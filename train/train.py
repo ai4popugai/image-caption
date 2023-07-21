@@ -1,6 +1,9 @@
+import os
+
 import torch
 from torch import nn
 from torch.optim.lr_scheduler import LRScheduler
+from torch.utils.tensorboard import SummaryWriter
 
 
 class Trainer:
@@ -39,6 +42,11 @@ class Trainer:
         self.train_iters = train_iters
         self.val_iters = val_iters
         self.show_iters = show_iters
+
+        if os.path.exists(self.logs_dir) is False:
+            os.makedirs(self.logs_dir)
+        writer = SummaryWriter(self.logs_dir)
+        self.writer = writer
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -119,6 +127,7 @@ class Trainer:
                 iteration += 1
                 if iteration % self.show_iters == 0:
                     print(f'Iteration: {iteration}, loss: {loss}')
+                    self.writer.add_scalars("Loss", {'train': loss}, iteration)
                 if iteration % self.train_iters == 0:
                     self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
                 if iteration % self.val_iters == 0:
@@ -134,5 +143,6 @@ class Trainer:
             loss = self._val_iteration(model, batch)
             losses.append(loss)
         mean_loss = sum(losses) / len(losses)
+        self.writer.add_scalars("Loss", {'val': mean_loss}, iteration)
         print(f'Validation iteration: {iteration}, mean loss: {mean_loss}')
 
