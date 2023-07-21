@@ -120,7 +120,7 @@ class Trainer:
                 if iteration % self.show_iters == 0:
                     print(f'Iteration: {iteration}, loss: {loss}')
                 if iteration % self.train_iters == 0:
-                    self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth')
+                    self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
                 if iteration % self.val_iters == 0:
                     self._val_loop(model, val_loader, iteration)
                 if iteration == max_iteration:
