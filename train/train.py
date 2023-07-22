@@ -20,7 +20,8 @@ class Trainer:
                  logs_dir: str,
                  optimizer: torch.optim.Optimizer,
                  loss: nn.Module,
-                 metrics: List[BaseMetric],
+                 train_metrics: List[BaseMetric],
+                 val_metrics: List[BaseMetric],
                  train_iters: int, val_iters: int,
                  show_iters: int,):
         """
@@ -32,7 +33,8 @@ class Trainer:
         :param logs_dir: directory where to place train logs.
         :param optimizer: initialized optimizer instance.
         :param loss: loss function for optimizations.
-        :param metrics: list of metrics to be calculated during training.
+        :param train_metrics: list of metrics to be calculated during training.
+        :param val_metrics: list of metrics to be calculated during validation.
         :param train_iters: number of training iterations before validation loop is executed.
         :param val_iters: number of iterations in the validation loop.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
@@ -45,7 +47,8 @@ class Trainer:
         self.logs_dir = logs_dir
         self.optimizer = optimizer
         self.loss = loss
-        self.metrics = metrics
+        self.train_metrics = train_metrics
+        self.val_metrics = val_metrics
         self.train_iters = train_iters
         self.val_iters = val_iters
         self.show_iters = show_iters
@@ -110,47 +113,61 @@ class Trainer:
         }, snapshot_path)
         print(f'Saved snapshot to {snapshot_path}')
 
-    def log(self, mode: str, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor], loss: torch.Tensor,
-            global_step: int) -> None:
+    @staticmethod
+    def _update_metrics(metrics: List[BaseMetric],
+                        result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> None:
+        for metric in metrics:
+            metric.update(result, batch)
+
+    def _report_metrics(self, mode: str,  metrics: List[BaseMetric], global_step) -> None:
         if mode != 'train' and mode != 'val':
-            raise ValueError('mode must be either train or val')
-        print(f'Iteration: {global_step}, {mode} loss: {loss}')
-        for metric in self.metrics:
+            raise ValueError(f'Unknown mode: {mode}')
+
+        for metric in metrics:
             metric_name = metric.__class__.__name__
-            metric_value = metric(result, batch)
+            metric_value = metric.compute()
             self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
             print(f'Iteration: {global_step}, {mode} {metric_name}: {metric_value}')
-        self.writer.add_scalars("Loss", {'train': loss}, global_step)
 
-    def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor],
-                         global_step: int) -> None:
+    def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
         model.train()
         self.optimizer.zero_grad()
         result = model(batch)
         loss = self.loss(result, batch)
         loss.backward()
         self.optimizer.step()
+        self._update_metrics(self.train_metrics, result, batch)
+        return loss.item()
 
-        if global_step % self.show_iters == 0:
-            self.log('train', result, batch, loss, global_step)
-
-    def _val_iteration(self, model, batch) -> Dict[str, torch.Tensor]:
+    def _val_iteration(self, model, batch) -> torch.Tensor:
         model.eval()
         with torch.no_grad():
             result = model(batch)
             loss = self.loss(result, batch)
-        return {'loss': loss.item()}
+            self._update_metrics(self.val_metrics, result, batch)
+        return loss.item()
 
     def _train_loop(self, model, train_loader, val_loader, start_iteration, max_iteration, lr_policy):
         iteration = start_iteration
         while iteration < max_iteration:
             for batch in train_loader:
-                self._train_iteration(model, batch, iteration)
+                loss = self._train_iteration(model, batch)
                 iteration += 1
                 if iteration % self.train_iters == 0:
+                    # save snapshot
                     self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
+
+                    # report loss
+                    print(f'Iteration: {iteration}, train loss: {loss}')
+                    self.writer.add_scalars("Loss", {'train': loss}, iteration)
+
+                    # report metrics
+                    self._report_metrics('train', self.train_metrics, iteration)
                 if iteration % self.val_iters == 0:
                     self._val_loop(model, val_loader, iteration)
+
+                    # report metrics
+                    self._report_metrics('val', self.val_metrics, iteration)
                 if iteration == max_iteration:
                     break
             if lr_policy is not None:
