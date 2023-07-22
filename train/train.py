@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple, Dict, Any
+from typing import List, Dict
 
 import torch
 from torch import nn
@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 
-from augmentations.augs import BaseAug
+from augmentations.classification.augs import BaseAug
 from metricks.base_metric import BaseMetric
 
 IMAGE_NET_NORM = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
