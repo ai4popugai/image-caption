@@ -26,6 +26,8 @@ class RunBase:
 
         self.snapshot_dir = os.path.join(os.environ['SNAPSHOT_DIR'], self.project, self.experiment_name, self.run_name)
         self.logs_dir = os.path.join(os.environ['LOGS_DIR'], self.project, self.experiment_name, self.run_name)
+        os.makedirs(self.snapshot_dir, exist_ok=True)
+        os.makedirs(self.logs_dir, exist_ok=True)
 
         self.optimizer = None
         self.loss = nn.CrossEntropyLoss()
