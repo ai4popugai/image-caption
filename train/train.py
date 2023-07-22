@@ -6,8 +6,12 @@ from torch import nn
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
 
+from augmentations.augs import BaseAug
 from metricks.base_metric import BaseMetric
+
+IMAGE_NET_NORM = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
 class Trainer:
@@ -22,6 +26,8 @@ class Trainer:
                  loss: nn.Module,
                  train_metrics: List[BaseMetric],
                  val_metrics: List[BaseMetric],
+                 train_augs: List[BaseAug],
+                 val_augs: List[BaseAug],
                  train_iters: int, val_iters: int,
                  show_iters: int,):
         """
@@ -35,6 +41,8 @@ class Trainer:
         :param loss: loss function for optimizations.
         :param train_metrics: list of metrics to be calculated during training.
         :param val_metrics: list of metrics to be calculated during validation.
+        :param train_augs: list of augmentations to be applied during training.
+        :param val_augs: list of augmentations to be applied during validation.
         :param train_iters: number of training iterations before validation loop is executed.
         :param val_iters: number of iterations in the validation loop.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
@@ -49,6 +57,8 @@ class Trainer:
         self.loss = loss
         self.train_metrics = train_metrics
         self.val_metrics = val_metrics
+        self.train_augs = train_augs
+        self.val_augs = val_augs
         self.train_iters = train_iters
         self.val_iters = val_iters
         self.show_iters = show_iters
@@ -146,10 +156,16 @@ class Trainer:
         self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
 
+    def _aug_loop(self, aug_list: List[BaseAug], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        for aug in aug_list:
+            batch = aug(batch)
+        return batch
+
     def _train_loop(self, model, train_loader, val_loader, start_iteration, max_iteration, lr_policy):
         iteration = start_iteration
         while iteration < max_iteration:
             for batch in train_loader:
+                batch = self._aug_loop(self.train_augs, batch)
                 loss = self._train_iteration(model, batch)
                 iteration += 1
                 if iteration % self.train_iters == 0:
@@ -181,6 +197,7 @@ class Trainer:
         model.eval()
         with torch.no_grad():
             for batch in val_loader:
+                batch = self._aug_loop(self.val_augs, batch)
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)

@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from typing import Dict
 
 import torch
 from torch import nn
@@ -20,5 +21,6 @@ class ColorAug(BaseAug):
         self.transform = transforms.ColorJitter(brightness=(b_low, 1.),
                                                 saturation=(s_low, 1.), contrast=(c_low, 1.))
 
-    def forward(self, frames: torch.Tensor) -> torch.Tensor:
-        return self.transform(frames)
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        batch['frames'] = self.transform(batch['frames'])
+        return batch
