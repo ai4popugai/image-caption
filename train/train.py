@@ -28,7 +28,7 @@ class Trainer:
                  val_metrics: List[BaseMetric],
                  train_augs: List[BaseAug],
                  val_augs: List[BaseAug],
-                 val_iters: int, snapshot_iters: int,
+                 train_iters: int, snapshot_iters: int,
                  show_iters: int,):
         """
         :param train_dataset: dataset for train loop.
@@ -43,7 +43,7 @@ class Trainer:
         :param val_metrics: list of metrics to be calculated during validation.
         :param train_augs: list of augmentations to be applied during training.
         :param val_augs: list of augmentations to be applied during validation.
-        :param val_iters: number of iterations in the validation loop.
+        :param train_iters: number of training iterations before log train loss and training metrics.
         :param snapshot_iters: number of training iterations before snapshot is saved.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
         """
@@ -60,7 +60,7 @@ class Trainer:
         self.train_augs = train_augs
         self.val_augs = val_augs
         self.snapshot_iters = snapshot_iters
-        self.val_iters = val_iters
+        self.train_iters = train_iters
         self.show_iters = show_iters
 
         if os.path.exists(self.logs_dir) is False:
@@ -178,7 +178,7 @@ class Trainer:
 
                     # report metrics
                     self._report_metrics('train', self.train_metrics, iteration)
-                if iteration % self.val_iters == 0:
+                if iteration % self.train_iters == 0:
                     loss = self._val_loop(model, val_loader)
 
                     # report loss
