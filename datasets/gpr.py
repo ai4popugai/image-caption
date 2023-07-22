@@ -29,4 +29,5 @@ class GPRDataset(Dataset):
     def __getitem__(self, idx):
         frame = Image.open(self.frames_list[idx])
         frame = self.frame_transforms(frame).byte()
-        return {'frame': frame, 'label': int(os.path.basename(self.frames_list[idx]).split('_')[0])}
+        return {'frames': frame,
+                'labels': int(os.path.basename(self.frames_list[idx]).split('_')[0])}
