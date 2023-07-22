@@ -14,6 +14,6 @@ class EfficientNet(nn.Module):
         self.base_model._fc = nn.Linear(2048, NUM_CLASSES)
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        x = batch['frame']
+        x = batch['frames']
         x = self.base_model(x)
         return {'logits': x}
