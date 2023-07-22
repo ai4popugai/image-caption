@@ -4,7 +4,7 @@ import torch
 import torchvision.models
 from torch import nn
 
-from datasets.gpr import NUM_CLASSES
+from datasets.classification.gpr import NUM_CLASSES
 
 
 class EfficientNet(nn.Module):

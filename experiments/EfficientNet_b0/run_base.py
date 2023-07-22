@@ -4,7 +4,7 @@ from typing import Tuple, List
 from torch import nn
 from torch.utils.data import Dataset, random_split
 
-from datasets.gpr import GPRDataset
+from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 from metricks.classification.accuracy import Accuracy
 from metricks.base_metric import BaseMetric

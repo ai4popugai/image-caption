@@ -1,12 +1,15 @@
 import os
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
+import torch
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
 from torchvision.transforms import Compose, Resize, InterpolationMode, PILToTensor
 
 
 NUM_CLASSES = 1200
+IMAGE_NET_NORM = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
 class GPRDataset(Dataset):
@@ -29,5 +32,5 @@ class GPRDataset(Dataset):
     def __getitem__(self, idx):
         frame = Image.open(self.frames_list[idx])
         frame = self.frame_transforms(frame).byte()
-        return {'frames': frame,
+        return {'frames': IMAGE_NET_NORM(frame.float().div(255.)),
                 'labels': int(os.path.basename(self.frames_list[idx]).split('_')[0])}

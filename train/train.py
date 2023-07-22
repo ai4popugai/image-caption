@@ -11,8 +11,6 @@ from torchvision import transforms
 from augmentations.classification.augs import BaseAug
 from metricks.base_metric import BaseMetric
 
-IMAGE_NET_NORM = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-
 
 class Trainer:
     def __init__(self,

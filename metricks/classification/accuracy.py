@@ -2,7 +2,7 @@ from typing import Dict
 
 import torch
 
-from datasets.gpr import NUM_CLASSES
+from datasets.classification.gpr import NUM_CLASSES
 from metricks.base_metric import BaseMetric
 from torchmetrics import Accuracy as AccuracyMetric
 
