@@ -126,6 +126,7 @@ class Trainer:
         for metric in metrics:
             metric_name = metric.__class__.__name__
             metric_value = metric.compute()
+            metric.reset()
             self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
             print(f'Iteration: {global_step}, {mode} {metric_name}: {metric_value}')
 
