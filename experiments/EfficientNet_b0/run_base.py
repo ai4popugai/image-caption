@@ -34,13 +34,13 @@ class RunBase:
         self.train_iters = 100
         self.show_iters = 10
         self.snapshot_iters = 200
-        self.max_iteration = None
+        self.max_iteration = 1000000
 
         self.start_snapshot_path = None
 
-        self.reset_optimizer = None
+        self.reset_optimizer = True
         self.lr_policy = None
-        self.strict_weight_loading = None
+        self.strict_weight_loading = True
 
         self.cudnn_benchmark = None
         self.device = None
