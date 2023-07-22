@@ -1,13 +1,12 @@
 import os
 from typing import Tuple, List
 
-import torch.nn
 from torch import nn
 from torch.utils.data import Dataset, random_split
 
 from datasets.gpr import GPRDataset
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
-from metricks.accuracy import Accuracy
+from metricks.classification.accuracy import Accuracy
 from metricks.base_metric import BaseMetric
 
 
