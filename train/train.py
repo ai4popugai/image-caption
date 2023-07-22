@@ -1,23 +1,28 @@
 import os
+from typing import List, Tuple, Dict, Any
 
 import torch
 from torch import nn
 from torch.optim.lr_scheduler import LRScheduler
+from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
+
+from metricks.base_metric import BaseMetric
 
 
 class Trainer:
     def __init__(self,
-                 train_dataset,
-                 val_dataset,
-                 batch_size,
-                 num_workers,
-                 snapshot_dir,
-                 logs_dir,
-                 optimizer,
-                 loss,
-                 train_iters, val_iters,
-                 show_iters):
+                 train_dataset: Dataset,
+                 val_dataset: Dataset,
+                 batch_size: int,
+                 num_workers: int,
+                 snapshot_dir: str,
+                 logs_dir: str,
+                 optimizer: torch.optim.Optimizer,
+                 loss: nn.Module,
+                 metrics: List[BaseMetric],
+                 train_iters: int, val_iters: int,
+                 show_iters: int,):
         """
         :param train_dataset: dataset for train loop.
         :param val_dataset: dataset for validation loop.
@@ -27,9 +32,10 @@ class Trainer:
         :param logs_dir: directory where to place train logs.
         :param optimizer: initialized optimizer instance.
         :param loss: loss function for optimizations.
+        :param metrics: list of metrics to be calculated during training.
         :param train_iters: number of training iterations before validation loop is executed.
         :param val_iters: number of iterations in the validation loop.
-         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
+        :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
         """
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
@@ -39,6 +45,7 @@ class Trainer:
         self.logs_dir = logs_dir
         self.optimizer = optimizer
         self.loss = loss
+        self.metrics = metrics
         self.train_iters = train_iters
         self.val_iters = val_iters
         self.show_iters = show_iters
@@ -69,7 +76,7 @@ class Trainer:
         if reset_optimizer:
             self.optimizer.zero_grad()
 
-        train_loader = torch.utils.data.DataLoader(
+        train_loader = DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
@@ -77,7 +84,7 @@ class Trainer:
             pin_memory=True,
             drop_last=True,
         )
-        val_loader = torch.utils.data.DataLoader(
+        val_loader = DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
             shuffle=False,
@@ -103,31 +110,43 @@ class Trainer:
         }, snapshot_path)
         print(f'Saved snapshot to {snapshot_path}')
 
-    def _train_iteration(self, model, batch):
+    def log(self, mode: str, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor], loss: torch.Tensor,
+            global_step: int) -> None:
+        if mode != 'train' and mode != 'val':
+            raise ValueError('mode must be either train or val')
+        print(f'Iteration: {global_step}, {mode} loss: {loss}')
+        for metric in self.metrics:
+            metric_name = metric.__class__.__name__
+            metric_value = metric(result, batch)
+            self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
+            print(f'Iteration: {global_step}, {mode} {metric_name}: {metric_value}')
+        self.writer.add_scalars("Loss", {'train': loss}, global_step)
+
+    def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor],
+                         global_step: int) -> None:
         model.train()
         self.optimizer.zero_grad()
         result = model(batch)
         loss = self.loss(result, batch)
         loss.backward()
         self.optimizer.step()
-        return loss.item()
 
-    def _val_iteration(self, model, batch):
+        if global_step % self.show_iters == 0:
+            self.log('train', result, batch, loss, global_step)
+
+    def _val_iteration(self, model, batch) -> Dict[str, torch.Tensor]:
         model.eval()
         with torch.no_grad():
             result = model(batch)
             loss = self.loss(result, batch)
-        return loss.item()
+        return {'loss': loss.item()}
 
     def _train_loop(self, model, train_loader, val_loader, start_iteration, max_iteration, lr_policy):
         iteration = start_iteration
         while iteration < max_iteration:
             for batch in train_loader:
-                loss = self._train_iteration(model, batch)
+                self._train_iteration(model, batch, iteration)
                 iteration += 1
-                if iteration % self.show_iters == 0:
-                    print(f'Iteration: {iteration}, loss: {loss}')
-                    self.writer.add_scalars("Loss", {'train': loss}, iteration)
                 if iteration % self.train_iters == 0:
                     self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
                 if iteration % self.val_iters == 0:
