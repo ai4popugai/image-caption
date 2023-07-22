@@ -28,7 +28,7 @@ class Trainer:
                  val_metrics: List[BaseMetric],
                  train_augs: List[BaseAug],
                  val_augs: List[BaseAug],
-                 train_iters: int, val_iters: int,
+                 val_iters: int, snapshot_iters: int,
                  show_iters: int,):
         """
         :param train_dataset: dataset for train loop.
@@ -43,8 +43,8 @@ class Trainer:
         :param val_metrics: list of metrics to be calculated during validation.
         :param train_augs: list of augmentations to be applied during training.
         :param val_augs: list of augmentations to be applied during validation.
-        :param train_iters: number of training iterations before validation loop is executed.
         :param val_iters: number of iterations in the validation loop.
+        :param snapshot_iters: number of training iterations before snapshot is saved.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
         """
         self.train_dataset = train_dataset
@@ -59,7 +59,7 @@ class Trainer:
         self.val_metrics = val_metrics
         self.train_augs = train_augs
         self.val_augs = val_augs
-        self.train_iters = train_iters
+        self.snapshot_iters = snapshot_iters
         self.val_iters = val_iters
         self.show_iters = show_iters
 
@@ -168,10 +168,10 @@ class Trainer:
                 batch = self._aug_loop(self.train_augs, batch)
                 loss = self._train_iteration(model, batch)
                 iteration += 1
-                if iteration % self.train_iters == 0:
+                if iteration % self.snapshot_iters == 0:
                     # save snapshot
                     self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
-
+                if iteration % self.show_iters == 0:
                     # report loss
                     print(f'Iteration: {iteration}, train loss: {loss}')
                     self.writer.add_scalars("Loss", {'train': loss}, iteration)

@@ -31,9 +31,9 @@ class RunBase:
         self.loss = nn.CrossEntropyLoss()
 
         self.metrics: List[BaseMetric] = [Accuracy()]
-        self.train_iters = None
-        self.val_iters = None
-        self.show_iters = None
+        self.val_iters = 100
+        self.show_iters = 10
+        self.snapshot_iters = 200
         self.max_iteration = None
 
         self.start_snapshot_path = None
