@@ -42,8 +42,7 @@ class RunBase:
         self.lr_policy = None
         self.strict_weight_loading = True
 
-        self.cudnn_benchmark = None
-        self.device = None
+        self.cudnn_benchmark = True
 
     def setup_model(self) -> nn.Module:
         return EfficientNet()
