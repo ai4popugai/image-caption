@@ -6,7 +6,6 @@ from torch import nn
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from torchvision import transforms
 
 from augmentations.classification.augs import BaseAug
 from metricks.base_metric import BaseMetric
@@ -109,7 +108,7 @@ class Trainer:
         )
         self._train_loop(model, train_loader, val_loader, global_step, max_iteration, lr_policy)
 
-    def _load_snapshot(self, model, start_snapshot_name, strict_weight_loading) -> int:
+    def _load_snapshot(self, model: nn.Module, start_snapshot_name: str, strict_weight_loading: bool) -> int:
         start_snapshot_path = os.path.join(self.snapshot_dir, start_snapshot_name)
         checkpoint = torch.load(start_snapshot_path, map_location=self.device)
         model.load_state_dict(checkpoint['model_state_dict'], strict=strict_weight_loading)
@@ -123,7 +122,7 @@ class Trainer:
             return None
         return os.path.basename(max(snapshot_paths, key=os.path.getctime))
 
-    def _save_snapshot(self, model, snapshot_path, global_step):
+    def _save_snapshot(self, model: nn.Module, snapshot_path: str, global_step: int):
         torch.save({
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
@@ -138,7 +137,7 @@ class Trainer:
         for metric in metrics:
             metric.update(result, batch)
 
-    def _report_metrics(self, mode: str,  metrics: List[BaseMetric], global_step) -> None:
+    def _report_metrics(self, mode: str,  metrics: List[BaseMetric], global_step: int) -> None:
         if mode != 'train' and mode != 'val':
             raise ValueError(f'Unknown mode: {mode}')
 
@@ -159,7 +158,7 @@ class Trainer:
         self._update_metrics(self.train_metrics, result, batch)
         return loss.item()
 
-    def _val_iteration(self, model, batch) -> torch.Tensor:
+    def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
         result = model(batch)
         loss = self.loss(result, batch)
         self._update_metrics(self.val_metrics, result, batch)
@@ -171,7 +170,7 @@ class Trainer:
         return batch
 
     @staticmethod
-    def _get_batch(iterator, train_loader) -> Union[Iterator, Dict[str, torch.Tensor]]:
+    def _get_batch(iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
         try:
             batch = next(iterator)
         except StopIteration:
@@ -179,7 +178,8 @@ class Trainer:
             batch = next(iterator)
         return iterator, batch
 
-    def _train_loop(self, model, train_loader, val_loader, start_iteration, max_iteration, lr_policy):
+    def _train_loop(self, model: nn.Module, train_loader: DataLoader, val_loader: DataLoader,
+                    start_iteration: int, max_iteration: int, lr_policy: LRScheduler) -> None:
         iterator = iter(train_loader)
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
@@ -210,7 +210,7 @@ class Trainer:
             if lr_policy is not None:
                 lr_policy.step()
 
-    def _val_loop(self, model, val_loader) -> float:
+    def _val_loop(self, model: nn.Module, val_loader: DataLoader) -> float:
         losses = []
         model.eval()
         with torch.no_grad():
