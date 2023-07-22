@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 import torch.nn
 from torch import nn
@@ -7,6 +7,8 @@ from torch.utils.data import Dataset, random_split
 
 from datasets.gpr import GPRDataset
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
+from metricks.accuracy import Accuracy
+from metricks.base_metric import BaseMetric
 
 
 class RunBase:
@@ -27,9 +29,9 @@ class RunBase:
         self.logs_dir = os.path.join(os.environ['LOGS_DIR'], self.project, self.experiment_name, self.run_name)
 
         self.optimizer = None
-        self.loss = None
+        self.loss = nn.CrossEntropyLoss()
 
-        self.metrics = None
+        self.metrics: List[BaseMetric] = [Accuracy()]
         self.train_iters = None
         self.val_iters = None
         self.show_iters = None
