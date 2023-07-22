@@ -3,7 +3,9 @@ from typing import Tuple
 
 import torch.nn
 from torch import nn
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
+
+from datasets.gpr import GPRDataset
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 
 
@@ -18,6 +20,8 @@ class RunBase:
 
         self.batch_size = 64
         self.num_workers = 8
+
+        self.validation_split = 0.2
 
         self.snapshot_dir = os.path.join(os.environ['SNAPSHOT_DIR'], self.project, self.experiment_name, self.run_name)
         self.logs_dir = os.path.join(os.environ['LOGS_DIR'], self.project, self.experiment_name, self.run_name)
@@ -44,7 +48,15 @@ class RunBase:
         return EfficientNet()
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
-        pass
+        dataset = GPRDataset(resolution=(64, 64))
+
+        # Split the dataset into training and validation sets (e.g., 80% train, 20% validation)
+        dataset_size = dataset.__len__()
+        validation_size = int(self.validation_split * dataset_size)
+        train_size = dataset_size - validation_size
+
+        train_dataset, validation_dataset = random_split(dataset, [train_size, validation_size])
+        return train_dataset, validation_dataset
 
     def train(self,
               reset_optimizer: bool = False,
