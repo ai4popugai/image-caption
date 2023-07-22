@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Union, Tuple, Any, Iterator
 
 import torch
 from torch import nn
@@ -161,34 +161,43 @@ class Trainer:
             batch = aug(batch)
         return batch
 
+    @staticmethod
+    def _get_batch(iterator, train_loader) -> Union[Iterator, Dict[str, torch.Tensor]]:
+        try:
+            batch = next(iterator)
+        except StopIteration:
+            iterator = iter(train_loader)
+            batch = next(iterator)
+        return iterator, batch
+
     def _train_loop(self, model, train_loader, val_loader, start_iteration, max_iteration, lr_policy):
-        iteration = start_iteration
-        while iteration < max_iteration:
-            for batch in train_loader:
-                batch = self._aug_loop(self.train_augs, batch)
-                loss = self._train_iteration(model, batch)
-                iteration += 1
-                if iteration % self.snapshot_iters == 0:
-                    # save snapshot
-                    self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
-                if iteration % self.show_iters == 0:
-                    # report loss
-                    print(f'Iteration: {iteration}, train loss: {loss}')
-                    self.writer.add_scalars("Loss", {'train': loss}, iteration)
+        iterator = iter(train_loader)
+        for iteration in range(start_iteration, max_iteration + start_iteration):
+            iterator, batch = self._get_batch(iterator, train_loader)
+            batch = self._aug_loop(self.train_augs, batch)
+            loss = self._train_iteration(model, batch)
+            iteration += 1
+            if iteration % self.snapshot_iters == 0:
+                # save snapshot
+                self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
+            if iteration % self.show_iters == 0:
+                # report loss
+                print(f'Iteration: {iteration}, train loss: {loss}')
+                self.writer.add_scalars("Loss", {'train': loss}, iteration)
 
-                    # report metrics
-                    self._report_metrics('train', self.train_metrics, iteration)
-                if iteration % self.train_iters == 0:
-                    loss = self._val_loop(model, val_loader)
+                # report metrics
+                self._report_metrics('train', self.train_metrics, iteration)
+            if iteration % self.train_iters == 0:
+                loss = self._val_loop(model, val_loader)
 
-                    # report loss
-                    self.writer.add_scalars("Loss", {'val': loss}, iteration)
-                    print(f'Validation iteration: {iteration}, mean loss: {loss}')
+                # report loss
+                self.writer.add_scalars("Loss", {'val': loss}, iteration)
+                print(f'Validation iteration: {iteration}, mean loss: {loss}')
 
-                    # report metrics
-                    self._report_metrics('val', self.val_metrics, iteration)
-                if iteration == max_iteration:
-                    break
+                # report metrics
+                self._report_metrics('val', self.val_metrics, iteration)
+            if iteration == max_iteration:
+                break
             if lr_policy is not None:
                 lr_policy.step()
 
