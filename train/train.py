@@ -129,7 +129,7 @@ class Trainer:
             self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
             print(f'Iteration: {global_step}, {mode} {metric_name}: {metric_value}')
 
-    def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
         model.train()
         self.optimizer.zero_grad()
         result = model(batch)
@@ -162,7 +162,11 @@ class Trainer:
                     # report metrics
                     self._report_metrics('train', self.train_metrics, iteration)
                 if iteration % self.val_iters == 0:
-                    self._val_loop(model, val_loader, iteration)
+                    loss = self._val_loop(model, val_loader)
+
+                    # report loss
+                    self.writer.add_scalars("Loss", {'val': loss}, iteration)
+                    print(f'Validation iteration: {iteration}, mean loss: {loss}')
 
                     # report metrics
                     self._report_metrics('val', self.val_metrics, iteration)
@@ -171,7 +175,7 @@ class Trainer:
             if lr_policy is not None:
                 lr_policy.step()
 
-    def _val_loop(self, model, val_loader, iteration):
+    def _val_loop(self, model, val_loader) -> float:
         losses = []
         model.eval()
         with torch.no_grad():
@@ -179,6 +183,4 @@ class Trainer:
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)
-        self.writer.add_scalars("Loss", {'val': mean_loss}, iteration)
-        print(f'Validation iteration: {iteration}, mean loss: {mean_loss}')
-
+        return mean_loss.item()
