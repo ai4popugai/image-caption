@@ -68,7 +68,7 @@ class Trainer:
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def train(self, model: nn.Module, start_snapshot_path: str or None, reset_optimizer: bool,
+    def train(self, model: nn.Module, start_snapshot_name: str or None, reset_optimizer: bool,
               max_iteration: int,
               lr_policy: LRScheduler or None = None,
               strict_weight_loading: bool = True,
@@ -79,8 +79,8 @@ class Trainer:
         torch.backends.cuda.matmul.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
         torch.backends.cudnn.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
 
-        if start_snapshot_path is not None:
-            global_step = self._load_snapshot(model, start_snapshot_path, strict_weight_loading)
+        if start_snapshot_name is not None:
+            global_step = self._load_snapshot(model, start_snapshot_name, strict_weight_loading)
         else:
             the_last_snapshot = self._detect_last_snapshot()
             if the_last_snapshot is not None:
@@ -109,7 +109,8 @@ class Trainer:
         )
         self._train_loop(model, train_loader, val_loader, global_step, max_iteration, lr_policy)
 
-    def _load_snapshot(self, model, start_snapshot_path, strict_weight_loading) -> int:
+    def _load_snapshot(self, model, start_snapshot_name, strict_weight_loading) -> int:
+        start_snapshot_path = os.path.join(self.snapshot_dir, start_snapshot_name)
         checkpoint = torch.load(start_snapshot_path, map_location=self.device)
         model.load_state_dict(checkpoint['model_state_dict'], strict=strict_weight_loading)
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -120,7 +121,7 @@ class Trainer:
         snapshot_paths = [os.path.join(self.snapshot_dir, name) for name in os.listdir(self.snapshot_dir)]
         if len(snapshot_paths) == 0:
             return None
-        return max(snapshot_paths, key=os.path.getctime)
+        return os.path.basename(max(snapshot_paths, key=os.path.getctime))
 
     def _save_snapshot(self, model, snapshot_path, global_step):
         torch.save({

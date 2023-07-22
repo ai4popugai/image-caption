@@ -36,7 +36,7 @@ class RunBase:
         self.snapshot_iters = 200
         self.max_iteration = 1000000
 
-        self.start_snapshot_path = None
+        self.start_snapshot_name = None
 
         self.reset_optimizer = True
         self.lr_policy = None
