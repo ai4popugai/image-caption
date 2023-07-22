@@ -1,3 +1,5 @@
+from typing import Dict
+
 import torch
 
 from datasets.gpr import NUM_CLASSES
@@ -10,11 +12,11 @@ class Accuracy(BaseMetric):
         super().__init__(name='accuracy')
         self.accuracy = AccuracyMetric(task="multiclass", num_classes=NUM_CLASSES)
 
-    def forward(self, preds: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+    def forward(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> torch.Tensor:
         """
         Compute accuracy metric.
-        :param preds: logits from model
-        :param targets: real labels
+        :param result: output of the network
+        :param batch: batch of data
         :return: accuracy metric
         """
-        return self.accuracy(preds, targets)
+        return self.accuracy(result['logits'], batch['labels'])
