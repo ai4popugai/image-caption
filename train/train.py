@@ -140,11 +140,9 @@ class Trainer:
         return loss.item()
 
     def _val_iteration(self, model, batch) -> torch.Tensor:
-        model.eval()
-        with torch.no_grad():
-            result = model(batch)
-            loss = self.loss(result, batch)
-            self._update_metrics(self.val_metrics, result, batch)
+        result = model(batch)
+        loss = self.loss(result, batch)
+        self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
 
     def _train_loop(self, model, train_loader, val_loader, start_iteration, max_iteration, lr_policy):
@@ -175,9 +173,11 @@ class Trainer:
 
     def _val_loop(self, model, val_loader, iteration):
         losses = []
-        for batch in val_loader:
-            loss = self._val_iteration(model, batch)
-            losses.append(loss)
+        model.eval()
+        with torch.no_grad():
+            for batch in val_loader:
+                loss = self._val_iteration(model, batch)
+                losses.append(loss)
         mean_loss = sum(losses) / len(losses)
         self.writer.add_scalars("Loss", {'val': mean_loss}, iteration)
         print(f'Validation iteration: {iteration}, mean loss: {mean_loss}')
