@@ -82,7 +82,11 @@ class Trainer:
         if start_snapshot_path is not None:
             global_step = self._load_snapshot(model, start_snapshot_path, strict_weight_loading)
         else:
-            global_step = 0
+            the_last_snapshot = self._detect_last_snapshot()
+            if the_last_snapshot is not None:
+                global_step = self._load_snapshot(model, the_last_snapshot, strict_weight_loading)
+            else:
+                global_step = 0
 
         if reset_optimizer:
             self.optimizer.zero_grad()
@@ -111,6 +115,12 @@ class Trainer:
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         print(f'Loaded snapshot from {start_snapshot_path}')
         return checkpoint['global_step']
+
+    def _detect_last_snapshot(self) -> str or None:
+        snapshot_paths = [os.path.join(self.snapshot_dir, name) for name in os.listdir(self.snapshot_dir)]
+        if len(snapshot_paths) == 0:
+            return None
+        return max(snapshot_paths, key=os.path.getctime)
 
     def _save_snapshot(self, model, snapshot_path, global_step):
         torch.save({
