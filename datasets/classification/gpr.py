@@ -21,7 +21,6 @@ class GPRDataset(Dataset):
         self.frames_list = [os.path.join(root, file_name) for file_name in sorted(os.listdir(root))]
         self.frame_transforms = Compose([
             PILToTensor(),
-            # Remove the batch dimension using squeeze()
             lambda x: x.squeeze(0),
             Resize(resolution, InterpolationMode.BILINEAR)  # Use BILINEAR instead of BOX
         ])
