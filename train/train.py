@@ -169,13 +169,14 @@ class Trainer:
             batch = aug(batch)
         return batch
 
-    @staticmethod
-    def _get_batch(iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
+    def _get_batch(self, iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
         try:
             batch = next(iterator)
         except StopIteration:
             iterator = iter(train_loader)
             batch = next(iterator)
+
+        batch = {batch[key].to(self.device, non_blocking=True) for key in batch}
         return iterator, batch
 
     def _train_loop(self, model: nn.Module, train_loader: DataLoader, val_loader: DataLoader,
