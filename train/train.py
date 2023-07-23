@@ -87,6 +87,8 @@ class Trainer:
             else:
                 global_step = 0
 
+        model.to(self.device)
+
         if reset_optimizer:
             self.optimizer.zero_grad()
 
