@@ -22,7 +22,7 @@ class GPRDataset(Dataset):
         self.frame_transforms = Compose([
             PILToTensor(),
             lambda x: x.squeeze(0),
-            Resize(resolution, InterpolationMode.BILINEAR)  # Use BILINEAR instead of BOX
+            Resize(resolution, InterpolationMode.BILINEAR)
         ])
 
     def __len__(self) -> int:
