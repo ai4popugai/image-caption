@@ -26,7 +26,7 @@ class GPRDataset(Dataset):
         return len(self.frames_list)
 
     def __getitem__(self, idx):
-        frame = cv2.imread(self.frames_list[idx], cv2.IMREAD_UNCHANGED)
+        frame = cv2.imread(self.frames_list[idx], cv2.IMREAD_COLOR)
         frame = self.frame_transforms(frame)
         return {'frames': IMAGE_NET_NORM(frame),
                 'labels': int(os.path.basename(self.frames_list[idx]).split('_')[0])}
