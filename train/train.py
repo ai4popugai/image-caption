@@ -89,16 +89,13 @@ class Trainer:
         torch.backends.cudnn.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
 
         if start_snapshot_name is not None:
-            global_step = self._load_snapshot(model, start_snapshot_name, strict_weight_loading)
+            global_step = self._load_snapshot(model, start_snapshot_name, strict_weight_loading, reset_optimizer)
         else:
             the_last_snapshot = self._detect_last_snapshot()
             if the_last_snapshot is not None:
-                global_step = self._load_snapshot(model, the_last_snapshot, strict_weight_loading)
+                global_step = self._load_snapshot(model, the_last_snapshot, strict_weight_loading, reset_optimizer)
             else:
                 global_step = 0
-
-        if reset_optimizer:
-            self.optimizer.zero_grad()
 
         train_loader = DataLoader(
             self.train_dataset,
@@ -118,11 +115,13 @@ class Trainer:
         )
         self._train_loop(model, train_loader, val_loader, global_step, max_iteration, lr_policy)
 
-    def _load_snapshot(self, model: nn.Module, start_snapshot_name: str, strict_weight_loading: bool) -> int:
+    def _load_snapshot(self, model: nn.Module, start_snapshot_name: str, strict_weight_loading: bool,
+                       reset_optimizer: bool) -> int:
         start_snapshot_path = os.path.join(self.snapshot_dir, start_snapshot_name)
         checkpoint = torch.load(start_snapshot_path, map_location=self.device)
         model.load_state_dict(checkpoint['model_state_dict'], strict=strict_weight_loading)
-        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        if reset_optimizer is False:
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         print(f'Loaded snapshot from {start_snapshot_path}')
         return checkpoint['global_step']
 
