@@ -2,7 +2,7 @@ from typing import Dict
 
 import torch
 
-from metricks.base_metric import BaseMetric
+from metrics.base_metric import BaseMetric
 from torchmetrics import Accuracy as AccuracyMetric
 
 

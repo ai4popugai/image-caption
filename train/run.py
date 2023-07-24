@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 from torch.optim.lr_scheduler import LRScheduler
 
 from augmentations.classification.augs import BaseAug
-from metricks.base_metric import BaseMetric
+from metrics.base_metric import BaseMetric
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from train.train import Trainer
 

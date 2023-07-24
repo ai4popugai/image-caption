@@ -8,8 +8,8 @@ from torch.utils.data import Dataset, random_split
 from augmentations.classification.augs import ColorAug
 from datasets.classification.gpr import GPRDataset, NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
-from metricks.classification.accuracy import Accuracy
-from metricks.base_metric import BaseMetric
+from metrics.classification.accuracy import Accuracy
+from metrics.base_metric import BaseMetric
 from train.run import Run
 
 
