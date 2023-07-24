@@ -1,9 +1,14 @@
 import os
 from abc import ABC
-from typing import Tuple
+from typing import Tuple, Optional, List
 
+from torch import nn
+from torch.optim import Optimizer
 from torch.utils.data import Dataset
+from torch.optim.lr_scheduler import LRScheduler
 
+from augmentations.classification.augs import BaseAug
+from metricks.base_metric import BaseMetric
 from train.train import Trainer
 
 
@@ -16,47 +21,43 @@ class Run(ABC):
         self.experiment_name = os.path.basename(experiment_path)  # i.e. wav2lip3
         self.project = os.path.basename(os.path.split(os.path.split(experiment_path)[0])[0])  # i.e. wav2lip
 
-        self.batch_size = 64
-        self.num_workers = 8
+        self.batch_size: int = 64
+        self.num_workers: int = 8
 
-        self.validation_split = 0.2
+        self.validation_split: float = 0.2
 
         # num of iterations
-        self.train_iters = 100
-        self.show_iters = 10
-        self.snapshot_iters = 200
-        self.max_iteration = 1000000
+        self.train_iters: int = 100
+        self.show_iters: int = 10
+        self.snapshot_iters: int = 200
+        self.max_iteration: int = 1000000
 
-        self.snapshot_dir = os.path.join(os.environ['SNAPSHOT_DIR'], self.project, self.experiment_name, self.run_name)
-        self.logs_dir = os.path.join(os.environ['LOGS_DIR'], self.project, self.experiment_name, self.run_name)
+        self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOT_DIR'], self.project, self.experiment_name, self.run_name)
+        self.logs_dir: str = os.path.join(os.environ['LOGS_DIR'], self.project, self.experiment_name, self.run_name)
         os.makedirs(self.snapshot_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
 
         # optimizer
-        self.optimizer = None
-        self.reset_optimizer = False
-        self.lr_policy = None
+        self.optimizer: Optional[Optimizer] = None
+        self.reset_optimizer: bool = False
+        self.lr_policy: Optional[LRScheduler] = None
 
         # loss
-        self.loss = None
-
-        # list of metrics
-        self.train_metrics: None
-        self.val_metrics: None
+        self.loss: Optional[nn.Module] = None
 
         # snapshots
-        self.strict_weight_loading = True
+        self.strict_weight_loading: bool = True
 
         # cudnn
-        self.cudnn_benchmark = True
+        self.cudnn_benchmark: bool = True
 
         # augs
-        self.train_augs = None
-        self.val_augs = None
+        self.train_augs: Optional[List[BaseAug]] = None
+        self.val_augs: Optional[List[BaseAug]] = None
 
         # metrics
-        self.train_metrics = None
-        self.val_metrics = None
+        self.train_metrics: Optional[List[BaseMetric]] = None
+        self.val_metrics: Optional[List[BaseMetric]] = None
 
     def setup_model(self):
         raise NotImplementedError
