@@ -8,7 +8,7 @@ class LinearIterationPolicy(BaseIterationPolicy):
         self.end_iter = end_iter
         self.end_val = end_val
 
-    def evaluate(self, global_step: int) -> float:
+    def step(self, global_step: int) -> float:
         if global_step < self.start_iter:
             return self.start_val
         elif global_step >= self.end_iter:
