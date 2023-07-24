@@ -4,7 +4,7 @@ from typing import Tuple, List
 from torch import nn
 from torch.utils.data import Dataset, random_split
 
-from datasets.classification.gpr import GPRDataset
+from datasets.classification.gpr import GPRDataset, NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 from metricks.classification.accuracy import Accuracy
 from metricks.base_metric import BaseMetric
@@ -19,6 +19,8 @@ class RunBase:
         self.experiment_name = os.path.basename(experiment_path)  # i.e. wav2lip3
         self.project = os.path.basename(os.path.split(os.path.split(experiment_path)[0])[0])  # i.e. wav2lip
 
+        self.num_classes = NUM_CLASSES
+
         self.batch_size = 64
         self.num_workers = 8
 
@@ -32,11 +34,7 @@ class RunBase:
         self.optimizer = None
         self.loss = nn.CrossEntropyLoss()
 
-        self.metrics: List[BaseMetric] = [Accuracy()]
-        self.train_iters = 100
-        self.show_iters = 10
-        self.snapshot_iters = 200
-        self.max_iteration = 1000000
+        self.metrics: List[BaseMetric] = [Accuracy(self.num_classes)]
 
         self.start_snapshot_name = None
 
@@ -47,7 +45,7 @@ class RunBase:
         self.cudnn_benchmark = True
 
     def setup_model(self) -> nn.Module:
-        return EfficientNet()
+        return EfficientNet(num_classes=self.num_classes)
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         dataset = GPRDataset(resolution=(64, 64))
@@ -59,9 +57,3 @@ class RunBase:
 
         train_dataset, validation_dataset = random_split(dataset, [train_size, validation_size])
         return train_dataset, validation_dataset
-
-    def train(self,
-              reset_optimizer: bool = False,
-              start_snapshot: str = None,
-              ):
-        pass
