@@ -194,7 +194,7 @@ class Trainer:
             iterator = iter(train_loader)
             batch = next(iterator)
 
-        batch = {batch[key].to(self.device, non_blocking=True) for key in batch}
+        batch = {key: batch[key].to(self.device, non_blocking=True) for key in batch}
         return iterator, batch
 
     def _train_loop(self, model: nn.Module, train_loader: DataLoader, val_loader: DataLoader,
