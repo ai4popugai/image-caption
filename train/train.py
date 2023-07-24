@@ -1,8 +1,9 @@
 import os
-from typing import List, Dict, Union, Iterator
+from typing import List, Dict, Union, Iterator, Optional, Type
 
 import torch
 from torch import nn
+from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -19,7 +20,8 @@ class Trainer:
                  num_workers: int,
                  snapshot_dir: str,
                  logs_dir: str,
-                 optimizer: torch.optim.Optimizer,
+                 optimizer: Optional[Optimizer],
+                 optimizer_class: Optional[Type[Optimizer]],
                  loss: nn.Module,
                  train_metrics: List[BaseMetric],
                  val_metrics: List[BaseMetric],
@@ -35,6 +37,7 @@ class Trainer:
         :param snapshot_dir: directory for snapshots.
         :param logs_dir: directory where to place train logs.
         :param optimizer: initialized optimizer instance.
+        :param optimizer_class: optimizer class to be initialized.
         :param loss: loss function for optimizations.
         :param train_metrics: list of metrics to be calculated during training.
         :param val_metrics: list of metrics to be calculated during validation.
@@ -51,6 +54,7 @@ class Trainer:
         self.snapshot_dir = snapshot_dir
         self.logs_dir = logs_dir
         self.optimizer = optimizer
+        self.optimizer_class = optimizer_class
         self.loss = loss
         self.train_metrics = train_metrics
         self.val_metrics = val_metrics
