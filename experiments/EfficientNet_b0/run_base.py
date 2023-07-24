@@ -1,6 +1,7 @@
 import os
 from typing import Tuple, List
 
+import torch.optim.optimizer
 from torch import nn
 from torch.utils.data import Dataset, random_split
 
@@ -23,7 +24,7 @@ class RunBase(Run):
 
         self.validation_split = 0.2
 
-        self.optimizer = None
+        self.optimizer_class = torch.optim.Adam
         self.loss = nn.CrossEntropyLoss()
 
         self.train_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
