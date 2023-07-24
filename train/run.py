@@ -1,6 +1,6 @@
 import os
 from abc import ABC
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, List, Type, Dict
 
 from torch import nn
 from torch.optim import Optimizer
@@ -38,7 +38,8 @@ class Run(ABC):
         os.makedirs(self.logs_dir, exist_ok=True)
 
         # optimizer
-        self.optimizer: Optional[Optimizer] = None
+        self.optimizer_class: Optional[Type[Optimizer]] = None
+        self.optimizer_kwargs: Optional[Dict] = None
         self.reset_optimizer: bool = False
         self.lr_policy: Optional[LRScheduler] = None
 
@@ -76,7 +77,8 @@ class Run(ABC):
                           num_workers=self.num_workers,
                           train_dataset=train_dataset,
                           val_dataset=val_dataset,
-                          optimizer=self.optimizer,
+                          optimizer_class=self.optimizer_class,
+                          optimizer_kwargs=self.optimizer_kwargs,
                           loss=self.loss,
                           snapshot_dir=self.snapshot_dir,
                           logs_dir=self.logs_dir,
