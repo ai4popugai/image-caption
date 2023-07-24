@@ -78,12 +78,13 @@ class Trainer:
               max_iteration: int,
               lr_policy: Optional[BaseIterationPolicy] = None,
               strict_weight_loading: bool = True,
-              cudnn_benchmark: bool = True,):
+              cudnn_benchmark: bool = True,
+              allow_tf32: bool = False,):
 
         torch.backends.cudnn.benchmark = cudnn_benchmark
         torch.backends.cudnn.deterministic = False
-        torch.backends.cuda.matmul.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
-        torch.backends.cudnn.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
+        torch.backends.cuda.matmul.allow_tf32 = allow_tf32  # False to improve numerical accuracy.
+        torch.backends.cudnn.allow_tf32 = allow_tf32  # False to improve numerical accuracy.
 
         model.to(self.device)
 

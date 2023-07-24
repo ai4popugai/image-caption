@@ -33,8 +33,8 @@ class Run(ABC):
         self.snapshot_iters: int = 200
         self.max_iteration: int = 1000000
 
-        self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOT_DIR'], self.project, self.experiment_name, self.run_name)
-        self.logs_dir: str = os.path.join(os.environ['LOGS_DIR'], self.project, self.experiment_name, self.run_name)
+        self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, self.experiment_name, self.run_name)
+        self.logs_dir: str = os.path.join(os.environ['LOG_DIR'], self.project, self.experiment_name, self.run_name)
         os.makedirs(self.snapshot_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
 
@@ -52,6 +52,8 @@ class Run(ABC):
 
         # cudnn
         self.cudnn_benchmark: bool = True
+
+        self.allow_tf32: bool = False
 
         # augs
         self.train_augs: Optional[List[BaseAug]] = None
@@ -98,4 +100,5 @@ class Run(ABC):
                       lr_policy=self.lr_policy,
                       strict_weight_loading=self.strict_weight_loading,
                       cudnn_benchmark=self.cudnn_benchmark,
+                      allow_tf32=self.allow_tf32,
                       )
