@@ -20,8 +20,8 @@ class Trainer:
                  num_workers: int,
                  snapshot_dir: str,
                  logs_dir: str,
-                 optimizer: Optional[Optimizer],
-                 optimizer_class: Optional[Type[Optimizer]],
+                 optimizer_class: Type[Optimizer],
+                 optimizer_kwargs: Dict,
                  loss: nn.Module,
                  train_metrics: List[BaseMetric],
                  val_metrics: List[BaseMetric],
@@ -36,8 +36,8 @@ class Trainer:
         :param num_workers: number of CPU workers used by DataLoader.
         :param snapshot_dir: directory for snapshots.
         :param logs_dir: directory where to place train logs.
-        :param optimizer: initialized optimizer instance.
         :param optimizer_class: optimizer class to be initialized.
+        :param optimizer_kwargs: kwargs for optimizer initialization.
         :param loss: loss function for optimizations.
         :param train_metrics: list of metrics to be calculated during training.
         :param val_metrics: list of metrics to be calculated during validation.
@@ -53,8 +53,9 @@ class Trainer:
         self.num_workers = num_workers
         self.snapshot_dir = snapshot_dir
         self.logs_dir = logs_dir
-        self.optimizer = optimizer
+        self.optimizer = None
         self.optimizer_class = optimizer_class
+        self.optimizer_kwargs = optimizer_kwargs
         self.loss = loss
         self.train_metrics = train_metrics
         self.val_metrics = val_metrics
@@ -77,6 +78,11 @@ class Trainer:
               strict_weight_loading: bool = True,
               cudnn_benchmark: bool = True,):
 
+        model.to(self.device)
+
+        # instantiating optimizer
+        self.optimizer = self.optimizer_class(model.parameters(), **self.optimizer_kwargs)
+
         torch.backends.cudnn.benchmark = cudnn_benchmark
         torch.backends.cudnn.deterministic = False
         torch.backends.cuda.matmul.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
@@ -90,8 +96,6 @@ class Trainer:
                 global_step = self._load_snapshot(model, the_last_snapshot, strict_weight_loading)
             else:
                 global_step = 0
-
-        model.to(self.device)
 
         if reset_optimizer:
             self.optimizer.zero_grad()
