@@ -21,6 +21,12 @@ class Run(ABC):
 
         self.validation_split = 0.2
 
+        # num of iterations
+        self.train_iters = 100
+        self.show_iters = 10
+        self.snapshot_iters = 200
+        self.max_iteration = 1000000
+
         self.snapshot_dir = os.path.join(os.environ['SNAPSHOT_DIR'], self.project, self.experiment_name, self.run_name)
         self.logs_dir = os.path.join(os.environ['LOGS_DIR'], self.project, self.experiment_name, self.run_name)
         os.makedirs(self.snapshot_dir, exist_ok=True)
@@ -28,7 +34,7 @@ class Run(ABC):
 
         # optimizer
         self.optimizer = None
-        self.reset_optimizer = None
+        self.reset_optimizer = False
         self.lr_policy = None
 
         # loss
@@ -38,14 +44,7 @@ class Run(ABC):
         self.train_metrics: None
         self.val_metrics: None
 
-        # num of iterations
-        self.train_iters = 100
-        self.show_iters = 10
-        self.snapshot_iters = 200
-        self.max_iteration = 1000000
-
         # snapshots
-        self.start_snapshot_name = None
         self.strict_weight_loading = True
 
         # cudnn
@@ -66,7 +65,6 @@ class Run(ABC):
         raise NotImplementedError
 
     def train(self,
-              reset_optimizer: bool = False,
               start_snapshot_name: str = None,
               ):
         model = self.setup_model()
@@ -90,9 +88,10 @@ class Run(ABC):
                           snapshot_iters=self.snapshot_iters,
                           )
         trainer.train(model=model,
-                      reset_optimizer=reset_optimizer,
+                      reset_optimizer=self.reset_optimizer,
                       start_snapshot_name=start_snapshot_name,
                       max_iteration=self.max_iteration,
                       lr_policy=self.lr_policy,
                       strict_weight_loading=self.strict_weight_loading,
+                      cudnn_benchmark=self.cudnn_benchmark,
                       )
