@@ -5,6 +5,7 @@ import torch.optim.optimizer
 from torch import nn
 from torch.utils.data import Dataset, random_split
 
+from augmentations.classification.augs import ColorAug
 from datasets.classification.gpr import GPRDataset, NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 from metricks.classification.accuracy import Accuracy
@@ -29,6 +30,9 @@ class RunBase(Run):
 
         self.train_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
         self.val_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
+
+        self.train_augs = [ColorAug()]
+        self.val_augs = [ColorAug()]
 
         self.start_snapshot_name = None
 

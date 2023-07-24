@@ -27,10 +27,11 @@ class Trainer:
                  loss: nn.Module,
                  train_metrics: List[BaseMetric],
                  val_metrics: List[BaseMetric],
-                 train_augs: List[BaseAug],
-                 val_augs: List[BaseAug],
                  train_iters: int, snapshot_iters: int,
-                 show_iters: int,):
+                 show_iters: int,
+                 train_augs: Optional[List[BaseAug]] = None,
+                 val_augs: Optional[List[BaseAug]] = None,
+                 ):
         """
         :param train_dataset: dataset for train loop.
         :param val_dataset: dataset for validation loop.
@@ -181,8 +182,9 @@ class Trainer:
         return loss.item()
 
     def _aug_loop(self, aug_list: List[BaseAug], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        for aug in aug_list:
-            batch = aug(batch)
+        if aug_list is not None:
+            for aug in aug_list:
+                batch = aug(batch)
         return batch
 
     def _get_batch(self, iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:

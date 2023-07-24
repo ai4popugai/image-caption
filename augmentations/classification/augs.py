@@ -22,5 +22,5 @@ class ColorAug(BaseAug):
                                                 saturation=(s_low, 1.), contrast=(c_low, 1.))
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        batch['frames'] = self.transform(batch['frames'])
-        return batch
+        transformed_frames = self.transform(batch['frames'].clone())
+        return {'frames': transformed_frames, 'labels': batch['labels']}
