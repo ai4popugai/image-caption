@@ -10,6 +10,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 from augmentations.classification.augs import BaseAug
 from metricks.base_metric import BaseMetric
+from optim_utils.iter_policy.base_policy import BaseIterationPolicy
+from optim_utils.iter_policy.policy import LrPolicy
 
 
 class Trainer:
@@ -74,19 +76,23 @@ class Trainer:
 
     def train(self, model: nn.Module, start_snapshot_name: str or None, reset_optimizer: bool,
               max_iteration: int,
-              lr_policy: LRScheduler or None = None,
+              lr_policy: Optional[BaseIterationPolicy] = None,
               strict_weight_loading: bool = True,
               cudnn_benchmark: bool = True,):
+
+        torch.backends.cudnn.benchmark = cudnn_benchmark
+        torch.backends.cudnn.deterministic = False
+        torch.backends.cuda.matmul.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
+        torch.backends.cudnn.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
 
         model.to(self.device)
 
         # instantiating optimizer
         self.optimizer = self.optimizer_class(model.parameters(), **self.optimizer_kwargs)
 
-        torch.backends.cudnn.benchmark = cudnn_benchmark
-        torch.backends.cudnn.deterministic = False
-        torch.backends.cuda.matmul.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
-        torch.backends.cudnn.allow_tf32 = self.allow_tf32  # False to improve numerical accuracy.
+        # init lr_policy
+        if lr_policy is not None:
+            lr_policy = LrPolicy(self.optimizer, lr_policy)
 
         if start_snapshot_name is not None:
             global_step = self._load_snapshot(model, start_snapshot_name, strict_weight_loading, reset_optimizer)
@@ -189,19 +195,24 @@ class Trainer:
         return iterator, batch
 
     def _train_loop(self, model: nn.Module, train_loader: DataLoader, val_loader: DataLoader,
-                    start_iteration: int, max_iteration: int, lr_policy: LRScheduler) -> None:
+                    start_iteration: int, max_iteration: int, lr_policy: Optional[LrPolicy]) -> None:
         iterator = iter(train_loader)
+        lr = self.optimizer.param_groups[0]['lr']
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
             batch = self._aug_loop(self.train_augs, batch)
             loss = self._train_iteration(model, batch)
             iteration += 1
+
+            if lr_policy is not None:
+                lr = lr_policy.step(iteration)
+
             if iteration % self.snapshot_iters == 0:
                 # save snapshot
                 self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
             if iteration % self.show_iters == 0:
                 # report loss
-                print(f'Iteration: {iteration}, train loss: {loss}')
+                print(f'Iteration: {iteration}, train loss: {loss}, lr: {lr}')
                 self.writer.add_scalars("Loss", {'train': loss}, iteration)
 
                 # report metrics
@@ -217,8 +228,6 @@ class Trainer:
                 self._report_metrics('val', self.val_metrics, iteration)
             if iteration == max_iteration:
                 break
-            if lr_policy is not None:
-                lr_policy.step()
 
     def _val_loop(self, model: nn.Module, val_loader: DataLoader) -> float:
         losses = []

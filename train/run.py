@@ -9,6 +9,7 @@ from torch.optim.lr_scheduler import LRScheduler
 
 from augmentations.classification.augs import BaseAug
 from metricks.base_metric import BaseMetric
+from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from train.train import Trainer
 
 
@@ -41,7 +42,7 @@ class Run(ABC):
         self.optimizer_class: Optional[Type[Optimizer]] = None
         self.optimizer_kwargs: Optional[Dict] = None
         self.reset_optimizer: bool = False
-        self.lr_policy: Optional[LRScheduler] = None
+        self.lr_policy: Optional[BaseIterationPolicy] = None
 
         # loss
         self.loss: Optional[nn.Module] = None
