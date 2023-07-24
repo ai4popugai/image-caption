@@ -207,9 +207,6 @@ class Trainer:
             loss = self._train_iteration(model, batch)
             iteration += 1
 
-            if lr_policy is not None:
-                lr = lr_policy.step(iteration)
-
             if iteration % self.snapshot_iters == 0:
                 # save snapshot
                 self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
@@ -229,6 +226,8 @@ class Trainer:
 
                 # report metrics
                 self._report_metrics('val', self.val_metrics, iteration)
+            if lr_policy is not None:
+                lr = lr_policy.step(iteration)
             if iteration == max_iteration:
                 break
 
