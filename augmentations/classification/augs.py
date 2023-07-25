@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Dict
+from typing import Dict, Tuple
 
 import torch
 from torch import nn
@@ -36,4 +36,24 @@ class RandomFlip(BaseAug):
         transformed_frames = batch['frames'].clone()
         if torch.rand(1).item() < self.p:
             transformed_frames = hflip(transformed_frames)
+        return {'frames': transformed_frames, 'labels': batch['labels']}
+
+
+class RandomCrop(BaseAug):
+    def __init__(self, size: Tuple[int, int]):
+        super().__init__()
+        self.size = size
+
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        transformed_frames = transforms.RandomCrop(self.size)(batch['frames'].clone())
+        return {'frames': transformed_frames, 'labels': batch['labels']}
+
+
+class CenterCrop(BaseAug):
+    def __init__(self, size: Tuple[int, int]):
+        super().__init__()
+        self.size = size
+
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        transformed_frames = transforms.CenterCrop(self.size)(batch['frames'].clone())
         return {'frames': transformed_frames, 'labels': batch['labels']}
