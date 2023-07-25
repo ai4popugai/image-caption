@@ -8,6 +8,7 @@ from torch.utils.data import Dataset, random_split
 from augmentations.classification.augs import ColorAug
 from datasets.classification.gpr import GPRDataset, NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
+from loss.classification.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
 from metrics.base_metric import BaseMetric
 from train.run import Run
@@ -26,7 +27,7 @@ class RunBase(Run):
         self.validation_split = 0.2
 
         self.optimizer_class = torch.optim.Adam
-        self.loss = nn.CrossEntropyLoss()
+        self.loss = CrossEntropyLoss()
 
         self.train_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
         self.val_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
