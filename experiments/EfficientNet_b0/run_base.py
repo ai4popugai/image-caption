@@ -34,8 +34,8 @@ class RunBase(Run):
         self.optimizer_class = torch.optim.Adam
         self.loss = CrossEntropyLoss()
 
-        self.train_metrics: List[BaseMetric] = [Accuracy(self._num_classes), AUC_ROC(self._num_classes)]
-        self.val_metrics: List[BaseMetric] = [Accuracy(self._num_classes), AUC_ROC(self._num_classes)]
+        self.train_metrics = [Accuracy(self._num_classes), AUC_ROC(self._num_classes)]
+        self.val_metrics = [Accuracy(self._num_classes), AUC_ROC(self._num_classes)]
 
         self.crop_size = (192, 192)
         self.train_augs = [ColorAug(), RandomFlip(), RandomCrop(self.crop_size)]
