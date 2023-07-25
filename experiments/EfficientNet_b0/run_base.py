@@ -32,7 +32,7 @@ class RunBase(Run):
         self.train_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
         self.val_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
 
-        self.crop_size = (64, 64)
+        self.crop_size = (192, 192)
         self.train_augs = [ColorAug(), RandomFlip(), RandomCrop(self.crop_size)]
         self.val_augs = [ColorAug(), RandomFlip(), CenterCrop(self.crop_size)]
 
