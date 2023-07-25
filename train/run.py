@@ -6,6 +6,7 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import Dataset
+from torchvision import transforms
 
 from augmentations.classification.augs import BaseAug
 from metrics.base_metric import BaseMetric
@@ -64,6 +65,7 @@ class Run(ABC):
         self.train_metrics: Optional[List[BaseMetric]] = None
         self.val_metrics: Optional[List[BaseMetric]] = None
 
+        self.normalizer = transforms.Normalize(mean=[0., 0., 0.], std=[1., 1., 1.])
         self.normalize_batch: Optional[BaseNormalizer] = None
 
     def setup_model(self):
