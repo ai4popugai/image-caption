@@ -17,7 +17,7 @@ class BaseAug(ABC, nn.Module):
 
 
 class ColorAug(BaseAug):
-    def __init__(self, b_low: float = 0.8, s_low: float = 0.8, c_low: float = 0.8):
+    def __init__(self, b_low: float = 0.7, s_low: float = 0.7, c_low: float = 0.7):
         super().__init__()
         self.transform = transforms.ColorJitter(brightness=(b_low, 1.),
                                                 saturation=(s_low, 1.), contrast=(c_low, 1.))
