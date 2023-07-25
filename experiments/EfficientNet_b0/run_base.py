@@ -5,7 +5,7 @@ import torch.optim.optimizer
 from torch import nn
 from torch.utils.data import Dataset, random_split
 
-from augmentations.classification.augs import ColorAug, RandomFlip
+from augmentations.classification.augs import ColorAug, RandomFlip, RandomCrop, CenterCrop
 from datasets.classification.gpr import GPRDataset, NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 from loss.classification.cross_entropy import CrossEntropyLoss
@@ -32,8 +32,9 @@ class RunBase(Run):
         self.train_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
         self.val_metrics: List[BaseMetric] = [Accuracy(self._num_classes)]
 
-        self.train_augs = [ColorAug(), RandomFlip()]
-        self.val_augs = [ColorAug(), RandomFlip()]
+        self.crop_size = (64, 64)
+        self.train_augs = [ColorAug(), RandomFlip(), RandomCrop(self.crop_size)]
+        self.val_augs = [ColorAug(), RandomFlip(), CenterCrop(self.crop_size)]
 
         self.start_snapshot_name = None
 
