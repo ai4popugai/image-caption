@@ -31,6 +31,7 @@ class Trainer:
                  show_iters: int,
                  train_augs: Optional[List[BaseAug]] = None,
                  val_augs: Optional[List[BaseAug]] = None,
+                 normalizer: Optional[nn.Module] = None,
                  ):
         """
         :param train_dataset: dataset for train loop.
@@ -49,6 +50,7 @@ class Trainer:
         :param train_iters: number of training iterations before log train loss and training metrics.
         :param snapshot_iters: number of training iterations before snapshot is saved.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
+        :param normalizer: normalization layer to be applied to input images.
         """
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
@@ -67,6 +69,7 @@ class Trainer:
         self.snapshot_iters = snapshot_iters
         self.train_iters = train_iters
         self.show_iters = show_iters
+        self.normalizer = normalizer
 
         if os.path.exists(self.logs_dir) is False:
             os.makedirs(self.logs_dir)
@@ -186,6 +189,11 @@ class Trainer:
                 batch = aug(batch)
         return batch
 
+    def _normalize(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        if self.normalizer is not None:
+            batch = self.normalizer(batch)
+        return batch
+
     def _get_batch(self, iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
         try:
             batch = next(iterator)
@@ -203,6 +211,7 @@ class Trainer:
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
             batch = self._aug_loop(self.train_augs, batch)
+            batch = self._normalize(batch)
             loss = self._train_iteration(model, batch)
             iteration += 1
 
@@ -236,6 +245,7 @@ class Trainer:
         with torch.no_grad():
             for batch in val_loader:
                 batch = self._aug_loop(self.val_augs, batch)
+                batch = self._normalize(batch)
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)

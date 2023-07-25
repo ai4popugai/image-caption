@@ -70,6 +70,9 @@ class Run(ABC):
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         raise NotImplementedError
 
+    def normalize_batch(self):
+        pass
+
     def train(self,
               start_snapshot_name: str = None,
               ):
