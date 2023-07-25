@@ -83,7 +83,6 @@ class Trainer:
               allow_tf32: bool = False,):
 
         torch.backends.cudnn.benchmark = cudnn_benchmark
-        torch.backends.cudnn.deterministic = False
         torch.backends.cuda.matmul.allow_tf32 = allow_tf32  # False to improve numerical accuracy.
         torch.backends.cudnn.allow_tf32 = allow_tf32  # False to improve numerical accuracy.
 

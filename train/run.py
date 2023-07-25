@@ -2,6 +2,7 @@ import os
 from abc import ABC
 from typing import Tuple, Optional, List, Type, Dict
 
+import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import Dataset
@@ -72,6 +73,10 @@ class Run(ABC):
     def train(self,
               start_snapshot_name: str = None,
               ):
+        torch.manual_seed(42)
+        torch.cuda.manual_seed(42)
+        torch.backends.cudnn.deterministic = True
+
         model = self.setup_model()
 
         train_dataset, val_dataset = self.setup_datasets()
