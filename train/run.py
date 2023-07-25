@@ -6,10 +6,10 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import Dataset
-from torch.optim.lr_scheduler import LRScheduler
 
 from augmentations.classification.augs import BaseAug
 from metrics.base_metric import BaseMetric
+from normalize.base_normalizer import BaseNormalizer
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from train.train import Trainer
 
@@ -64,13 +64,12 @@ class Run(ABC):
         self.train_metrics: Optional[List[BaseMetric]] = None
         self.val_metrics: Optional[List[BaseMetric]] = None
 
+        self.normalize_batch: Optional[BaseNormalizer] = None
+
     def setup_model(self):
         raise NotImplementedError
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
-        raise NotImplementedError
-
-    def normalize_batch(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         raise NotImplementedError
 
     def train(self,

@@ -13,6 +13,7 @@ from loss.classification.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
 from metrics.base_metric import BaseMetric
 from metrics.classification.auc_roc import AUC_ROC
+from normalize.classification.normalize import BatchNormalizer
 from train.run import Run
 
 
@@ -23,6 +24,7 @@ class RunBase(Run):
         self._num_classes = NUM_CLASSES
         self.resolution = (256, 256)
         self.normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        self.normalize_batch = BatchNormalizer(normalizer=self.normalizer)
 
         self.batch_size = 64
         self.num_workers = 8
@@ -45,9 +47,6 @@ class RunBase(Run):
 
     def setup_model(self) -> nn.Module:
         return EfficientNet(num_classes=self._num_classes)
-
-    def normalize_batch(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        return self.normalizer(batch['frames'])
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         dataset = GPRDataset(resolution=self.resolution)
