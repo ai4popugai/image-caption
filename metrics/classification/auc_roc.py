@@ -19,7 +19,7 @@ class AUC_ROC(BaseMetric):
         :param batch: batch of data
         """
         self.true_labels.extend(batch['labels'].cpu().numpy())
-        self.predicted_probs.extend(torch.softmax(result['logits'], dim=1).cpu().numpy())
+        self.predicted_probs.extend(torch.softmax(result['logits'].detach(), dim=1).cpu().numpy())
 
     def compute(self) -> float:
         """
