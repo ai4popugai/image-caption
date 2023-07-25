@@ -25,11 +25,11 @@ class Trainer:
                  optimizer_class: Type[Optimizer],
                  optimizer_kwargs: Dict,
                  loss: nn.Module,
-                 train_metrics: List[BaseMetric],
-                 val_metrics: List[BaseMetric],
                  train_iters: int, snapshot_iters: int,
                  show_iters: int,
                  normalizer: Callable,
+                 train_metrics: Optional[List[BaseMetric]] = None,
+                 val_metrics: Optional[List[BaseMetric]] = None,
                  train_augs: Optional[List[BaseAug]] = None,
                  val_augs: Optional[List[BaseAug]] = None,
                  ):
@@ -156,16 +156,17 @@ class Trainer:
         for metric in metrics:
             metric.update(result, batch)
 
-    def _report_metrics(self, mode: str,  metrics: List[BaseMetric], global_step: int) -> None:
+    def _report_metrics(self, mode: str,  metrics: Optional[List[BaseMetric]], global_step: int) -> None:
         if mode != 'train' and mode != 'val':
             raise ValueError(f'Unknown mode: {mode}')
 
-        for metric in metrics:
-            metric_name = metric.__class__.__name__
-            metric_value = metric.compute()
-            metric.reset()
-            self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
-            print(f'iteration: {global_step}, {mode} {metric_name}: {metric_value:.3f()}')
+        if metrics is not None:
+            for metric in metrics:
+                metric_name = metric.__class__.__name__
+                metric_value = metric.compute()
+                metric.reset()
+                self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
+                print(f'iteration: {global_step}, {mode} {metric_name}: {metric_value:.3f()}')
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
         model.train()
@@ -184,7 +185,7 @@ class Trainer:
         return loss.item()
 
     @staticmethod
-    def _aug_loop(aug_list: List[BaseAug], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    def _aug_loop(aug_list: Optional[List[BaseAug]], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         if aug_list is not None:
             for aug in aug_list:
                 batch = aug(batch)
