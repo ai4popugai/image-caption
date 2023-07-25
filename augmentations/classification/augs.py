@@ -4,6 +4,7 @@ from typing import Dict
 import torch
 from torch import nn
 from torchvision import transforms
+from torchvision.transforms.functional import hflip
 
 
 class BaseAug(ABC, nn.Module):
@@ -23,4 +24,16 @@ class ColorAug(BaseAug):
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         transformed_frames = self.transform(batch['frames'].clone())
+        return {'frames': transformed_frames, 'labels': batch['labels']}
+
+
+class RandomFlip(BaseAug):
+    def __init__(self, p=0.5):
+        super().__init__()
+        self.p = p
+
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        transformed_frames = batch['frames'].clone()
+        if torch.rand(1).item() < self.p:
+            transformed_frames = hflip(transformed_frames)
         return {'frames': transformed_frames, 'labels': batch['labels']}
