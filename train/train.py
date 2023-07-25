@@ -183,7 +183,8 @@ class Trainer:
         self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
 
-    def _aug_loop(self, aug_list: List[BaseAug], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    @staticmethod
+    def _aug_loop(aug_list: List[BaseAug], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         if aug_list is not None:
             for aug in aug_list:
                 batch = aug(batch)
