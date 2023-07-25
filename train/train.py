@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Union, Iterator, Optional, Type
+from typing import List, Dict, Union, Iterator, Optional, Type, Callable
 
 import torch
 from torch import nn
@@ -29,9 +29,9 @@ class Trainer:
                  val_metrics: List[BaseMetric],
                  train_iters: int, snapshot_iters: int,
                  show_iters: int,
+                 normalizer: Callable,
                  train_augs: Optional[List[BaseAug]] = None,
                  val_augs: Optional[List[BaseAug]] = None,
-                 normalizer: Optional[nn.Module] = None,
                  ):
         """
         :param train_dataset: dataset for train loop.
@@ -190,8 +190,7 @@ class Trainer:
         return batch
 
     def _normalize(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        if self.normalizer is not None:
-            batch = self.normalizer(batch)
+        batch = self.normalizer(batch)
         return batch
 
     def _get_batch(self, iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:

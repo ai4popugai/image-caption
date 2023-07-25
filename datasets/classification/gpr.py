@@ -3,11 +3,9 @@ from typing import Tuple
 
 import cv2
 from torch.utils.data import Dataset
-from torchvision import transforms
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
 NUM_CLASSES = 1200
-IMAGE_NET_NORM = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
 class GPRDataset(Dataset):

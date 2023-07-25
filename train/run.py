@@ -70,8 +70,8 @@ class Run(ABC):
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         raise NotImplementedError
 
-    def normalize_batch(self):
-        pass
+    def normalize_batch(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        raise NotImplementedError
 
     def train(self,
               start_snapshot_name: str = None,
@@ -100,7 +100,7 @@ class Run(ABC):
                           train_iters=self.train_iters,
                           show_iters=self.show_iters,
                           snapshot_iters=self.snapshot_iters,
-                          )
+                          normalizer=self.normalize_batch,)
         trainer.train(model=model,
                       reset_optimizer=self.reset_optimizer,
                       start_snapshot_name=start_snapshot_name,

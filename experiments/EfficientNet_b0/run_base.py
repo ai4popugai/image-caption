@@ -1,9 +1,10 @@
 import os
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 import torch.optim.optimizer
 from torch import nn
 from torch.utils.data import Dataset, random_split
+from torchvision import transforms
 
 from augmentations.classification.augs import ColorAug, RandomFlip, RandomCrop, CenterCrop
 from datasets.classification.gpr import GPRDataset, NUM_CLASSES
@@ -21,6 +22,7 @@ class RunBase(Run):
 
         self._num_classes = NUM_CLASSES
         self.resolution = (256, 256)
+        self.normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
         self.batch_size = 64
         self.num_workers = 8
@@ -43,6 +45,9 @@ class RunBase(Run):
 
     def setup_model(self) -> nn.Module:
         return EfficientNet(num_classes=self._num_classes)
+
+    def normalize_batch(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        return self.normalizer(batch['frames'])
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         dataset = GPRDataset(resolution=self.resolution)
