@@ -19,7 +19,7 @@ class RunBase(Run):
         super().__init__(filename)
 
         self._num_classes = NUM_CLASSES
-        self.resolution = (64, 64)
+        self.resolution = (128, 128)
 
         self.batch_size = 64
         self.num_workers = 8
