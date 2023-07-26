@@ -249,6 +249,7 @@ class Trainer:
                 # report loss
                 log_msg = f'iter: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
                 self.writer.add_scalars("Loss", {'train': loss}, iteration)
+                self.writer.add_scalar("lr", lr, iteration)
 
                 # report metrics
                 log_msg = self._report_metrics('train', self.train_metrics, iteration, log_msg)
