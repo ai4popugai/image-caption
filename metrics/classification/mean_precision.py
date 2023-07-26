@@ -21,7 +21,7 @@ class MeanPrecision(BaseMetric):
         :return: mean precision metric
         """
         self.num += 1
-        self.prob_precision += self.precision(result['logits'], batch['labels']).item()
+        self.prob_precision += self.precision(result['logits'].cpu(), batch['labels'].cpu()).item()
 
     def compute(self) -> float:
         return self.prob_precision / self.num

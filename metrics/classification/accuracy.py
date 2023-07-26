@@ -21,7 +21,7 @@ class Accuracy(BaseMetric):
         :return: accuracy metric
         """
         self.num += 1
-        self.prob_acc += self.accuracy(result['logits'], batch['labels']).item()
+        self.prob_acc += self.accuracy(result['logits'].cpu(), batch['labels'].cpu()).item()
 
     def compute(self) -> float:
         return self.prob_acc / self.num
