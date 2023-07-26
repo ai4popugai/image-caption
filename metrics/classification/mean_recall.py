@@ -29,3 +29,6 @@ class MeanRecall(BaseMetric):
     def reset(self):
         self.prob_recall = 0.0
         self.num = 0
+
+    def to(self, device: torch.device) -> None:
+        self.recall.to(device)

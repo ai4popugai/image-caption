@@ -29,3 +29,6 @@ class MeanPrecision(BaseMetric):
     def reset(self):
         self.prob_precision = 0.0
         self.num = 0
+
+    def to(self, device: torch.device) -> None:
+        self.precision.to(device)

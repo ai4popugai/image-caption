@@ -20,3 +20,7 @@ class BaseMetric(ABC):
     @abstractmethod
     def reset(self) -> None:
         pass
+
+    @abstractmethod
+    def to(self, device: torch.device) -> None:
+        pass
