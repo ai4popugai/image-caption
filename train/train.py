@@ -102,13 +102,13 @@ class Trainer:
         model.to(self.device)
 
         # move metrics to device
-        if self.train_metrics is not None:
-            for metric in self.train_metrics:
-                metric.to(self.device)
-
-        if self.val_metrics is not None:
-            for metric in self.val_metrics:
-                metric.to(self.device)
+        # if self.train_metrics is not None:
+        #     for metric in self.train_metrics:
+        #         metric.to(self.device)
+        #
+        # if self.val_metrics is not None:
+        #     for metric in self.val_metrics:
+        #         metric.to(self.device)
 
         # instantiating optimizer
         self.optimizer = self.optimizer_class(model.parameters(), lr=0.0, **self.optimizer_kwargs)
