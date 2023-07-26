@@ -61,14 +61,17 @@ class RandomResizedCrop(BaseAug):
         self.probability = probability
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        if random.random() < self.probability:
-            transform = transforms.Compose([
-                transforms.RandomCrop(self.size),
-                transforms.Resize(batch['frames'].shape[-2:])  # Resize back to original resolution
-            ])
-            transformed_frames = transform(batch['frames'])
-        else:
-            transformed_frames = batch['frames']
+        transform = transforms.Compose([
+            transforms.RandomCrop(self.size),
+            transforms.Resize(batch['frames'].shape[-2:])  # Resize back to original resolution
+        ])
+
+        transformed_frames = batch['frames']
+
+        # Perform random resized crop on each frame
+        for i in range(transformed_frames.shape[0]):
+            if random.random() < self.probability:
+                transformed_frames[i] = transform(transformed_frames[i])
 
         return {'frames': transformed_frames, 'labels': batch['labels']}
 
