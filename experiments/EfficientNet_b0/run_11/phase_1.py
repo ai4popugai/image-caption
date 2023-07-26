@@ -19,6 +19,10 @@ class Phase1(RunBase):
         self.val_augs = None
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
+        """
+        Provide new train - test 80/20 splits.
+        :return: train and val datasets
+        """
         dataset = GPRDataset(resolution=self.resolution)
 
         train_dataset, val_dataset = GPRDataset(resolution=self.resolution), GPRDataset(resolution=self.resolution)
