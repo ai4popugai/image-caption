@@ -1,3 +1,4 @@
+--pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 absl-py==1.4.0
 cachetools==5.3.1
 certifi==2023.5.7
@@ -33,7 +34,6 @@ sympy==1.12
 tensorboard==2.13.0
 tensorboard-data-server==0.7.1
 threadpoolctl==3.2.0
-
 typing_extensions==4.7.1
 urllib3==1.26.16
 Werkzeug==2.3.6
