@@ -167,7 +167,7 @@ class Trainer:
                 metric_value = metric.compute()
                 metric.reset()
                 self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
-                log_msg += f', {metric_name}: {metric_value:.3f}'
+                log_msg += f',{"val" if mode == "val" else ""} {metric_name}: {metric_value:.3f}'
         return log_msg
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
@@ -223,7 +223,7 @@ class Trainer:
                 self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
             if iteration % self.show_iters == 0:
                 # report loss
-                log_msg = f'iteration: {iteration}, train loss: {loss:.3f}, lr: {lr:.6f}'
+                log_msg = f'iteration: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
                 self.writer.add_scalars("Loss", {'train': loss}, iteration)
 
                 # report metrics
