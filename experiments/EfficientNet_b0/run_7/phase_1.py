@@ -11,7 +11,6 @@ class Phase1(RunBase):
         self.optimizer_kwargs = {'lr': 2.4e-3, 'weight_decay': 3e-5}
         self.lr_policy = None
 
-        self.train_augs = [RandomFlip(), RandomCrop(self.crop_size)]
         self.num_workers = 4
 
 

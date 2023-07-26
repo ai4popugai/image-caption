@@ -40,7 +40,7 @@ class RunBase(Run):
                             MeanRecall(self._num_classes), MeanPrecision(self._num_classes)]
 
         self.crop_size = (192, 192)
-        self.train_augs = [ColorAug(), RandomFlip(), RandomCrop(self.crop_size)]
+        self.train_augs = [RandomFlip(), RandomCrop(self.crop_size)]
         self.val_augs = [CenterCrop(self.crop_size)]
 
         self.start_snapshot_name = None
