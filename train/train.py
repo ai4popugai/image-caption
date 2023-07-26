@@ -76,7 +76,16 @@ class Trainer:
         writer = SummaryWriter(self.logs_dir)
         self.writer = writer
 
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = self._set_device()
+        print(f'train on {self.device}')
+
+    @staticmethod
+    def _set_device() -> torch.device:
+        if torch.backends.mps.is_available():
+            device = torch.device('mps')
+        else:
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        return device
 
     def train(self, model: nn.Module, start_snapshot_name: str or None, reset_optimizer: bool,
               max_iteration: int,
