@@ -20,6 +20,7 @@ class BaseAug(ABC, nn.Module):
 
 
 class ColorAug(BaseAug):
+    """AUG IS BROKEN!!! DON'T USE (DRUGS)!!!!"""
     def __init__(self, b_low: float = 0.7, s_low: float = 0.7, c_low: float = 0.7):
         super().__init__()
         self.transform = transforms.ColorJitter(brightness=(b_low, 1.),
@@ -88,4 +89,3 @@ class Rotate(BaseAug):
                                  center=center.tolist())
 
         return rotated_frame
-

@@ -7,6 +7,7 @@ from metrics.base_metric import BaseMetric
 
 
 class AUC_ROC(BaseMetric):
+    """METRIC IS BROKEN!!! DON'T USE (DRUGS)!!!!"""
     def __init__(self, num_classes: int):
         super().__init__(name='AUC-ROC')
         self.num_classes = num_classes
