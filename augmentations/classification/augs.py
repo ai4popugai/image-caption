@@ -70,11 +70,10 @@ class Rotate(BaseAug):
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         transformed_frames = batch['frames']
 
-        # Randomly select an angle within the defined range
-        angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
-
         # Perform rotation on each frame
         for i in range(transformed_frames.shape[0]):
+            # Randomly select an angle within the defined range
+            angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
             transformed_frames[i] = self.rotate_frame(transformed_frames[i], angle)
 
         return {'frames': transformed_frames, 'labels': batch['labels']}
