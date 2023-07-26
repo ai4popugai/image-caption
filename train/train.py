@@ -1,3 +1,4 @@
+import datetime
 import os
 from typing import List, Dict, Union, Iterator, Optional, Type, Callable
 
@@ -251,6 +252,7 @@ class Trainer:
 
                 # report metrics
                 log_msg = self._report_metrics('train', self.train_metrics, iteration, log_msg)
+                log_msg += f'{7*" "}{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
                 print(log_msg)
             if iteration % self.train_iters == 0:
                 loss = self._val_loop(model, val_loader)
@@ -261,6 +263,7 @@ class Trainer:
 
                 # report metrics
                 log_msg = self._report_metrics('val', self.val_metrics, iteration, log_msg)
+                log_msg += f'{7*" "}{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
                 print(log_msg)
             if lr_policy is not None:
                 lr = lr_policy.step(iteration)
