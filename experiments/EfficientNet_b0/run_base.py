@@ -11,8 +11,8 @@ from datasets.classification.gpr import GPRDataset, NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 from loss.classification.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
-from metrics.base_metric import BaseMetric
-from metrics.classification.auc_roc import AUC_ROC
+from metrics.classification.mean_precision import MeanPrecision
+from metrics.classification.mean_recall import MeanRecall
 from normalize.classification.normalize import BatchNormalizer
 from train.run import Run
 
@@ -34,8 +34,10 @@ class RunBase(Run):
         self.optimizer_class = torch.optim.Adam
         self.loss = CrossEntropyLoss()
 
-        self.train_metrics = [Accuracy(self._num_classes), AUC_ROC(self._num_classes)]
-        self.val_metrics = [Accuracy(self._num_classes), AUC_ROC(self._num_classes)]
+        self.train_metrics = [Accuracy(self._num_classes),
+                              MeanRecall(self._num_classes), MeanPrecision(self._num_classes)]
+        self.val_metrics = [Accuracy(self._num_classes),
+                            MeanRecall(self._num_classes), MeanPrecision(self._num_classes)]
 
         self.crop_size = (192, 192)
         self.train_augs = [ColorAug(), RandomFlip(), RandomCrop(self.crop_size)]
