@@ -32,7 +32,7 @@ class Run(ABC):
         # num of iterations
         self.train_iters: int = 300
         self.show_iters: int = 10
-        self.snapshot_iters: int = 200
+        self.snapshot_iters: int = 150
         self.max_iteration: int = 1000000
 
         self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, self.experiment_name, self.run_name)
