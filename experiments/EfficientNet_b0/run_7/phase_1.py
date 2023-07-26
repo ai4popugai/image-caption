@@ -11,8 +11,6 @@ class Phase1(RunBase):
         self.optimizer_kwargs = {'lr': 2.4e-3, 'weight_decay': 3e-5}
         self.lr_policy = None
 
-        self.num_workers = 4
-
 
 if __name__ == '__main__':
     Phase1().train(start_snapshot_name=None)

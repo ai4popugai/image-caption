@@ -25,7 +25,7 @@ class Run(ABC):
         self.project = os.path.basename(os.path.split(os.path.split(experiment_path)[0])[0])  # i.e. wav2lip
 
         self.batch_size: int = 64
-        self.num_workers: int = 8
+        self.num_workers: int = 4
 
         self.validation_split: float = 0.2
 

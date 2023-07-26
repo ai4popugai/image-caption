@@ -12,7 +12,6 @@ class Phase1(RunBase):
         self.lr_policy = None
 
         self.train_augs = [RandomFlip(), Rotate(), RandomCrop(self.crop_size)]
-        self.num_workers = 4
 
 
 if __name__ == '__main__':
