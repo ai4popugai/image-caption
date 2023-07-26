@@ -85,7 +85,8 @@ class Rotate(BaseAug):
         center = torch.tensor(frame.shape[1:]).float() / 2.0
 
         # Perform rotation
-        rotated_frame = F.rotate(frame, angle, interpolation=F.InterpolationMode.BILINEAR, center=center)
+        rotated_frame = F.rotate(frame, angle, interpolation=F.InterpolationMode.BILINEAR,
+                                 center=center.tolist())
 
         return rotated_frame
 
