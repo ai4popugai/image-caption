@@ -7,7 +7,7 @@ class Phase1(RunBase):
         super().__init__(__file__)
 
         self.optimizer_kwargs = {'weight_decay': 3e-5}
-        self.lr_policy = LinearIterationPolicy(0, 0, 200, 3.0e-4)
+        self.lr_policy = LinearIterationPolicy(0, 0, 200, 3e-4)
 
 
 if __name__ == '__main__':
