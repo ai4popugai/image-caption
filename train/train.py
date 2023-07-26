@@ -156,17 +156,19 @@ class Trainer:
         for metric in metrics:
             metric.update(result, batch)
 
-    def _report_metrics(self, mode: str,  metrics: Optional[List[BaseMetric]], global_step: int) -> None:
+    def _report_metrics(self, mode: str,  metrics: Optional[List[BaseMetric]], global_step: int,
+                        log_msg: str) -> str:
         if mode != 'train' and mode != 'val':
             raise ValueError(f'Unknown mode: {mode}')
 
         if metrics is not None:
             for metric in metrics:
-                metric_name = metric.__class__.__name__
+                metric_name = metric.name
                 metric_value = metric.compute()
                 metric.reset()
                 self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
-                print(f'iteration: {global_step}, {mode} {metric_name}: {metric_value:.3f}')
+                log_msg += f', {metric_name}: {metric_value:.3f}'
+        return log_msg
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
         model.train()
@@ -221,20 +223,22 @@ class Trainer:
                 self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
             if iteration % self.show_iters == 0:
                 # report loss
-                print(f'iteration: {iteration}, train loss: {loss:.3f}, lr: {lr:.3f}')
+                log_msg = f'iteration: {iteration}, train loss: {loss:.3f}, lr: {lr:.6f}'
                 self.writer.add_scalars("Loss", {'train': loss}, iteration)
 
                 # report metrics
-                self._report_metrics('train', self.train_metrics, iteration)
+                log_msg = self._report_metrics('train', self.train_metrics, iteration, log_msg)
+                print(log_msg)
             if iteration % self.train_iters == 0:
                 loss = self._val_loop(model, val_loader)
 
                 # report loss
+                log_msg = f'iteration: {iteration}, val loss: {loss:.3f}'
                 self.writer.add_scalars("Loss", {'val': loss}, iteration)
-                print(f'Val iteration: {iteration}, val loss: {loss:.3f}')
 
                 # report metrics
-                self._report_metrics('val', self.val_metrics, iteration)
+                log_msg = self._report_metrics('val', self.val_metrics, iteration, log_msg)
+                print(log_msg)
             if lr_policy is not None:
                 lr = lr_policy.step(iteration)
             if iteration == max_iteration:
