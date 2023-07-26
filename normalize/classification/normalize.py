@@ -11,5 +11,5 @@ class BatchNormalizer(BaseNormalizer):
         super().__init__(normalizer=normalizer)
 
     def __call__(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        normalised_frames = self.normalizer(batch['frames'].clone())
+        normalised_frames = self.normalizer(batch['frames'])
         return {'frames': normalised_frames, 'labels': batch['labels']}

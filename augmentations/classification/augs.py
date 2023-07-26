@@ -23,7 +23,7 @@ class ColorAug(BaseAug):
                                                 saturation=(s_low, 1.), contrast=(c_low, 1.))
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = self.transform(batch['frames'].clone())
+        transformed_frames = self.transform(batch['frames'])
         return {'frames': transformed_frames, 'labels': batch['labels']}
 
 
@@ -33,7 +33,7 @@ class RandomFlip(BaseAug):
         self.p = p
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch['frames'].clone()
+        transformed_frames = batch['frames']
         if torch.rand(1).item() < self.p:
             transformed_frames = hflip(transformed_frames)
         return {'frames': transformed_frames, 'labels': batch['labels']}
@@ -45,7 +45,7 @@ class RandomCrop(BaseAug):
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = transforms.RandomCrop(self.size)(batch['frames'].clone())
+        transformed_frames = transforms.RandomCrop(self.size)(batch['frames'])
         return {'frames': transformed_frames, 'labels': batch['labels']}
 
 
@@ -55,5 +55,5 @@ class CenterCrop(BaseAug):
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = transforms.CenterCrop(self.size)(batch['frames'].clone())
+        transformed_frames = transforms.CenterCrop(self.size)(batch['frames'])
         return {'frames': transformed_frames, 'labels': batch['labels']}
