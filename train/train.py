@@ -216,6 +216,10 @@ class Trainer:
         batch = self.normalizer(batch)
         return batch
 
+    def _batch_to_device(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        batch = {key: batch[key].to(self.device, non_blocking=True) for key in batch}
+        return batch
+
     def _get_batch(self, iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
         try:
             batch = next(iterator)
@@ -223,7 +227,6 @@ class Trainer:
             iterator = iter(train_loader)
             batch = next(iterator)
 
-        batch = {key: batch[key].to(self.device, non_blocking=True) for key in batch}
         return iterator, batch
 
     def _train_loop(self, model: nn.Module, train_loader: DataLoader, val_loader: DataLoader,
@@ -232,6 +235,7 @@ class Trainer:
         lr = self.optimizer.param_groups[0]['lr']
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
+            batch = self._batch_to_device(batch)
             batch = self._aug_loop(self.train_augs, batch)
             batch = self._normalize(batch)
             loss = self._train_iteration(model, batch)
@@ -268,6 +272,7 @@ class Trainer:
         model.eval()
         with torch.no_grad():
             for batch in val_loader:
+                batch = self._batch_to_device(batch)
                 batch = self._aug_loop(self.val_augs, batch)
                 batch = self._normalize(batch)
                 loss = self._val_iteration(model, batch)
