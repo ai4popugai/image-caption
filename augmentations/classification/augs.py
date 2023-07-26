@@ -1,3 +1,4 @@
+import random
 from abc import abstractmethod, ABC
 from typing import Dict, Tuple
 
@@ -50,6 +51,25 @@ class RandomCrop(BaseAug):
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         transformed_frames = transforms.RandomCrop(self.size)(batch['frames'])
+        return {'frames': transformed_frames, 'labels': batch['labels']}
+
+
+class RandomResizedCrop(BaseAug):
+    def __init__(self, size: Tuple[int, int], probability: float = 0.5):
+        super().__init__()
+        self.size = size
+        self.probability = probability
+
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        if random.random() < self.probability:
+            transform = transforms.Compose([
+                transforms.RandomCrop(self.size),
+                transforms.Resize(batch['frames'].shape[-2:])  # Resize back to original resolution
+            ])
+            transformed_frames = transform(batch['frames'])
+        else:
+            transformed_frames = batch['frames']
+
         return {'frames': transformed_frames, 'labels': batch['labels']}
 
 
