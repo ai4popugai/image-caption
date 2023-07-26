@@ -41,7 +41,7 @@ class RunBase(Run):
 
         self.crop_size = (192, 192)
         self.train_augs = [ColorAug(), RandomFlip(), RandomCrop(self.crop_size)]
-        self.val_augs = [ColorAug(), RandomFlip(), CenterCrop(self.crop_size)]
+        self.val_augs = [CenterCrop(self.crop_size)]
 
         self.start_snapshot_name = None
 
