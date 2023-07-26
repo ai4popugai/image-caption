@@ -12,6 +12,7 @@ class Phase1(RunBase):
         self.lr_policy = LinearIterationPolicy(0, 0, 3000, 2.4e-3)
 
         self.max_iteration = 180000
+        self.snapshot_iters = 300
 
 
 if __name__ == '__main__':
