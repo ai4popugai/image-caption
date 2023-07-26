@@ -8,6 +8,7 @@ class BaseMetric(ABC):
     def __init__(self, name: str):
         super().__init__()
         self.name = name
+        self.unit = ''
 
     @abstractmethod
     def update(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> None:

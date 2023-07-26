@@ -12,6 +12,7 @@ class Accuracy(BaseMetric):
         self.accuracy = AccuracyMetric(task="multiclass", num_classes=num_classes)
         self.num = 0
         self.prob_acc = 0.0
+        self.unit = '%'
 
     def update(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> None:
         """
@@ -24,7 +25,7 @@ class Accuracy(BaseMetric):
         self.prob_acc += self.accuracy(result['logits'].cpu(), batch['labels'].cpu()).item()
 
     def compute(self) -> float:
-        return self.prob_acc / self.num
+        return (self.prob_acc / self.num) * 100
 
     def reset(self):
         self.prob_acc = 0.0

@@ -12,6 +12,7 @@ class MeanPrecision(BaseMetric):
         self.precision = PrecisionMetric(average='macro', task='multiclass', num_classes=num_classes)
         self.num = 0
         self.prob_precision = 0.0
+        self.unit = '%'
 
     def update(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> None:
         """
@@ -24,7 +25,7 @@ class MeanPrecision(BaseMetric):
         self.prob_precision += self.precision(result['logits'].cpu(), batch['labels'].cpu()).item()
 
     def compute(self) -> float:
-        return self.prob_precision / self.num
+        return (self.prob_precision / self.num) * 100
 
     def reset(self):
         self.prob_precision = 0.0

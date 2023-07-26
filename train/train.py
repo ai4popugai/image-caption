@@ -187,7 +187,7 @@ class Trainer:
                 metric_value = metric.compute()
                 metric.reset()
                 self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
-                log_msg += f',{" val" if mode == "val" else ""} {metric_name}: {metric_value:.3f}'
+                log_msg += f',{" val" if mode == "val" else ""} {metric_name}: {metric_value:.2f}{metric.unit}'
         return log_msg
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:

@@ -12,6 +12,7 @@ class MeanRecall(BaseMetric):
         self.recall = RecallMetric(average='macro', task='multiclass', num_classes=num_classes)
         self.num = 0
         self.prob_recall = 0.0
+        self.unit = '%'
 
     def update(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> None:
         """
@@ -24,7 +25,7 @@ class MeanRecall(BaseMetric):
         self.prob_recall += self.recall(result['logits'].cpu(), batch['labels'].cpu()).item()
 
     def compute(self) -> float:
-        return self.prob_recall / self.num
+        return (self.prob_recall / self.num) * 100
 
     def reset(self):
         self.prob_recall = 0.0
