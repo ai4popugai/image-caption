@@ -7,6 +7,7 @@ import torch
 from torch import nn
 from torchvision import transforms
 from torchvision.transforms.functional import hflip
+import torchvision.transforms.functional as F
 
 
 class BaseAug(ABC, nn.Module):
@@ -80,19 +81,11 @@ class Rotate(BaseAug):
 
     @staticmethod
     def rotate_frame(frame, angle):
-        # Convert frame to numpy array
-        frame = frame.numpy()
+        # Calculate image center
+        center = torch.tensor(frame.shape[1:]).float() / 2.0
 
-        height, width = frame.shape[:2]
-        center = (width / 2, height / 2)
-
-        # Get the rotation matrix
-        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-
-        # Perform the actual rotation
-        rotated_frame = cv2.warpAffine(frame, rotation_matrix, (width, height))
-
-        # Convert back to torch.Tensor
-        rotated_frame = torch.from_numpy(rotated_frame)
+        # Perform rotation
+        rotated_frame = F.rotate(frame, angle, interpolation=F.InterpolationMode.BILINEAR, center=center)
 
         return rotated_frame
+
