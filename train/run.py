@@ -42,7 +42,7 @@ class Run(ABC):
 
         # optimizer
         self.optimizer_class: Optional[Type[Optimizer]] = None
-        self.optimizer_kwargs: Dict = {}
+        self.optimizer_kwargs: Dict = {'lr': 0.}
         self.reset_optimizer: bool = False
         self.lr_policy: Optional[BaseIterationPolicy] = None
 
