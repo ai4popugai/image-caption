@@ -254,4 +254,4 @@ class Trainer:
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)
-        return mean_loss.item()
+        return mean_loss
