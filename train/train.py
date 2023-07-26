@@ -273,12 +273,16 @@ class Trainer:
     def _val_loop(self, model: nn.Module, val_loader: DataLoader) -> float:
         losses = []
         model.eval()
+        iterator = iter(val_loader)
+        val_iters = len(val_loader)
         with torch.no_grad():
-            for batch in val_loader:
+            for _ in range(val_iters):
+                iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self._batch_to_device(batch)
                 batch = self._aug_loop(self.val_augs, batch)
                 batch = self._normalize(batch)
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)
+        del iterator
         return mean_loss
