@@ -132,7 +132,6 @@ class Trainer:
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-            pin_memory=True,
             drop_last=True,
         )
         val_loader = DataLoader(
@@ -140,7 +139,6 @@ class Trainer:
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
-            pin_memory=True,
             drop_last=False,
         )
         self._train_loop(model, train_loader, val_loader, global_step, max_iteration, lr_policy)
@@ -225,6 +223,7 @@ class Trainer:
         try:
             batch = next(iterator)
         except StopIteration:
+            del iterator
             iterator = iter(train_loader)
             batch = next(iterator)
 
