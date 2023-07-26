@@ -223,7 +223,7 @@ class Trainer:
                 self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
             if iteration % self.show_iters == 0:
                 # report loss
-                log_msg = f'iteration: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
+                log_msg = f'iter: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
                 self.writer.add_scalars("Loss", {'train': loss}, iteration)
 
                 # report metrics
@@ -233,7 +233,7 @@ class Trainer:
                 loss = self._val_loop(model, val_loader)
 
                 # report loss
-                log_msg = f'iteration: {iteration}, val loss: {loss:.3f}'
+                log_msg = f'iter: {iteration}, val loss: {loss:.3f}'
                 self.writer.add_scalars("Loss", {'val': loss}, iteration)
 
                 # report metrics
