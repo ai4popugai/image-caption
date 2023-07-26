@@ -112,7 +112,7 @@ class Trainer:
         #         metric.to(self.device)
 
         # instantiating optimizer
-        self.optimizer = self.optimizer_class(model.parameters(), lr=0.0, **self.optimizer_kwargs)
+        self.optimizer = self.optimizer_class(model.parameters(), **self.optimizer_kwargs)
 
         # init lr_policy
         if lr_policy is not None:
