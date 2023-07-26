@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from sklearn.metrics import roc_auc_score
 from typing import Dict
@@ -26,10 +27,14 @@ class AUC_ROC(BaseMetric):
         Compute the AUC-ROC metric.
         :return: AUC-ROC score
         """
-        true_labels = torch.tensor(self.true_labels)
-        predicted_probs = torch.tensor(self.predicted_probs)
-        auc_roc_per_class = [roc_auc_score(true_labels[:, i], predicted_probs[:, i]) for i in range(self.num_classes)]
-        return sum(auc_roc_per_class) / self.num_classes
+        true_labels = np.array(self.true_labels)
+        true_labels_one_hot = np.zeros((len(true_labels), self.num_classes))
+        true_labels_one_hot[np.arange(len(true_labels)), true_labels] = 1
+
+        predicted_probs = np.array(self.predicted_probs)
+        roc_auc_per_class = [roc_auc_score(true_labels_one_hot[:, i], predicted_probs[:, i])
+                             for i in range(self.num_classes)]
+        return sum(roc_auc_per_class) / self.num_classes
 
     def reset(self):
         """
