@@ -10,7 +10,6 @@ class Phase1(RunBase):
 
         self.optimizer_kwargs = {'lr': 7.5e-5, 'weight_decay': 3e-5}
         self.lr_policy = None
-        self.optimizer_kwargs = {}
 
         self.num_workers = 4
 
