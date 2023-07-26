@@ -63,7 +63,7 @@ class RandomResizedCrop(BaseAug):
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         transform = transforms.Compose([
             transforms.RandomCrop(self.size),
-            transforms.Resize(batch['frames'].shape[-2:])  # Resize back to original resolution
+            transforms.Resize(batch['frames'].shape[-2:], antialias=False)  # Resize back to original resolution
         ])
 
         transformed_frames = batch['frames']

@@ -17,7 +17,7 @@ class GPRDataset(Dataset):
         self.frames_list = [os.path.join(root, file_name) for file_name in sorted(os.listdir(root))]
         self.frame_transforms = Compose([
             ToTensor(),
-            Resize(resolution, InterpolationMode.BILINEAR, antialias=True)
+            Resize(resolution, InterpolationMode.BILINEAR, antialias=False)
         ])
 
     def __len__(self) -> int:
