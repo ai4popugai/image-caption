@@ -10,11 +10,14 @@ from optim_utils.iter_policy.cosine_policy import CosineAnnealingIterationPolicy
 
 
 class Phase1(RunBase):
+    """"
+    Resume run_17
+    """
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
         self.optimizer_kwargs = {'weight_decay': 3e-2}
-        self.lr_policy = CosineAnnealingIterationPolicy(2e-3, 9000, 2e-5, 1000)
+        self.lr_policy = CosineAnnealingIterationPolicy(3e-4, 9000, 3e-5, 1000)
 
         self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.5),
                            RandomFlip(), RotateWithProb(probability=0.5)]
@@ -40,5 +43,6 @@ class Phase1(RunBase):
 
 
 if __name__ == '__main__':
-    start_snapshot = 'EfficientNet_b0/run_18/snapshot_9000.pth'
+    # start_snapshot = 'EfficientNet_b0/run_18/snapshot_9000.pth'
+    start_snapshot = 'EfficientNet_b0/run_17/snapshot_7800.pth'
     Phase1().train(start_snapshot=start_snapshot)
