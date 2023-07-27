@@ -1,6 +1,7 @@
 import math
 
-from .base_policy import BaseIterationPolicy
+from optim_utils.iter_policy.base_policy import BaseIterationPolicy
+import matplotlib.pyplot as plt
 
 
 class CosineAnnealingIterationPolicy(BaseIterationPolicy):
@@ -15,3 +16,14 @@ class CosineAnnealingIterationPolicy(BaseIterationPolicy):
         cos = math.cos(arg * math.pi / 2)  # cycles from 1 to 0
         val = (self.start_lr - self.end_lr) * cos + self.end_lr  # cycles form start_lr to end_lr
         return val
+
+
+if __name__ == '__main__':
+    policy = CosineAnnealingIterationPolicy(start_lr=1e-1, start_iter=0, end_lr=1e-3, period=1000)
+    items = []
+    for i in range(10000):
+        items.append(policy.step(i))
+
+    plt.plot(items)
+    plt.show()
+
