@@ -78,7 +78,8 @@ class Run(ABC):
               start_snapshot: str = None,
               ):
 
-        start_snapshot = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, start_snapshot)
+        start_snapshot = None if start_snapshot is None \
+            else os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, start_snapshot)
 
         torch.manual_seed(42)
         torch.cuda.manual_seed(42)
