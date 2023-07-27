@@ -54,7 +54,7 @@ class RandomCrop(BaseAug):
         return {'frames': transformed_frames, 'labels': batch['labels']}
 
 
-class RandomResizedCrop(BaseAug):
+class RandomResizedCropWithProb(BaseAug):
     def __init__(self, size: Tuple[int, int], probability: float = 0.5):
         super().__init__()
         self.size = size

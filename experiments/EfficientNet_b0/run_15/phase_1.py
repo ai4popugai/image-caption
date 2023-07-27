@@ -3,7 +3,7 @@ from typing import Tuple
 
 from torch.utils.data import Dataset
 
-from augmentations.classification.augs import RandomFlip, RandomCrop, Rotate, RandomResizedCrop
+from augmentations.classification.augs import RandomFlip, RandomCrop, Rotate, RandomResizedCropWithProb
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.run_base import RunBase
 from optim_utils.iter_policy.linear_policy import LinearIterationPolicy
@@ -15,7 +15,7 @@ class Phase1(RunBase):
 
         self.optimizer_kwargs = {'weight_decay': 3e-3}
 
-        self.train_augs = [RandomResizedCrop(size=self.crop_size, probability=0.5),
+        self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.5),
                            RandomFlip(), Rotate()]
         self.val_augs = None
 
