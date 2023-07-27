@@ -14,9 +14,10 @@ class GPRDataset(Dataset):
         if os.getenv("GPR_DATASET") is None:
             raise RuntimeError('Dataset path must be set up.')
         root = os.environ['GPR_DATASET']
+        images_dir = os.path.join(root, 'images')
         self.description_path = os.path.join(root, 'categories.json')
         self.resolution = resolution
-        self.frames_list = [os.path.join(root, file_name) for file_name in sorted(os.listdir(root))]
+        self.frames_list = [os.path.join(images_dir, file_name) for file_name in sorted(os.listdir(images_dir))]
         self.frame_transforms = Compose([
             ToTensor(),
             Resize(resolution, InterpolationMode.BILINEAR, antialias=False)
