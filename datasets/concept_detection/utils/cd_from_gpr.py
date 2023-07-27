@@ -25,7 +25,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, ds
     device = Trainer.get_device()
     # device = torch.device('cpu')
 
-    emd_dir = os.path.join(dst_dir, 'emd')
+    emd_dir = os.path.join(dst_dir, 'embs')
     os.makedirs(emd_dir, exist_ok=True)
 
     # Convert experiment, run, and phase to module paths
