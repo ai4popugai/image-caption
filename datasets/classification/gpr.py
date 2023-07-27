@@ -3,6 +3,8 @@ from typing import Tuple
 
 import cv2
 import json
+
+import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
@@ -39,4 +41,4 @@ class GPRDataset(Dataset):
         frame = cv2.imread(self.frames_list[idx], cv2.IMREAD_COLOR)
         frame = self.frame_transforms(frame)
         return {'frames': frame,
-                'labels': int(os.path.basename(self.frames_list[idx]).split('_')[0])}
+                'labels': torch.tensor(int(os.path.basename(self.frames_list[idx]).split('_')[0]), dtype=torch.int64)}
