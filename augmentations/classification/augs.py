@@ -112,3 +112,22 @@ class Rotate(BaseAug):
                                  center=center.tolist())
 
         return rotated_frame
+
+
+class RotateWithProb(BaseAug):
+    def __init__(self, angle_range=(-180, 180), probability: float = 0.5):
+        super().__init__()
+        self.angle_range = angle_range
+        self.probability = probability
+
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        transformed_frames = batch['frames']
+
+        # Perform rotation on each frame
+        for i in range(transformed_frames.shape[0]):
+            if random.random() < self.probability:
+                # Randomly select an angle within the defined range
+                angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
+                transformed_frames[i] = Rotate.rotate_frame(transformed_frames[i], angle)
+
+        return {'frames': transformed_frames, 'labels': batch['labels']}
