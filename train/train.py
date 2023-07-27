@@ -204,7 +204,7 @@ class Trainer:
         return loss.item()
 
     @staticmethod
-    def aug_loop(aug_list: Optional[List[BaseAug]], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    def aug_loop(batch: Dict[str, torch.Tensor], aug_list: Optional[List[BaseAug]]) -> Dict[str, torch.Tensor]:
         if aug_list is not None:
             for aug in aug_list:
                 batch = aug(batch)
@@ -237,7 +237,7 @@ class Trainer:
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
             batch = self.batch_to_device(batch, self.device)
-            batch = self.aug_loop(self.train_augs, batch)
+            batch = self.aug_loop(batch, self.train_augs)
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch)
             iteration += 1
@@ -280,7 +280,7 @@ class Trainer:
             for _ in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.batch_to_device(batch, self.device)
-                batch = self.aug_loop(self.val_augs, batch)
+                batch = self.aug_loop(batch, self.val_augs)
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
