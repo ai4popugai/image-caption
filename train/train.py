@@ -118,12 +118,12 @@ class Trainer:
         if lr_policy is not None:
             lr_policy = LrPolicy(self.optimizer, lr_policy)
 
-        if start_snapshot is not None:
-            global_step = self._load_snapshot(model, start_snapshot, strict_weight_loading, reset_optimizer)
+        the_last_snapshot_path = self._detect_last_snapshot_path()
+        if the_last_snapshot_path is not None:
+            global_step = self._load_snapshot(model, the_last_snapshot_path, strict_weight_loading, reset_optimizer)
         else:
-            the_last_snapshot_path = self._detect_last_snapshot_path()
-            if the_last_snapshot_path is not None:
-                global_step = self._load_snapshot(model, the_last_snapshot_path, strict_weight_loading, reset_optimizer)
+            if start_snapshot is not None:
+                global_step = self._load_snapshot(model, start_snapshot, strict_weight_loading, reset_optimizer)
             else:
                 global_step = 0
 
