@@ -77,11 +77,11 @@ class Trainer:
         writer = SummaryWriter(self.logs_dir)
         self.writer = writer
 
-        self.device = self.set_device()
+        self.device = self.get_device()
         print(f'train on {self.device}')
 
     @staticmethod
-    def set_device() -> torch.device:
+    def get_device() -> torch.device:
         if torch.backends.mps.is_available():
             device = torch.device('mps')
         else:
