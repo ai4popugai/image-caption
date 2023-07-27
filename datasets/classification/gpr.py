@@ -2,6 +2,7 @@ import os
 from typing import Tuple
 
 import cv2
+import json
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
@@ -13,12 +14,22 @@ class GPRDataset(Dataset):
         if os.getenv("GPR_DATASET") is None:
             raise RuntimeError('Dataset path must be set up.')
         root = os.environ['GPR_DATASET']
+        self.description_path = os.path.join(root, 'categories.json')
         self.resolution = resolution
         self.frames_list = [os.path.join(root, file_name) for file_name in sorted(os.listdir(root))]
         self.frame_transforms = Compose([
             ToTensor(),
             Resize(resolution, InterpolationMode.BILINEAR, antialias=False)
         ])
+
+    def read_descriptions(self):
+        """
+        Metgod reads json self.description_path and returns dict with categories descriptions
+        :return: desciptions dict
+        """
+        with open(self.description_path, 'r') as f:
+            descriptions = json.load(f)
+        return descriptions
 
     def __len__(self) -> int:
         return len(self.frames_list)
