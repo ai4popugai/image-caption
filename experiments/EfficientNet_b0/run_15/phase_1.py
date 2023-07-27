@@ -14,7 +14,6 @@ class Phase1(RunBase):
         super().__init__(os.path.abspath(__file__))
 
         self.optimizer_kwargs = {'weight_decay': 3e-3}
-        self.lr_policy = None
 
         self.train_augs = [RandomResizedCrop(size=self.crop_size, probability=0.5),
                            RandomFlip(), Rotate()]
