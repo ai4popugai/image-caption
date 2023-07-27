@@ -14,10 +14,10 @@ class Phase1(RunBase):
         super().__init__(os.path.abspath(__file__))
 
         self.optimizer_kwargs = {'weight_decay': 3e-2}
-        self.lr_policy = LinearIterationPolicy(0, 0, 3000, 2e-3)
+        self.lr_policy = LinearIterationPolicy(0, 0, 3000, 3e-4)
 
-        self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.5),
-                           RandomFlip(), RotateWithProb(probability=0.5)]
+        self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.75),
+                           RandomFlip(), RotateWithProb(probability=0.75)]
         self.val_augs = None
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
