@@ -204,18 +204,20 @@ class Trainer:
         return loss.item()
 
     @staticmethod
-    def _aug_loop(aug_list: Optional[List[BaseAug]], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    def aug_loop(aug_list: Optional[List[BaseAug]], batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         if aug_list is not None:
             for aug in aug_list:
                 batch = aug(batch)
         return batch
 
-    def _normalize(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        batch = self.normalizer(batch)
+    @staticmethod
+    def normalize(batch: Dict[str, torch.Tensor], normalizer: Callable) -> Dict[str, torch.Tensor]:
+        batch = normalizer(batch)
         return batch
-
-    def _batch_to_device(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        batch = {key: batch[key].to(self.device, non_blocking=True) for key in batch}
+    
+    @staticmethod
+    def batch_to_device(batch: Dict[str, torch.Tensor], device: torch.device) -> Dict[str, torch.Tensor]:
+        batch = {key: batch[key].to(device, non_blocking=True) for key in batch}
         return batch
 
     def _get_batch(self, iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
@@ -234,9 +236,9 @@ class Trainer:
         lr = self.optimizer.param_groups[0]['lr']
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
-            batch = self._batch_to_device(batch)
-            batch = self._aug_loop(self.train_augs, batch)
-            batch = self._normalize(batch)
+            batch = self.batch_to_device(batch, self.device)
+            batch = self.aug_loop(self.train_augs, batch)
+            batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch)
             iteration += 1
 
@@ -277,9 +279,9 @@ class Trainer:
         with torch.no_grad():
             for _ in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
-                batch = self._batch_to_device(batch)
-                batch = self._aug_loop(self.val_augs, batch)
-                batch = self._normalize(batch)
+                batch = self.batch_to_device(batch, self.device)
+                batch = self.aug_loop(self.val_augs, batch)
+                batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)
