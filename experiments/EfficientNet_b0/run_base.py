@@ -13,6 +13,7 @@ from loss.classification.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
 from metrics.classification.mean_precision import MeanPrecision
 from metrics.classification.mean_recall import MeanRecall
+from models.classification.base_model import BaseClassificationModel
 from normalize.classification.normalize import BatchNormalizer
 from train.run import Run
 
@@ -47,7 +48,7 @@ class RunBase(Run):
 
         self.lr_policy = None
 
-    def setup_model(self) -> nn.Module:
+    def setup_model(self) -> BaseClassificationModel:
         return EfficientNet(num_classes=self._num_classes)
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
