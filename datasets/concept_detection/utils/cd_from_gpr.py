@@ -1,42 +1,52 @@
 import os
 import shutil
+import argparse
 
 import torch
 from torch.utils.data import DataLoader
 
 from datasets.classification.gpr import GPRDataset
-from experiments.EfficientNet_b0.run_16.phase_1 import Phase1
 from models.classification.feature_extractor import FeatureExtractor
 from train.train import Trainer
 
 
-def create_dataset(snapshot_name: str, dst_dir: str):
+def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, dst_dir: str, ):
     """
-    Function created new dataset from existing one.
-    All images from GPR dataset pass through Efficient without last layer and stores in new dataset.
-    :param dst_dir: directory where new dataset will be stored
-    :param snapshot_name: name of snapshot from which we take model
+    Function creates a new dataset from an existing one.
+    All images from GPR dataset pass through EfficientNet without the last layer and are stored in the new dataset.
+    :param dst_dir: directory where the new dataset will be stored
+    :param snapshot_name: name of the snapshot from which we take the model
+    :param experiment: name of the experiment (e.g., "EfficientNet_b0")
+    :param run: name of the run (e.g., "run_16")
+    :param phase: name of the phase (e.g., "phase_1")
     :return:
     """
+    # setup device
+    device = Trainer.get_device()
+
     emd_dir = os.path.join(dst_dir, 'emd')
     os.makedirs(emd_dir, exist_ok=True)
 
-    # init run and model
-    run = Phase1()
-    model = FeatureExtractor(run.setup_model())
+    # Convert experiment, run, and phase to module paths
+    run_module = __import__(f'experiments.{experiment}.{run}', fromlist=[phase])
+    phase_module = getattr(run_module, phase)
+    run_instance = phase_module.Phase1()
+
+    model = run_instance.setup_model()
 
     # load snapshot
-    snapshot_path = os.path.join(run.snapshot_dir, snapshot_name)
-    model.load_state_dict(torch.load(snapshot_path), strict=True)
+    snapshot_path = os.path.join(run_instance.snapshot_dir, snapshot_name)
+    checkpoint = torch.load(snapshot_path, map_location=device)
+    model.load_state_dict(checkpoint['model_state_dict'], strict=True)
+
+    # create feature extractor
+    model = FeatureExtractor(model)
 
     # datasets and loaders
-    dataset = GPRDataset(resolution=run.resolution)
+    dataset = GPRDataset(resolution=run_instance.resolution)
 
     # copy description
     shutil.copyfile(dataset.description_path, dst_dir)
-
-    # setup device
-    device = Trainer.get_device()
 
     # inference loop
     model.to(device)
@@ -53,8 +63,20 @@ def create_dataset(snapshot_name: str, dst_dir: str):
 
             # prepare batch
             batch = Trainer.batch_to_device(batch, device)
-            batch = Trainer.aug_loop(run.val_augs, batch)
-            batch = Trainer.normalize(batch, run.normalizer)
+            batch = Trainer.aug_loop(run_instance.val_augs, batch)
+            batch = Trainer.normalize(batch, run_instance.normalizer)
 
             # inference
             result = model(batch)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Create a new dataset using EfficientNet without the last layer.")
+    parser.add_argument("--experiment", type=str, help="Name of the experiment (e.g., 'EfficientNet_b0')")
+    parser.add_argument("--run", type=str, help="Name of the run (e.g., 'run_16')")
+    parser.add_argument("--phase", type=str, help="Name of the phase (e.g., 'phase_1')")
+    parser.add_argument("--snapshot_name", type=str, help="Name of the snapshot from which to take the model")
+    parser.add_argument("--dst_dir", type=str, help="Directory where the new dataset will be stored")
+    args = parser.parse_args()
+
+    create_dataset(args.experiment, args.run, args.phase, args.snapshot_name, args.dst_dir, )
