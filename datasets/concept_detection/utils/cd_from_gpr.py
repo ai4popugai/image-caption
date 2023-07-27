@@ -23,6 +23,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, ds
     """
     # setup device
     device = Trainer.get_device()
+    # device = torch.device('cpu')
 
     emd_dir = os.path.join(dst_dir, 'emd')
     os.makedirs(emd_dir, exist_ok=True)
@@ -46,28 +47,29 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, ds
     dataset = GPRDataset(resolution=run_instance.resolution)
 
     # copy description
-    shutil.copyfile(dataset.description_path, dst_dir)
+    shutil.copy(dataset.description_path, dst_dir)
 
     # inference loop
     model.to(device)
     model.eval()
     with torch.no_grad():
-        for ff in dataset.frames_list:
+        for idx, ff in enumerate(dataset.frames_list):
             # get id to save
             id = os.path.splitext(os.path.basename(ff))[0]
 
             # get batch
-            ff_idx = dataset.frames_list.index(ff)
-            batch = dataset[ff_idx]
+            batch = dataset[idx]
             batch['frames'] = batch['frames'].unsqueeze(0)
+            batch['labels'] = batch['labels'].unsqueeze(0)
 
             # prepare batch
             batch = Trainer.batch_to_device(batch, device)
-            batch = Trainer.aug_loop(run_instance.val_augs, batch)
+            batch = Trainer.aug_loop(batch, run_instance.val_augs)
             batch = Trainer.normalize(batch, run_instance.normalizer)
 
             # inference
             result = model(batch)
+            torch.save(result['embs'].squeeze(), os.path.join(emd_dir, f'{id}.pth'))
 
 
 if __name__ == "__main__":
