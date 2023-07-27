@@ -28,7 +28,7 @@ class Trainer:
                  loss: nn.Module,
                  train_iters: int, snapshot_iters: int,
                  show_iters: int,
-                 normalizer: Callable,
+                 normalizer: Optional[Callable] = None,
                  train_metrics: Optional[List[BaseMetric]] = None,
                  val_metrics: Optional[List[BaseMetric]] = None,
                  train_augs: Optional[List[BaseAug]] = None,
@@ -211,8 +211,9 @@ class Trainer:
         return batch
 
     @staticmethod
-    def normalize(batch: Dict[str, torch.Tensor], normalizer: Callable) -> Dict[str, torch.Tensor]:
-        batch = normalizer(batch)
+    def normalize(batch: Dict[str, torch.Tensor], normalizer: Optional[Callable]) -> Dict[str, torch.Tensor]:
+        if normalizer is not None:
+            batch = normalizer(batch)
         return batch
     
     @staticmethod

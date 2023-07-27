@@ -24,8 +24,9 @@ class RunBase(Run):
 
         self._num_classes = NUM_CLASSES
         self.resolution = (256, 256)
-        self.normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        self.normalize_batch = BatchNormalizer(normalizer=self.normalizer)
+
+        self._normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        self.normalizer = BatchNormalizer(normalizer=self._normalizer)
 
         self.batch_size = 64
         self.num_workers = 8

@@ -65,8 +65,8 @@ class Run(ABC):
         self.train_metrics: Optional[List[BaseMetric]] = None
         self.val_metrics: Optional[List[BaseMetric]] = None
 
-        self.normalizer = transforms.Normalize(mean=[0., 0., 0.], std=[1., 1., 1.])
-        self.normalize_batch: Optional[BaseNormalizer] = None
+        self._normalizer = transforms.Normalize(mean=[0., 0., 0.], std=[1., 1., 1.])
+        self.normalizer: Optional[BaseNormalizer] = None
 
     def setup_model(self):
         raise NotImplementedError
@@ -104,7 +104,7 @@ class Run(ABC):
                           train_iters=self.train_iters,
                           show_iters=self.show_iters,
                           snapshot_iters=self.snapshot_iters,
-                          normalizer=self.normalize_batch,)
+                          normalizer=self.normalizer,)
         trainer.train(model=model,
                       reset_optimizer=self.reset_optimizer,
                       start_snapshot=start_snapshot,
