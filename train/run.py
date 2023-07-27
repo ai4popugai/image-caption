@@ -75,7 +75,7 @@ class Run(ABC):
         raise NotImplementedError
 
     def train(self,
-              start_snapshot_name: str = None,
+              start_snapshot: str = None,
               ):
         torch.manual_seed(42)
         torch.cuda.manual_seed(42)
@@ -104,7 +104,7 @@ class Run(ABC):
                           normalizer=self.normalize_batch,)
         trainer.train(model=model,
                       reset_optimizer=self.reset_optimizer,
-                      start_snapshot_name=start_snapshot_name,
+                      start_snapshot=start_snapshot,
                       max_iteration=self.max_iteration,
                       lr_policy=self.lr_policy,
                       strict_weight_loading=self.strict_weight_loading,

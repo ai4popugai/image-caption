@@ -43,7 +43,7 @@ class RunBase(Run):
         self.train_augs = [RandomFlip(), RandomCrop(self.crop_size)]
         self.val_augs = [CenterCrop(self.crop_size)]
 
-        self.start_snapshot_name = None
+        self.start_snapshot = None
 
         self.lr_policy = None
 

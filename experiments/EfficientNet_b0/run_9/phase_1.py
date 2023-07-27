@@ -15,4 +15,4 @@ class Phase1(RunBase):
 
 
 if __name__ == '__main__':
-    Phase1().train(start_snapshot_name=None)
+    Phase1().train(start_snapshot=None)
