@@ -6,6 +6,7 @@ from torch.utils.data import Dataset
 from augmentations.classification.augs import RandomFlip, RandomCrop, Rotate, RandomResizedCropWithProb, RotateWithProb
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.run_base import RunBase
+from optim_utils.iter_policy.cossine_policy import CosineAnnealingIterationPolicy
 from optim_utils.iter_policy.linear_policy import LinearIterationPolicy
 
 
@@ -13,8 +14,8 @@ class Phase1(RunBase):
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
-        self.optimizer_kwargs = {'lr': 0.75e-4, 'weight_decay': 1e-1}
-        self.lr_policy = None
+        self.optimizer_kwargs = {'weight_decay': 3e-2}
+        self.lr_policy = CosineAnnealingIterationPolicy(2e-3, 9000, 2e-5, 1000)
 
         self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.5),
                            RandomFlip(), RotateWithProb(probability=0.5)]
