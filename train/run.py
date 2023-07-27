@@ -77,6 +77,9 @@ class Run(ABC):
     def train(self,
               start_snapshot: str = None,
               ):
+
+        start_snapshot = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, start_snapshot)
+
         torch.manual_seed(42)
         torch.cuda.manual_seed(42)
         torch.backends.cudnn.deterministic = True
