@@ -134,11 +134,20 @@ class RotateWithProb(BaseAug):
 
 
 class RandomColorJitterWithProb(BaseAug):
-    def __init__(self, probability: float = 0.5, brightness=0, contrast=0, saturation=0, hue=0):
+    def __init__(
+        self,
+        probability: float = 0.5,
+        brightness_range: Tuple[float, float] = (0, 0),
+        contrast_range: Tuple[float, float] = (0, 0),
+        saturation_range: Tuple[float, float] = (0, 0),
+        hue_range: Tuple[float, float] = (0, 0)
+    ):
         super().__init__()
         self.probability = probability
-        self.color_jitter = transforms.ColorJitter(brightness=brightness, contrast=contrast,
-                                                   saturation=saturation, hue=hue)
+        self.brightness_range = brightness_range
+        self.contrast_range = contrast_range
+        self.saturation_range = saturation_range
+        self.hue_range = hue_range
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         transformed_frames = batch['frames']
@@ -146,6 +155,23 @@ class RandomColorJitterWithProb(BaseAug):
         # Perform random color jittering on each frame
         for i in range(transformed_frames.shape[0]):
             if random.random() < self.probability:
-                transformed_frames[i] = self.color_jitter(transformed_frames[i])
+                transformed_frames[i] = self.apply_color_jitter(transformed_frames[i])
 
         return {'frames': transformed_frames, 'labels': batch['labels']}
+
+    def apply_color_jitter(self, frame: torch.Tensor) -> torch.Tensor:
+        # Generate random values for each color augmentation parameter within the specified range
+        brightness_factor = random.uniform(self.brightness_range[0], self.brightness_range[1])
+        contrast_factor = random.uniform(self.contrast_range[0], self.contrast_range[1])
+        saturation_factor = random.uniform(self.saturation_range[0], self.saturation_range[1])
+        hue_factor = random.uniform(self.hue_range[0], self.hue_range[1])
+
+        color_jitter_transform = transforms.ColorJitter(
+            brightness=brightness_factor,
+            contrast=contrast_factor,
+            saturation=saturation_factor,
+            hue=hue_factor
+        )
+
+        return color_jitter_transform(frame)
+
