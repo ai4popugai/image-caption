@@ -18,7 +18,7 @@ class Phase1(RunBase):
         self.lr_policy = LinearIterationPolicy(0, 0, 3000, 3e-4)
 
         self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.8),
-                           RandomColorJitterWithProb(probability=0.5, hue_range=(-0.5, 0.5)),
+                           RandomColorJitterWithProb(probability=0.5, hue_range=(-0.5, 0.5), brightness_range=(0.8, 1)),
                            RandomFlip(), RotateWithProb(probability=0.8)]
         self.val_augs = None
 
