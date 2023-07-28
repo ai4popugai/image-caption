@@ -14,7 +14,7 @@ class Phase1(RunBase):
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
-        self.optimizer_kwargs = {'weight_decay': 8e-4}
+        self.optimizer_kwargs = {'weight_decay': 2e-4}
         self.lr_policy = LinearIterationPolicy(0, 0, 3000, 3e-4)
 
         self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.8),
@@ -42,5 +42,4 @@ class Phase1(RunBase):
 
 
 if __name__ == '__main__':
-    start_snapshot = 'EfficientNet_b0/run_28/snapshot_1500.pth'
-    Phase1().train(start_snapshot=start_snapshot)
+    Phase1().train(start_snapshot=None)
