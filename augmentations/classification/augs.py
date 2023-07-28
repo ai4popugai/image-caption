@@ -131,3 +131,21 @@ class RotateWithProb(BaseAug):
                 transformed_frames[i] = Rotate.rotate_frame(transformed_frames[i], angle)
 
         return {'frames': transformed_frames, 'labels': batch['labels']}
+
+
+class RandomColorJitterWithProb(BaseAug):
+    def __init__(self, probability: float = 0.5, brightness=0, contrast=0, saturation=0, hue=0):
+        super().__init__()
+        self.probability = probability
+        self.color_jitter = transforms.ColorJitter(brightness=brightness, contrast=contrast,
+                                                   saturation=saturation, hue=hue)
+
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        transformed_frames = batch['frames']
+
+        # Perform random color jittering on each frame
+        for i in range(transformed_frames.shape[0]):
+            if random.random() < self.probability:
+                transformed_frames[i] = self.color_jitter(transformed_frames[i])
+
+        return {'frames': transformed_frames, 'labels': batch['labels']}
