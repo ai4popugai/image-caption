@@ -3,7 +3,8 @@ from typing import Tuple
 
 from torch.utils.data import Dataset
 
-from augmentations.classification.augs import RandomFlip, RandomCrop, Rotate, RandomResizedCropWithProb, RotateWithProb
+from augmentations.classification.augs import RandomFlip, RandomCrop, Rotate, RandomResizedCropWithProb, RotateWithProb, \
+    RandomColorJitterWithProb
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.run_base import RunBase
 from optim_utils.iter_policy.linear_policy import LinearIterationPolicy
@@ -13,11 +14,12 @@ class Phase1(RunBase):
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
-        self.optimizer_kwargs = {'weight_decay': 1.6e-4}
+        self.optimizer_kwargs = {'weight_decay': 8e-4}
         self.lr_policy = LinearIterationPolicy(0, 0, 3000, 3e-4)
 
-        self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.92),
-                           RandomFlip(), RotateWithProb(probability=0.92)]
+        self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.8),
+                           RandomColorJitterWithProb(probability=0.5, hue_range=(-0.5, 0.5)),
+                           RandomFlip(), RotateWithProb(probability=0.8)]
         self.val_augs = None
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
