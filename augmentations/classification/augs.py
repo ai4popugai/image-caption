@@ -137,9 +137,9 @@ class RandomColorJitterWithProb(BaseAug):
     def __init__(
         self,
         probability: float = 0.5,
-        brightness_range: Tuple[float, float] = (0, 0),
-        contrast_range: Tuple[float, float] = (0, 0),
-        saturation_range: Tuple[float, float] = (0, 0),
+        brightness_range: Tuple[float, float] = (1, 1),
+        contrast_range: Tuple[float, float] = (1, 1),
+        saturation_range: Tuple[float, float] = (1, 1),
         hue_range: Tuple[float, float] = (0, 0)
     ):
         super().__init__()
@@ -160,17 +160,11 @@ class RandomColorJitterWithProb(BaseAug):
         return {'frames': transformed_frames, 'labels': batch['labels']}
 
     def apply_color_jitter(self, frame: torch.Tensor) -> torch.Tensor:
-        # Generate random values for each color augmentation parameter within the specified range
-        brightness_factor = random.uniform(self.brightness_range[0], self.brightness_range[1])
-        contrast_factor = random.uniform(self.contrast_range[0], self.contrast_range[1])
-        saturation_factor = random.uniform(self.saturation_range[0], self.saturation_range[1])
-        hue_factor = random.uniform(self.hue_range[0], self.hue_range[1])
-
         color_jitter_transform = transforms.ColorJitter(
-            brightness=brightness_factor,
-            contrast=contrast_factor,
-            saturation=saturation_factor,
-            hue=hue_factor
+            brightness=self.brightness_range,
+            contrast=self.contrast_range,
+            saturation=self.saturation_range,
+            hue=self.hue_range
         )
 
         return color_jitter_transform(frame)
