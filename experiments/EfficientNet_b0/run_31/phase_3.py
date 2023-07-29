@@ -1,4 +1,4 @@
-"""From iteration 3000"""
+"""From iteration 6000"""
 
 
 import os
@@ -18,11 +18,13 @@ class Phase1(RunBase):
         super().__init__(os.path.abspath(__file__))
 
         self.optimizer_kwargs = {'weight_decay': 2e-4}
-        self.lr_policy = CosineAnnealingIterationPolicy(1.5e-4, 3000, 0, 1500)
+        self.lr_policy = CosineAnnealingIterationPolicy(1.5e-4, 6000, 0, 1500)
 
-        self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.8),
-                           RandomColorJitterWithProb(probability=0.5, hue_range=(-0.5, 0.5), brightness_range=(0.8, 1)),
-                           RandomFlip(), RotateWithProb(probability=0.8)]
+        self.crop_size = (214, 214)
+        self.train_augs = [RandomResizedCropWithProb(size=self.crop_size, probability=0.75),
+                           RandomColorJitterWithProb(probability=0.75, hue_range=(-0.5, 0.5)),
+                           RandomColorJitterWithProb(probability=0.5, brightness_range=(0.7, 1)),
+                           RandomFlip(), RotateWithProb(probability=0.75)]
         self.val_augs = None
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
