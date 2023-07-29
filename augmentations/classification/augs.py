@@ -1,6 +1,6 @@
 import random
 from abc import abstractmethod, ABC
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 import cv2
 import numpy as np
@@ -55,12 +55,17 @@ class RandomCrop(BaseAug):
 
 
 class RandomResizedCropWithProb(BaseAug):
-    def __init__(self, size: Tuple[int, int], probability: float = 0.5):
+    def __init__(self, size: Union[Tuple[Tuple[int, int], Tuple[int, int]], Tuple[int, int]],
+                 probability: float = 0.5):
         super().__init__()
         self.size = size
         self.probability = probability
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        if not isinstance(self.size[0], int):
+            self.size = (random.randint(self.size[0][0], self.size[1][0]),
+                         random.randint(self.size[1][0], self.size[1][1]))
+
         transform = transforms.Compose([
             transforms.RandomCrop(self.size),
             transforms.Resize(batch['frames'].shape[-2:], antialias=False)  # Resize back to original resolution
@@ -149,23 +154,19 @@ class RandomColorJitterWithProb(BaseAug):
         self.saturation_range = saturation_range
         self.hue_range = hue_range
 
-    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch['frames']
-
-        # Perform random color jittering on each frame
-        for i in range(transformed_frames.shape[0]):
-            if random.random() < self.probability:
-                transformed_frames[i] = self.apply_color_jitter(transformed_frames[i])
-
-        return {'frames': transformed_frames, 'labels': batch['labels']}
-
-    def apply_color_jitter(self, frame: torch.Tensor) -> torch.Tensor:
-        color_jitter_transform = transforms.ColorJitter(
+        self.color_jitter_transform = transforms.ColorJitter(
             brightness=self.brightness_range,
             contrast=self.contrast_range,
             saturation=self.saturation_range,
             hue=self.hue_range
         )
 
-        return color_jitter_transform(frame)
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        transformed_frames = batch['frames']
 
+        # Perform random color jittering on each frame
+        for i in range(transformed_frames.shape[0]):
+            if random.random() < self.probability:
+                transformed_frames[i] = self.color_jitter_transform(transformed_frames[i])
+
+        return {'frames': transformed_frames, 'labels': batch['labels']}
