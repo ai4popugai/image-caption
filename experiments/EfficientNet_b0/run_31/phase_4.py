@@ -45,5 +45,4 @@ class Phase1(RunBase):
 
 
 if __name__ == '__main__':
-    start_snapshot = 'EfficientNet_b0/run_31/snapshot_6000.pth'
-    Phase1().train(start_snapshot=start_snapshot, force_snapshot_loading=True)
+    Phase1().train(start_snapshot=None)
