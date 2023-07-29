@@ -76,6 +76,7 @@ class Run(ABC):
 
     def train(self,
               start_snapshot: str = None,
+              force_snapshot_loading: bool = False,
               ):
 
         start_snapshot = None if start_snapshot is None \
@@ -105,7 +106,8 @@ class Run(ABC):
                           train_iters=self.train_iters,
                           show_iters=self.show_iters,
                           snapshot_iters=self.snapshot_iters,
-                          normalizer=self.normalizer,)
+                          normalizer=self.normalizer,
+                          force_snapshot_loading=force_snapshot_loading,)
         trainer.train(model=model,
                       reset_optimizer=self.reset_optimizer,
                       start_snapshot=start_snapshot,
