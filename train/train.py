@@ -5,7 +5,6 @@ from typing import List, Dict, Union, Iterator, Optional, Type, Callable
 import torch
 from torch import nn
 from torch.optim import Optimizer
-from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -74,6 +73,10 @@ class Trainer:
         self.show_iters = show_iters
         self.normalizer = normalizer
         self.force_snapshot_loading = force_snapshot_loading
+
+        self.model_state_dict_key = 'model_state_dict'
+        self.optimizer_state_dict_key = 'optimizer_state_dict'
+        self.global_step_key = 'global_step'
 
         if os.path.exists(self.logs_dir) is False:
             os.makedirs(self.logs_dir)
@@ -159,18 +162,15 @@ class Trainer:
 
     def _load_snapshot(self, model: nn.Module, snapshot_path: str, strict_weight_loading: bool,
                        reset_optimizer: bool) -> int:
-        model_state_dict_key = 'model_state_dict'
-        optimizer_state_dict_key = 'optimizer_state_dict'
-        global_step_key = 'global_step'
         checkpoint = torch.load(snapshot_path, map_location=self.device)
-        model.load_state_dict(checkpoint[model_state_dict_key], strict=strict_weight_loading)
+        model.load_state_dict(checkpoint[self.model_state_dict_key], strict=strict_weight_loading)
         if reset_optimizer is False:
-            if optimizer_state_dict_key in checkpoint:
-                self.optimizer.load_state_dict(checkpoint[optimizer_state_dict_key])
+            if self.optimizer_state_dict_key in checkpoint:
+                self.optimizer.load_state_dict(checkpoint[self.optimizer_state_dict_key])
             else:
                 print('No optimizer state dict in snapshot. Optimizer is reset.')
         print(f'Loaded snapshot from {snapshot_path}')
-        return checkpoint[global_step_key]
+        return checkpoint[self.global_step_key]
 
     def _detect_last_snapshot_path(self) -> str or None:
         snapshot_paths = [os.path.join(self.snapshot_dir, name) for name in os.listdir(self.snapshot_dir)]
@@ -180,9 +180,9 @@ class Trainer:
 
     def _save_snapshot(self, model: nn.Module, snapshot_path: str, global_step: int):
         torch.save({
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
-            'global_step': global_step,
+            self.model_state_dict_key: model.state_dict(),
+            self.optimizer_state_dict_key: self.optimizer.state_dict(),
+            self.global_step_key: global_step,
 
         }, snapshot_path)
         print(f'Saved snapshot to {snapshot_path}')
@@ -241,7 +241,8 @@ class Trainer:
         batch = {key: batch[key].to(device, non_blocking=True) for key in batch}
         return batch
 
-    def _get_batch(self, iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
+    @staticmethod
+    def _get_batch(iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
         try:
             batch = next(iterator)
         except StopIteration:
