@@ -159,12 +159,18 @@ class Trainer:
 
     def _load_snapshot(self, model: nn.Module, snapshot_path: str, strict_weight_loading: bool,
                        reset_optimizer: bool) -> int:
+        model_state_dict_key = 'model_state_dict'
+        optimizer_state_dict_key = 'optimizer_state_dict'
+        global_step_key = 'global_step'
         checkpoint = torch.load(snapshot_path, map_location=self.device)
-        model.load_state_dict(checkpoint['model_state_dict'], strict=strict_weight_loading)
+        model.load_state_dict(checkpoint[model_state_dict_key], strict=strict_weight_loading)
         if reset_optimizer is False:
-            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            if optimizer_state_dict_key in checkpoint:
+                self.optimizer.load_state_dict(checkpoint[optimizer_state_dict_key])
+            else:
+                print('No optimizer state dict in snapshot. Optimizer is reset.')
         print(f'Loaded snapshot from {snapshot_path}')
-        return checkpoint['global_step']
+        return checkpoint[global_step_key]
 
     def _detect_last_snapshot_path(self) -> str or None:
         snapshot_paths = [os.path.join(self.snapshot_dir, name) for name in os.listdir(self.snapshot_dir)]
