@@ -50,7 +50,7 @@ class RunBase(Run):
         self.lr_policy = None
 
     def setup_model(self) -> BaseClassificationModel:
-        return EfficientNet(num_classes=self._num_classes, pretrained=False)
+        return EfficientNet(num_classes=self._num_classes)
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         dataset = GPRDataset(resolution=self.resolution)

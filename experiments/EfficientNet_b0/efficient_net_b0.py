@@ -8,7 +8,7 @@ from models.classification.base_model import BaseClassificationModel
 
 
 class EfficientNet(BaseClassificationModel):
-    def __init__(self, num_classes: int, pretrained: bool = False):
+    def __init__(self, num_classes: int):
         super().__init__()
-        self.model = torchvision.models.efficientnet_b0(pretrained=pretrained)
+        self.model = torchvision.models.efficientnet_b0()
         self.model.classifier[1] = nn.Linear(1280, num_classes)

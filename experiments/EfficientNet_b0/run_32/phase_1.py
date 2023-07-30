@@ -44,9 +44,7 @@ class Phase1(RunBase):
         del dataset
         return train_dataset, val_dataset
 
-    def setup_model(self) -> BaseClassificationModel:
-        return EfficientNet(num_classes=self._num_classes, pretrained=True)
-
 
 if __name__ == '__main__':
-    Phase1().train(start_snapshot=None)
+    start_snapshot = 'EfficientNet_b0/pretrain/pretrain.pth'
+    Phase1().train(start_snapshot=start_snapshot)
