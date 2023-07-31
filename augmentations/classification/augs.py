@@ -1,6 +1,7 @@
+import math
 import random
 from abc import abstractmethod, ABC
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, List
 
 import cv2
 import numpy as np
@@ -55,19 +56,23 @@ class RandomCrop(BaseAug):
 
 
 class RandomResizedCropWithProb(BaseAug):
-    def __init__(self, size: Union[Tuple[Tuple[int, int], Tuple[int, int]], Tuple[int, int]],
+    def __init__(self, size: Union[List[float, float], Tuple[int, int]],
                  probability: float = 0.5):
         super().__init__()
         self.size = size
         self.probability = probability
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        if not isinstance(self.size[0], int):
-            self.size = (random.randint(self.size[0][0], self.size[1][0]),
-                         random.randint(self.size[1][0], self.size[1][1]))
+        if isinstance(self.size[0], float):
+            change_factor = math.sqrt(random.uniform(self.size[0], self.size[1]))
+            new_height = int(batch['frames'].shape[-2] * change_factor)
+            new_width = int(batch['frames'].shape[-1] * change_factor)
+            size = (new_height, new_width)
+        else:
+            size = self.size
 
         transform = transforms.Compose([
-            transforms.RandomCrop(self.size),
+            transforms.RandomCrop(size),
             transforms.Resize(batch['frames'].shape[-2:], antialias=False)  # Resize back to original resolution
         ])
 
