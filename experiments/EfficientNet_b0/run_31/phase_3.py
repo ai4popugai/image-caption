@@ -20,7 +20,7 @@ class Phase1(RunBase):
         self.optimizer_kwargs = {'weight_decay': 2e-4}
         self.lr_policy = CosineAnnealingIterationPolicy(1.5e-4, 6000, 0, 1500)
 
-        self.train_augs = [RandomResizedCropWithProb(size=((200, 200), (214, 214)), probability=0.75),
+        self.train_augs = [RandomResizedCropWithProb(size=[0.61, 0.7], probability=0.75),
                            RandomColorJitterWithProb(probability=0.75, hue_range=(-0.5, 0.5)),
                            RandomColorJitterWithProb(probability=0.5, brightness_range=(0.7, 1)),
                            RandomFlip(), RotateWithProb(probability=0.75)]
