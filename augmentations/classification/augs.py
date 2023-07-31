@@ -56,7 +56,7 @@ class RandomCrop(BaseAug):
 
 
 class RandomResizedCropWithProb(BaseAug):
-    def __init__(self, size: Union[List[float, float], Tuple[int, int]],
+    def __init__(self, size: Union[List[float], Tuple[int, int]],
                  probability: float = 0.5):
         super().__init__()
         self.size = size
