@@ -22,17 +22,17 @@ class GPRConceptsDataset:
         text_corpus = list(self.descriptions.values())
 
         # init tokenizer
-        seed = 42
-        self.tokenizer = get_tokenizer('spacy', language='en_core_web_sm', seed=seed)
+        self.tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 
         # tokenize text corpus
         self.tokenized_corpus = [self.tokenizer(text) for text in text_corpus]
 
         # get vocabulary
-        self.vocab = set()
-        for text in self.tokenized_corpus:
-            self.vocab.update(text)
-        self.vocab = list(self.vocab)
+        self.vocab = []
+        for sentence in self.tokenized_corpus:
+            for token in sentence:
+                if token not in self.vocab:
+                    self.vocab.append(token)
 
     def __len__(self):
         return len(self.embs_list)
