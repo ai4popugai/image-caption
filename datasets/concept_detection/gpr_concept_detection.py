@@ -5,6 +5,9 @@ import re
 import torch
 from torchtext.data import get_tokenizer
 
+SOS = 'startofsentence'
+EOS = 'endofsentence'
+
 
 class GPRConceptsDataset:
     def __init__(self):
@@ -32,7 +35,7 @@ class GPRConceptsDataset:
         self.tokenized_corpus = [self.tokenizer(text) for text in text_corpus]
 
         # get vocabulary
-        self.vocab = []
+        self.vocab = [SOS, EOS]
         for sentence in self.tokenized_corpus:
             for token in sentence:
                 if token not in self.vocab:
@@ -45,6 +48,6 @@ class GPRConceptsDataset:
         emb = torch.load(self.embs_list[idx], map_location=torch.device('cpu'))
         emb_class = int(os.path.basename(self.embs_list[idx]).split('_')[0])
         description = self.descriptions[str(emb_class)]
-        tokenized = self.tokenizer(description)
+        tokenized = self.tokenizer(f'{SOS} {description} {EOS}')
         tokenized_tensor = torch.tensor([self.vocab.index(token) for token in tokenized], dtype=torch.int64)
         return {'embs': emb, 'tokens': tokenized_tensor}
