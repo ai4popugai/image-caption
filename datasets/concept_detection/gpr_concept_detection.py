@@ -20,23 +20,23 @@ class GPRConceptsDataset:
 
         # load descriptions
         with open(self.descriptions_path, 'r') as json_file:
-            self.descriptions = json.load(json_file)
+            self._descriptions = json.load(json_file)
 
-        for key, value in self.descriptions.items():
-            self.descriptions[key] = re.sub(r"[^a-zA-Z0-9]+", ' ', value.lower())
+        for key, value in self._descriptions.items():
+            self._descriptions[key] = re.sub(r"[^a-zA-Z0-9]+", ' ', value.lower())
 
         # get text corpus
-        text_corpus = list(self.descriptions.values())
+        text_corpus = list(self._descriptions.values())
 
         # init tokenizer
-        self.tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
+        self._tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 
         # tokenize text corpus
-        self.tokenized_corpus = [self.tokenizer(text) for text in text_corpus]
+        self._tokenized_corpus = [self._tokenizer(text) for text in text_corpus]
 
         # get vocabulary
         self.vocab = [SOS, EOS]
-        for sentence in self.tokenized_corpus:
+        for sentence in self._tokenized_corpus:
             for token in sentence:
                 if token not in self.vocab:
                     self.vocab.append(token)
@@ -47,7 +47,7 @@ class GPRConceptsDataset:
     def __getitem__(self, idx):
         emb = torch.load(self.embs_list[idx], map_location=torch.device('cpu'))
         emb_class = int(os.path.basename(self.embs_list[idx]).split('_')[0])
-        description = self.descriptions[str(emb_class)]
-        tokenized = self.tokenizer(f'{SOS} {description} {EOS}')
+        description = self._descriptions[str(emb_class)]
+        tokenized = self._tokenizer(f'{SOS} {description} {EOS}')
         tokenized_tensor = torch.tensor([self.vocab.index(token) for token in tokenized], dtype=torch.int64)
         return {'embs': emb, 'tokens': tokenized_tensor}
