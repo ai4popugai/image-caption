@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import torch
 from torchtext.data import get_tokenizer
@@ -17,6 +18,9 @@ class GPRConceptsDataset:
         # load descriptions
         with open(self.descriptions_path, 'r') as json_file:
             self.descriptions = json.load(json_file)
+
+        for key, value in self.descriptions.items():
+            self.descriptions[key] = re.sub(r"[^a-zA-Z0-9]+", ' ', value.lower())
 
         # get text corpus
         text_corpus = list(self.descriptions.values())
