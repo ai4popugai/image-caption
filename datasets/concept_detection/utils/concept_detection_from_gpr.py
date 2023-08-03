@@ -29,7 +29,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
     # device = torch.device('cpu')
 
     dst_dir = os.path.join(dataset_dir, f'{name_prefix}_{run}_{phase}_{os.path.splitext(snapshot_name)[0]}'
-                                        f'_num_leave_layers={num_leave_layers}')
+                                        f'_num_leave_layers_{num_leave_layers}')
     emd_dir = os.path.join(dst_dir, 'feature_maps')
     os.makedirs(emd_dir, exist_ok=True)
 
