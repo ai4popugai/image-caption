@@ -14,9 +14,9 @@ class GPRConceptsDataset:
         if os.getenv("GPR_DATASET_CONCEPT_DETECTION") is None:
             raise RuntimeError('Dataset path must be set up.')
         root = os.environ['GPR_DATASET_CONCEPT_DETECTION']
-        embs_dir = os.path.join(root, 'embs')
+        feature_maps_dir = os.path.join(root, 'feature_maps')
         self.descriptions_path = os.path.join(root, 'categories.json')
-        self.embs_list = [os.path.join(embs_dir, file_name) for file_name in sorted(os.listdir(embs_dir))]
+        self.feature_maps_list = [os.path.join(feature_maps_dir, file_name) for file_name in sorted(os.listdir(feature_maps_dir))]
 
         # load descriptions
         with open(self.descriptions_path, 'r') as json_file:
@@ -42,12 +42,12 @@ class GPRConceptsDataset:
                     self.vocab.append(token)
 
     def __len__(self):
-        return len(self.embs_list)
+        return len(self.feature_maps_list)
 
     def __getitem__(self, idx):
-        emb = torch.load(self.embs_list[idx], map_location=torch.device('cpu'))
-        emb_class = int(os.path.basename(self.embs_list[idx]).split('_')[0])
+        emb = torch.load(self.feature_maps_list[idx], map_location=torch.device('cpu'))
+        emb_class = int(os.path.basename(self.feature_maps_list[idx]).split('_')[0])
         description = self._descriptions[str(emb_class)]
         tokenized = self._tokenizer(f'{SOS} {description} {EOS}')
         tokenized_tensor = torch.tensor([self.vocab.index(token) for token in tokenized], dtype=torch.int64)
-        return {'embs': emb, 'tokens': tokenized_tensor}
+        return {'feature_maps': emb, 'tokens': tokenized_tensor}
