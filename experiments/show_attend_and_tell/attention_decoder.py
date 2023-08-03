@@ -23,11 +23,10 @@ class AttentionDecoder(nn.Module):
         self.fc_1 = nn.Linear(hidden_size, vocab_size)
         self.max_len = max_len
 
-    def _forward(self, inputs, hidden, keys):
-        # inputs: (batch_size, 1)
+    def _forward(self, embedding, hidden, keys):
+        # embedding: (batch_size, 1, embedding_size)
         # hidden: (batch_size, hidden_size)
         # keys: (batch_size, seq_len, keys_hidden_size)
-        embedding = self.embedding(inputs)  # embedding: (batch_size, 1, embedding_size)
         context, weights = self.attention(hidden.unsqueeze(1), keys)  # context: (batch_size, 1, keys_hidden_size)
                                                                       # weights: (batch_size, 1, seq_len)
         context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
@@ -38,3 +37,16 @@ class AttentionDecoder(nn.Module):
         output = output.squeeze(1)  # output: (batch_size, hidden_size)
         output = self.fc_1(output)  # output: (batch_size, vocab_size)
         return output, hidden.squeeze(0), weights
+
+    def forward(self, features, captions):
+        # features: (batch_size, seq_len, keys_hidden_size)
+        # captions: (batch_size, seq_len)
+        embeddings = self.embedding(captions)  # embeddings: (batch_size, seq_len, embedding_size)
+        batch_size = features.shape[0]
+        hidden = torch.zeros(batch_size, self.hidden_size, device=features.device)
+        outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
+        for t in range(self.max_len):
+            embedding = embeddings.select(1, t).unsqueeze(1)  # embedding: (batch_size, 1, embedding_size)
+            output, hidden, _ = self._forward(embedding, hidden, features)
+            outputs[:, t] = output
+        return outputs
