@@ -85,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument("--snapshot_name", type=str, help="Name of the snapshot from which to take the model")
     parser.add_argument("--dataset_dir", type=str, help="Directory where the new dataset will be stored")
     parser.add_argument("--name_prefix", type=str, help='Prefix for the name of the new dataset')
-    parser.add_argument("--num_leave_layers", type=str, help='Num layers to leave from start')
+    parser.add_argument("--num_leave_layers", type=str, default=4, help='Num layers to leave from start')
     args = parser.parse_args()
 
     create_dataset(args.experiment, args.run, args.phase, args.snapshot_name, args.dataset_dir, args.name_prefix,
