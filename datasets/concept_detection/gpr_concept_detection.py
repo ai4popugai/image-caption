@@ -45,9 +45,9 @@ class GPRConceptsDataset:
         return len(self.feature_maps_list)
 
     def __getitem__(self, idx):
-        emb = torch.load(self.feature_maps_list[idx], map_location=torch.device('cpu'))
-        emb_class = int(os.path.basename(self.feature_maps_list[idx]).split('_')[0])
-        description = self._descriptions[str(emb_class)]
+        feature_map = torch.load(self.feature_maps_list[idx], map_location=torch.device('cpu'))
+        feature_map_class = int(os.path.basename(self.feature_maps_list[idx]).split('_')[0])
+        description = self._descriptions[str(feature_map_class)]
         tokenized = self._tokenizer(f'{SOS} {description} {EOS}')
         tokenized_tensor = torch.tensor([self.vocab.index(token) for token in tokenized], dtype=torch.int64)
-        return {'feature_maps': emb, 'tokens': tokenized_tensor}
+        return {'feature_maps': feature_map, 'tokens': tokenized_tensor}
