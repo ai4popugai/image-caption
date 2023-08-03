@@ -50,4 +50,5 @@ class GPRConceptsDataset:
         description = self._descriptions[str(feature_map_class)]
         tokenized = self._tokenizer(f'{SOS} {description} {EOS}')
         tokenized_tensor = torch.tensor([self.vocab.index(token) for token in tokenized], dtype=torch.int64)
-        return {'feature_maps': feature_map, 'tokens': tokenized_tensor}
+        d, h, w = feature_map.shape
+        return {'feature_maps': feature_map.reshape(h * w, d), 'tokens': tokenized_tensor}
