@@ -9,6 +9,7 @@ from datasets import FEATURE_MAPS_KEYS, TOKENS_KEY
 
 SOS = 'startofsentence'
 EOS = 'endofsentence'
+PAD = 'padtoken'
 
 
 class GPRConceptsDataset:
@@ -35,13 +36,15 @@ class GPRConceptsDataset:
 
         # tokenize text corpus
         self._tokenized_corpus = [self._tokenizer(text) for text in text_corpus]
+        self._max_length = max([len(sentence) for sentence in self._tokenized_corpus])
 
         # init vocab
-        self._vocab = [SOS, EOS]
+        self._vocab = [SOS, EOS, PAD]
 
         # create sos and eos indices
         self.sos_tokenized = torch.tensor(self._vocab.index(SOS))
         self.eos_tokenize = torch.tensor(self._vocab.index(EOS))
+        self.pad_tokenized = torch.tensor(self._vocab.index(PAD))
 
         # form vocab
         for sentence in self._tokenized_corpus:
@@ -58,5 +61,7 @@ class GPRConceptsDataset:
         description = self._descriptions[str(feature_map_class)]
         tokenized = self._tokenizer(f'{SOS} {description} {EOS}')
         tokenized_tensor = torch.tensor([self._vocab.index(token) for token in tokenized], dtype=torch.int64)
+        tokenized_tensor = torch.cat([tokenized_tensor,
+                                      self.pad_tokenized.repeat(self._max_length - len(tokenized_tensor))], dim=0)
         d, h, w = feature_map.shape
         return {FEATURE_MAPS_KEYS: feature_map.reshape(h * w, d), TOKENS_KEY: tokenized_tensor}
