@@ -26,6 +26,15 @@ class AttentionDecoder(nn.Module):
         self.max_len = max_len
 
     def _forward(self, x_t, hidden, keys):
+        """
+        One step forward of the decoder, given the input x_t, the hidden state and the keys (feature maps).
+        x_t is the word embedding of the previous gt word if training mode or previous predicted word if inference mode,
+        hidden is the hidden state of the previous time step.
+        :param x_t: embedding of the previous gt word or previous predicted word.
+        :param hidden: hidden state of the previous time step.
+        :param keys: feature maps from the encoder.
+        :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
+        """
         # embedding: (batch_size, 1, hidden_size)
         # hidden: (batch_size, hidden_size)
         # keys: (batch_size, seq_len, keys_hidden_size)
@@ -40,16 +49,34 @@ class AttentionDecoder(nn.Module):
         output = self.fc_2(output)  # output: (batch_size, vocab_size)
         return output, hidden.squeeze(0), weights
 
-    def forward(self, captions, features):
-        # features: (batch_size, seq_len, keys_hidden_size)
-        # captions: (batch_size, seq_len)
+    def _forward_training(self, features, captions):
+        """
+        Forward pass in training mode. Captions are provided.
+        :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
+        :param captions: captions to train on (batch_size, seq_len).
+        :return: (batch_size, seq_len - 1, vocab_size) - predictions for each token in the sequence except EOS token.
+        """
+        out_seq_len = captions.shape[1] - 1  # -1 because we don't need to predict EOS token
         embeddings = self.embedding(captions)  # embeddings: (batch_size, seq_len, embedding_size)
         x = self.fc_1(embeddings)  # x: (batch_size, seq_len, hidden_size) - ready to go captions
         batch_size = features.shape[0]
         hidden = torch.zeros(batch_size, self.hidden_size, device=features.device)
-        outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
-        for t in range(self.max_len):
+        outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
+        for t in range(out_seq_len):
             x_t = x.select(1, t).unsqueeze(1)  # embedding: (batch_size, 1, hidden_size)
             output, hidden, _ = self._forward(x_t, hidden, features)
-            outputs[:, t] = output
-        return outputs
+            outputs[:, t, :] = output
+
+    def forward(self, features, captions: torch.Tensor = None):
+        """
+        The main method of the decoder. If captions are provided, the method will run in training mode.
+        :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
+        :param captions: captions to train on (batch_size, seq_len).
+        :return: output predictions (batch_size, seq_len - 1, vocab_size) if captions are provided,
+        else (batch_size, any_seq_len, vocab_size)
+        """
+        if captions is not None:
+            return self._forward_training(features, captions)  # (batch_size, seq_len, vocab_size)
+        else:
+            # in that case sequence length is not known
+            return self._forward_inference(features)  # (batch_size, any_seq_len, vocab_size)
