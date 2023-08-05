@@ -1,6 +1,9 @@
+from typing import Dict, Any
+
 import torch
 from torch import nn
 
+from datasets import LOGITS_KEY
 from models.functional import BahdanauAttention
 
 
@@ -121,7 +124,7 @@ class AttentionDecoder(nn.Module):
             outputs[:, t, :] = output
         return outputs
 
-    def forward(self, features: torch.Tensor, captions: torch.Tensor = None) -> torch.Tensor:
+    def forward(self, features: torch.Tensor, captions: torch.Tensor = None) -> Dict[str, torch.Tensor]:
         """
         The main method of the decoder. If captions are provided, the method will run in training mode.
 
@@ -132,7 +135,10 @@ class AttentionDecoder(nn.Module):
         else (batch_size, any_seq_len, vocab_size)
         """
         if captions is not None:
-            return self._forward_training(features, captions)  # (batch_size, seq_len, vocab_size)
+            outputs = self._forward_training(features, captions)  # (batch_size, seq_len, vocab_size)
         else:
             # in that case sequence length is not known
-            return self._forward_inference(features)  # (batch_size, any_seq_len <= self.max_len, vocab_size)
+            outputs = self._forward_inference(features)  # (batch_size, any_seq_len <= self.max_len, vocab_size)
+
+        return {LOGITS_KEY: outputs}
+
