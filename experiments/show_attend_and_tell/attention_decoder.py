@@ -116,7 +116,7 @@ class AttentionDecoder(nn.Module):
         # outputs: (batch_size, seq_len, vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
         for t in range(out_seq_len):
-            x_t = x.select(1, t)  # embedding: (batch_size, hidden_size)
+            x_t = x.select(1, t)  # x_t: (batch_size, hidden_size)
             output, hidden, _ = self._forward(x_t, hidden, features)
             outputs[:, t, :] = output
         return outputs
