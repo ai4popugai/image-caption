@@ -34,8 +34,14 @@ class GPRConceptsDataset:
         # tokenize text corpus
         self._tokenized_corpus = [self._tokenizer(text) for text in text_corpus]
 
-        # get vocabulary
+        # init vocab
         self._vocab = [SOS, EOS]
+
+        # create sos and eos indices
+        self.sos_idx = self._vocab.index(SOS)
+        self.eos_idx = self._vocab.index(EOS)
+
+        # form vocab
         for sentence in self._tokenized_corpus:
             for token in sentence:
                 if token not in self._vocab:
