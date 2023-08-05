@@ -11,7 +11,7 @@ class AttentionDecoder(nn.Module):
     def __init__(self, vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int,
                  sos_tokenized: torch.Tensor, eos_tokenized: torch.Tensor,
                  num_layers=4, max_len=15,):
-        super(AttentionDecoder, self).__init__()
+        super().__init__()
         # attention mechanism for feature maps and hidden state
         self.attention = BahdanauAttention(hidden_size, keys_hidden_size)
         # linear layer to transform context vector from keys_hidden_size to hidden_size
