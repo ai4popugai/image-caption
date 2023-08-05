@@ -32,11 +32,13 @@ class AttentionDecoder(nn.Module):
         """
         Convert tokenized words firstly to embeddings and then to x.
 
-        :param tokenized_words: (batch_size, seq_len) - tokenized words.
-        :return: (batch_size, seq_len, hidden_size) - ready to go x.
+        :param tokenized_words: (batch_size, seq_len) or (batch_size,) - tokenized words.
+        :return: (batch_size, seq_len, hidden_size) or (batch_size, hidden_size) - ready to go x.
         """
         embeddings = self.embedding(tokenized_words)  # embeddings: (batch_size, seq_len, embedding_size)
-        return self.fc_1(embeddings)  # x: (batch_size, seq_len, hidden_size) - ready to go captions
+        # or (batch_size, embedding_size)
+        return self.fc_1(embeddings)  # x: (batch_size, seq_len, hidden_size)
+        # or (batch_size, hidden_size) - ready to go captions
 
     def _forward(self, x_t, hidden, keys) -> (torch.Tensor, torch.Tensor, torch.Tensor):
         """
@@ -45,7 +47,7 @@ class AttentionDecoder(nn.Module):
         if inference mode,
         hidden is the hidden state of the previous time step.
 
-        :param x_t: ready to go vector of the previous gt word or previous predicted word (batch_size, 1, hidden_size).
+        :param x_t: ready to go vector of the previous gt word or previous predicted word (batch_size, hidden_size).
         :param hidden: hidden state of the previous time step (batch_size, hidden_size).
         :param keys: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
         :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
@@ -53,13 +55,13 @@ class AttentionDecoder(nn.Module):
         context, weights = self.attention(hidden.unsqueeze(1), keys)  # context: (batch_size, 1, keys_hidden_size)
                                                                       # weights: (batch_size, 1, seq_len)
         context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
-        rnn_input = torch.cat([x_t, context], dim=-1)  # rnn_input: (batch_size, 1, hidden_size + hidden_size)
+        rnn_input = torch.cat([x_t.unsqueeze(1), context], dim=-1)  # rnn_input: (batch_size, 1, hidden_size + hidden_size)
         # GRU takes input of shape (batch_size, seq_len, input_size) and hidden of shape (1, batch_size, hidden_size)
         output, hidden = self.rnn(rnn_input, hidden.unsqueeze(0))   # output: (batch_size, 1, hidden_size)
                                                                     # hidden: (batch_size, hidden_size)
         output = output.squeeze(1)  # output: (batch_size, hidden_size)
         output = self.fc_2(output)  # output: (batch_size, vocab_size)
-        return output, hidden.squeeze(0), weights
+        return output, hidden, weights
 
     def _forward_inference(self, features) -> torch.Tensor:
         """
@@ -76,7 +78,7 @@ class AttentionDecoder(nn.Module):
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
 
         # initialize the input with SOS token
-        x_t = self._tokens_to_x(self.sos_tokenized).repeat(batch_size, 1)  # x_t: (batch_size, 1, hidden_size)
+        x_t = self._tokens_to_x(self.sos_tokenized).repeat(batch_size)  # x_t: (batch_size, hidden_size)
 
         for t in range(self.max_len):
             output, hidden, _ = self._forward(x_t, hidden, features)  # output: (batch_size, vocab_size)
@@ -88,7 +90,7 @@ class AttentionDecoder(nn.Module):
             if (decoded_token == self.eos_tokenized).all().item():
                 return outputs[:, :t + 1, :]
             # get the embedding of the predicted word
-            x_t = self._tokens_to_x(decoded_token.unsqueeze(1))  # x_t: (batch_size, 1, hidden_size)
+            x_t = self._tokens_to_x(decoded_token)  # x_t: (batch_size, hidden_size)
         return outputs
 
     def _forward_training(self, features, captions) -> torch.Tensor:
@@ -106,7 +108,7 @@ class AttentionDecoder(nn.Module):
         # outputs: (batch_size, seq_len, vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
         for t in range(out_seq_len):
-            x_t = x.select(1, t).unsqueeze(1)  # embedding: (batch_size, 1, hidden_size)
+            x_t = x.select(1, t)  # embedding: (batch_size, hidden_size)
             output, hidden, _ = self._forward(x_t, hidden, features)
             outputs[:, t, :] = output
         return outputs
