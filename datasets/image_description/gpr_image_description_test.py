@@ -1,5 +1,5 @@
 import os
-from datasets.image_description.gpr_concept_detection import GPRConceptsDataset
+from datasets.image_description.gpr_image_description import GPRConceptsDataset
 
 
 def main():
