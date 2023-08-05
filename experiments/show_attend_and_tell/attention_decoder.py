@@ -95,11 +95,11 @@ class AttentionDecoder(nn.Module):
                                                                       # hidden: (num_layers, batch_size, hidden_size)
             outputs[:, t, :] = output
             # get the most probable word index
-            decoded_token = output.argmax(dim=-1)  # x_t: (batch_size,)
-            # check if x_t is EOS token
+            decoded_token = output.argmax(dim=-1)  # decoded_token: (batch_size,)
+            # check if decoded_token is EOS token
             if (decoded_token == self.eos_tokenized).all().item():
                 return outputs[:, :t + 1, :]
-            # get the embedding of the predicted word
+            # get the ready to go vector of the predicted word
             x_t = self._tokens_to_x(decoded_token)  # x_t: (batch_size, hidden_size)
         return outputs
 
@@ -112,7 +112,7 @@ class AttentionDecoder(nn.Module):
         :return: (batch_size, seq_len - 1, vocab_size) - predictions for each token in the sequence except EOS token.
         """
         out_seq_len = captions.shape[1] - 1  # -1 because we don't need to predict SOS token
-        x = self._tokens_to_x(captions)  # x: (batch_size, seq_len, hidden_size) - ready to go captions
+        x = self._tokens_to_x(captions)  # x: (batch_size, seq_len, hidden_size) - ready to go captions' vectors
         batch_size = features.shape[0]
         # hidden: (num_layers, batch_size, hidden_size)
         hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
