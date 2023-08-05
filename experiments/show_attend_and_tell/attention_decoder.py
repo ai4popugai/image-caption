@@ -5,7 +5,8 @@ from models.functional import BahdanauAttention
 
 
 class AttentionDecoder(nn.Module):
-    def __init__(self, vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int, eos_idx: int,
+    def __init__(self, vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int, sos: str,
+                 eos_idx: int,
                  num_layers=4, max_len=15,):
         super(AttentionDecoder, self).__init__()
         # attention mechanism for feature maps and hidden state
@@ -24,9 +25,10 @@ class AttentionDecoder(nn.Module):
         # linear layer to make final predictions
         self.fc_2 = nn.Linear(hidden_size, vocab_size)
         self.max_len = max_len
+        self.sos = sos
         self.eos_idx = eos_idx
 
-    def _forward(self, x_t, hidden, keys):
+    def _forward(self, x_t, hidden, keys) -> (torch.Tensor, torch.Tensor, torch.Tensor):
         """
         One step forward of the decoder, given the input x_t, the hidden state and the keys (feature maps).
         x_t is the word embedding of the previous gt word if training mode or previous predicted word if inference mode,
@@ -50,7 +52,7 @@ class AttentionDecoder(nn.Module):
         output = self.fc_2(output)  # output: (batch_size, vocab_size)
         return output, hidden.squeeze(0), weights
 
-    def _forward_training(self, features, captions):
+    def _forward_training(self, features, captions) -> torch.Tensor:
         """
         Forward pass in training mode. Captions are provided.
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
@@ -67,8 +69,9 @@ class AttentionDecoder(nn.Module):
             x_t = x.select(1, t).unsqueeze(1)  # embedding: (batch_size, 1, hidden_size)
             output, hidden, _ = self._forward(x_t, hidden, features)
             outputs[:, t, :] = output
+        return outputs
 
-    def forward(self, features, captions: torch.Tensor = None):
+    def forward(self, features, captions: torch.Tensor = None) -> torch.Tensor:
         """
         The main method of the decoder. If captions are provided, the method will run in training mode.
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
