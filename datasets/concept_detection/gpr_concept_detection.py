@@ -40,8 +40,8 @@ class GPRConceptsDataset:
         self._vocab = [SOS, EOS]
 
         # create sos and eos indices
-        self.sos_idx = self._vocab.index(SOS)
-        self.eos_idx = self._vocab.index(EOS)
+        self.sos_tokenized = torch.tensor(self._vocab.index(SOS))
+        self.eos_tokenize = torch.tensor(self._vocab.index(EOS))
 
         # form vocab
         for sentence in self._tokenized_corpus:
