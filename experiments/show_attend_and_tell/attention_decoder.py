@@ -18,7 +18,7 @@ class AttentionDecoder(nn.Module):
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
         self.vocab_size = vocab_size
-        # embedding layer to convert words indexex to embeddings
+        # embedding layer to convert words indices to embeddings
         self.embedding = nn.Embedding(vocab_size, embedding_size)
         # rnn cell
         self.num_layers = num_layers
@@ -41,7 +41,8 @@ class AttentionDecoder(nn.Module):
         return self.fc_1(embeddings)  # x: (batch_size, seq_len, hidden_size)
         # or (batch_size, hidden_size) - ready to go captions
 
-    def _forward(self, x_t, hidden, keys) -> (torch.Tensor, torch.Tensor, torch.Tensor):
+    def _forward(self, x_t: torch.Tensor, hidden: torch.Tensor, keys: torch.Tensor) \
+            -> (torch.Tensor, torch.Tensor, torch.Tensor):
         """
         One step forward of the decoder, given the input x_t, the hidden state and the keys (feature maps).
         x_t is the word ready to go vector of the previous gt word if training mode or previous predicted word
@@ -57,7 +58,8 @@ class AttentionDecoder(nn.Module):
         context, weights = self.attention(hidden[-1].unsqueeze(1), keys)  # context: (batch_size, 1, keys_hidden_size)
                                                                            # weights: (batch_size, 1, seq_len)
         context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
-        rnn_input = torch.cat([x_t.unsqueeze(1), context], dim=-1)  # rnn_input: (batch_size, 1, hidden_size + hidden_size)
+        # rnn_input: (batch_size, 1, hidden_size + hidden_size)
+        rnn_input = torch.cat([x_t.unsqueeze(1), context], dim=-1)
         # GRU takes input of shape (batch_size, 1, 2 * hidden_size
         # and hidden of shape (num_layers, batch_size, hidden_size)
         output, hidden = self.rnn(rnn_input, hidden)   # output: (batch_size, 1, hidden_size)
@@ -66,7 +68,7 @@ class AttentionDecoder(nn.Module):
         output = self.fc_2(output)  # output: (batch_size, vocab_size)
         return output, hidden, weights
 
-    def _forward_inference(self, features) -> torch.Tensor:
+    def _forward_inference(self, features: torch.Tensor) -> torch.Tensor:
         """
         Forward pass in inference mode. Captions are not provided.
         Decode the sequence step by step, until the EOS token is predicted or the max_len is reached.
@@ -98,7 +100,7 @@ class AttentionDecoder(nn.Module):
             x_t = self._tokens_to_x(decoded_token)  # x_t: (batch_size, hidden_size)
         return outputs
 
-    def _forward_training(self, features, captions) -> torch.Tensor:
+    def _forward_training(self, features: torch.Tensor, captions: torch.Tensor) -> torch.Tensor:
         """
         Forward pass in training mode. Captions are provided.
 
@@ -106,7 +108,7 @@ class AttentionDecoder(nn.Module):
         :param captions: captions to train on (batch_size, seq_len).
         :return: (batch_size, seq_len - 1, vocab_size) - predictions for each token in the sequence except EOS token.
         """
-        out_seq_len = captions.shape[1] - 1  # -1 because we don't need to predict EOS token
+        out_seq_len = captions.shape[1] - 1  # -1 because we don't need to predict SOS token
         x = self._tokens_to_x(captions)  # x: (batch_size, seq_len, hidden_size) - ready to go captions
         batch_size = features.shape[0]
         # hidden: (num_layers, batch_size, hidden_size)
@@ -119,7 +121,7 @@ class AttentionDecoder(nn.Module):
             outputs[:, t, :] = output
         return outputs
 
-    def forward(self, features, captions: torch.Tensor = None) -> torch.Tensor:
+    def forward(self, features: torch.Tensor, captions: torch.Tensor = None) -> torch.Tensor:
         """
         The main method of the decoder. If captions are provided, the method will run in training mode.
 
