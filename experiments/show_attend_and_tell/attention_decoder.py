@@ -5,8 +5,8 @@ from models.functional import BahdanauAttention
 
 
 class AttentionDecoder(nn.Module):
-    def __init__(self, vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int, num_layers=4,
-                 max_len=15):
+    def __init__(self, vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int, eos_idx: int,
+                 num_layers=4, max_len=15,):
         super(AttentionDecoder, self).__init__()
         # attention mechanism for feature maps and hidden state
         self.attention = BahdanauAttention(hidden_size, keys_hidden_size)
@@ -24,6 +24,7 @@ class AttentionDecoder(nn.Module):
         # linear layer to make final predictions
         self.fc_2 = nn.Linear(hidden_size, vocab_size)
         self.max_len = max_len
+        self.eos_idx = eos_idx
 
     def _forward(self, x_t, hidden, keys):
         """
