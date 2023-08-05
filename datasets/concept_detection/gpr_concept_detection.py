@@ -5,6 +5,8 @@ import re
 import torch
 from torchtext.data import get_tokenizer
 
+from datasets import FEATURE_MAPS_KEYS, TOKENS_KEY
+
 SOS = 'startofsentence'
 EOS = 'endofsentence'
 
@@ -14,7 +16,7 @@ class GPRConceptsDataset:
         if os.getenv("GPR_DATASET_CONCEPT_DETECTION") is None:
             raise RuntimeError('Dataset path must be set up.')
         root = os.environ['GPR_DATASET_CONCEPT_DETECTION']
-        feature_maps_dir = os.path.join(root, 'feature_maps')
+        feature_maps_dir = os.path.join(root, FEATURE_MAPS_KEYS)
         self.descriptions_path = os.path.join(root, 'categories.json')
         self.feature_maps_list = [os.path.join(feature_maps_dir, file_name) for file_name in sorted(os.listdir(feature_maps_dir))]
 
@@ -57,4 +59,4 @@ class GPRConceptsDataset:
         tokenized = self._tokenizer(f'{SOS} {description} {EOS}')
         tokenized_tensor = torch.tensor([self._vocab.index(token) for token in tokenized], dtype=torch.int64)
         d, h, w = feature_map.shape
-        return {'feature_maps': feature_map.reshape(h * w, d), 'tokens': tokenized_tensor}
+        return {FEATURE_MAPS_KEYS: feature_map.reshape(h * w, d), TOKENS_KEY: tokenized_tensor}

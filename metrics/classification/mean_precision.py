@@ -3,6 +3,7 @@ from typing import Dict
 import torch
 from torchmetrics import Precision as PrecisionMetric
 
+from datasets import LABELS_KEY, LOGITS_KEY
 from metrics.base_metric import BaseMetric
 
 
@@ -22,7 +23,7 @@ class MeanPrecision(BaseMetric):
         :return: mean precision metric
         """
         self.num += 1
-        self.prob_precision += self.precision(result['logits'].cpu(), batch['labels'].cpu()).item()
+        self.prob_precision += self.precision(result[LOGITS_KEY].cpu(), batch[LABELS_KEY].cpu()).item()
 
     def compute(self) -> float:
         return (self.prob_precision / self.num) * 100

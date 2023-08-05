@@ -11,6 +11,8 @@ from torchvision import transforms
 from torchvision.transforms.functional import hflip
 import torchvision.transforms.functional as F
 
+from datasets import FRAMES_KEY, LABELS_KEY
+
 
 class BaseAug(ABC, nn.Module):
     def __init__(self):
@@ -29,8 +31,8 @@ class ColorAug(BaseAug):
                                                 saturation=(s_low, 1.), contrast=(c_low, 1.))
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = self.transform(batch['frames'])
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        transformed_frames = self.transform(batch[FRAMES_KEY])
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
 
 
 class RandomFlip(BaseAug):
@@ -39,10 +41,10 @@ class RandomFlip(BaseAug):
         self.p = p
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch['frames']
+        transformed_frames = batch[FRAMES_KEY]
         if torch.rand(1).item() < self.p:
             transformed_frames = hflip(transformed_frames)
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
 
 
 class RandomCrop(BaseAug):
@@ -51,8 +53,8 @@ class RandomCrop(BaseAug):
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = transforms.RandomCrop(self.size)(batch['frames'])
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        transformed_frames = transforms.RandomCrop(self.size)(batch[FRAMES_KEY])
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
 
 
 class RandomResizedCropWithProb(BaseAug):
@@ -65,25 +67,25 @@ class RandomResizedCropWithProb(BaseAug):
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         if isinstance(self.size[0], float):
             change_factor = math.sqrt(random.uniform(self.size[0], self.size[1]))
-            new_height = int(batch['frames'].shape[-2] * change_factor)
-            new_width = int(batch['frames'].shape[-1] * change_factor)
+            new_height = int(batch[FRAMES_KEY].shape[-2] * change_factor)
+            new_width = int(batch[FRAMES_KEY].shape[-1] * change_factor)
             size = (new_height, new_width)
         else:
             size = self.size
 
         transform = transforms.Compose([
             transforms.RandomCrop(size),
-            transforms.Resize(batch['frames'].shape[-2:], antialias=False)  # Resize back to original resolution
+            transforms.Resize(batch[FRAMES_KEY].shape[-2:], antialias=False)  # Resize back to original resolution
         ])
 
-        transformed_frames = batch['frames']
+        transformed_frames = batch[FRAMES_KEY]
 
         # Perform random resized crop on each frame
         for i in range(transformed_frames.shape[0]):
             if random.random() < self.probability:
                 transformed_frames[i] = transform(transformed_frames[i])
 
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
 
 
 class CenterCrop(BaseAug):
@@ -92,8 +94,8 @@ class CenterCrop(BaseAug):
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = transforms.CenterCrop(self.size)(batch['frames'])
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        transformed_frames = transforms.CenterCrop(self.size)(batch[FRAMES_KEY])
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
 
 
 class Rotate(BaseAug):
@@ -102,7 +104,7 @@ class Rotate(BaseAug):
         self.angle_range = angle_range
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch['frames']
+        transformed_frames = batch[FRAMES_KEY]
 
         # Perform rotation on each frame
         for i in range(transformed_frames.shape[0]):
@@ -110,7 +112,7 @@ class Rotate(BaseAug):
             angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
             transformed_frames[i] = self.rotate_frame(transformed_frames[i], angle)
 
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
 
     @staticmethod
     def rotate_frame(frame, angle):
@@ -131,7 +133,7 @@ class RotateWithProb(BaseAug):
         self.probability = probability
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch['frames']
+        transformed_frames = batch[FRAMES_KEY]
 
         # Perform rotation on each frame
         for i in range(transformed_frames.shape[0]):
@@ -140,7 +142,7 @@ class RotateWithProb(BaseAug):
                 angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
                 transformed_frames[i] = Rotate.rotate_frame(transformed_frames[i], angle)
 
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
 
 
 class RandomColorJitterWithProb(BaseAug):
@@ -167,11 +169,11 @@ class RandomColorJitterWithProb(BaseAug):
         )
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch['frames']
+        transformed_frames = batch[FRAMES_KEY]
 
         # Perform random color jittering on each frame
         for i in range(transformed_frames.shape[0]):
             if random.random() < self.probability:
                 transformed_frames[i] = self.color_jitter_transform(transformed_frames[i])
 
-        return {'frames': transformed_frames, 'labels': batch['labels']}
+        return {FRAMES_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}

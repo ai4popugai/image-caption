@@ -2,6 +2,7 @@ from typing import Dict
 
 import torch
 
+from datasets import LABELS_KEY, LOGITS_KEY
 from metrics.base_metric import BaseMetric
 from torchmetrics import Accuracy as AccuracyMetric
 
@@ -22,7 +23,7 @@ class Accuracy(BaseMetric):
         :return: accuracy metric
         """
         self.num += 1
-        self.prob_acc += self.accuracy(result['logits'].cpu(), batch['labels'].cpu()).item()
+        self.prob_acc += self.accuracy(result[LOGITS_KEY].cpu(), batch[LABELS_KEY].cpu()).item()
 
     def compute(self) -> float:
         return (self.prob_acc / self.num) * 100

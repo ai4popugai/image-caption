@@ -3,6 +3,7 @@ from typing import Dict
 import torch
 from torchmetrics import Recall as RecallMetric
 
+from datasets import LABELS_KEY, LOGITS_KEY
 from metrics.base_metric import BaseMetric
 
 
@@ -22,7 +23,7 @@ class MeanRecall(BaseMetric):
         :return: mean recall metric
         """
         self.num += 1
-        self.prob_recall += self.recall(result['logits'].cpu(), batch['labels'].cpu()).item()
+        self.prob_recall += self.recall(result[LOGITS_KEY].cpu(), batch[LABELS_KEY].cpu()).item()
 
     def compute(self) -> float:
         return (self.prob_recall / self.num) * 100

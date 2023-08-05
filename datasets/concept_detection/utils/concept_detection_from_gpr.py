@@ -3,8 +3,8 @@ import shutil
 import argparse
 
 import torch
-from torch.utils.data import DataLoader
 
+from datasets import FEATURE_MAPS_KEYS, FRAMES_KEY, LABELS_KEY
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNetFeatureMapExtractor
 from train.train import Trainer
@@ -30,7 +30,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
 
     dst_dir = os.path.join(dataset_dir, f'{name_prefix}_{run}_{phase}_{os.path.splitext(snapshot_name)[0]}'
                                         f'_num_leave_layers_{num_leave_layers}')
-    emd_dir = os.path.join(dst_dir, 'feature_maps')
+    emd_dir = os.path.join(dst_dir, FEATURE_MAPS_KEYS)
     os.makedirs(emd_dir, exist_ok=True)
 
     # Convert experiment, run, and phase to module paths
@@ -64,8 +64,8 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
 
             # get batch
             batch = dataset[idx]
-            batch['frames'] = batch['frames'].unsqueeze(0)
-            batch['labels'] = batch['labels'].unsqueeze(0)
+            batch[FRAMES_KEY] = batch[FRAMES_KEY].unsqueeze(0)
+            batch[LABELS_KEY] = batch[LABELS_KEY].unsqueeze(0)
 
             # prepare batch
             batch = Trainer.batch_to_device(batch, device)
@@ -74,7 +74,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
 
             # inference
             result = model(batch)
-            torch.save(result['feature_maps'].squeeze(), os.path.join(emd_dir, f'{id}.pth'))
+            torch.save(result[FEATURE_MAPS_KEYS].squeeze(), os.path.join(emd_dir, f'{id}.pth'))
 
 
 if __name__ == "__main__":

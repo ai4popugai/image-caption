@@ -3,6 +3,7 @@ import torch
 from sklearn.metrics import roc_auc_score
 from typing import Dict
 
+from datasets import LABELS_KEY, LOGITS_KEY
 from metrics.base_metric import BaseMetric
 
 
@@ -20,8 +21,8 @@ class AUC_ROC(BaseMetric):
         :param result: output of the network
         :param batch: batch of data
         """
-        self.true_labels.extend(batch['labels'].cpu().numpy())
-        self.predicted_probs.extend(torch.softmax(result['logits'].detach(), dim=1).cpu().numpy())
+        self.true_labels.extend(batch[LABELS_KEY].cpu().numpy())
+        self.predicted_probs.extend(torch.softmax(result[LOGITS_KEY].detach(), dim=1).cpu().numpy())
 
     def compute(self) -> float:
         """
