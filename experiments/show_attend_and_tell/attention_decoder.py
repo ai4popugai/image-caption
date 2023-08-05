@@ -76,6 +76,7 @@ class AttentionDecoder(nn.Module):
         """
 
         batch_size = features.shape[0]
+        assert batch_size == 1, "In inference mode batch size must be 1."
         # hidden: (num_layers, batch_size, hidden_size)
         hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
         # outputs: (batch_size, max_len, vocab_size)
