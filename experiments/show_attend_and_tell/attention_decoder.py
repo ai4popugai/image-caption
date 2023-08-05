@@ -126,6 +126,7 @@ class AttentionDecoder(nn.Module):
         The main method of the decoder. If captions are provided, the method will run in training mode.
 
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
+        NOTE it can be another type of features, but it must be meaningful for the attention layer.
         :param captions: captions to train on (batch_size, seq_len).
         :return: output predictions (batch_size, seq_len - 1, vocab_size) if captions are provided,
         else (batch_size, any_seq_len, vocab_size)
