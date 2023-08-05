@@ -21,7 +21,8 @@ class AttentionDecoder(nn.Module):
         # embedding layer to convert words indexex to embeddings
         self.embedding = nn.Embedding(vocab_size, embedding_size)
         # rnn cell
-        self.rnn = nn.GRU(hidden_size + hidden_size, hidden_size, num_layers=num_layers, batch_first=True)
+        self.num_layers = num_layers
+        self.rnn = nn.GRU(hidden_size + hidden_size, hidden_size, num_layers=self.num_layers, batch_first=True)
         # linear layer to make final predictions
         self.fc_2 = nn.Linear(hidden_size, vocab_size)
         self.max_len = max_len
@@ -48,17 +49,19 @@ class AttentionDecoder(nn.Module):
         hidden is the hidden state of the previous time step.
 
         :param x_t: ready to go vector of the previous gt word or previous predicted word (batch_size, hidden_size).
-        :param hidden: hidden state of the previous time step (batch_size, hidden_size).
+        :param hidden: hidden state of the previous time step (num_layers, batch_size, hidden_size).
         :param keys: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
         :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
         """
-        context, weights = self.attention(hidden.unsqueeze(1), keys)  # context: (batch_size, 1, keys_hidden_size)
-                                                                      # weights: (batch_size, 1, seq_len)
+        # I get hidden state (batch_size, 1, hidden_size) from the last layer of GRU to the attention layer
+        context, weights = self.attention(hidden[-1].unsqueeze(1), keys)  # context: (batch_size, 1, keys_hidden_size)
+                                                                           # weights: (batch_size, 1, seq_len)
         context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
         rnn_input = torch.cat([x_t.unsqueeze(1), context], dim=-1)  # rnn_input: (batch_size, 1, hidden_size + hidden_size)
-        # GRU takes input of shape (batch_size, seq_len, input_size) and hidden of shape (1, batch_size, hidden_size)
-        output, hidden = self.rnn(rnn_input, hidden.unsqueeze(0))   # output: (batch_size, 1, hidden_size)
-                                                                    # hidden: (batch_size, hidden_size)
+        # GRU takes input of shape (batch_size, 1, 2 * hidden_size
+        # and hidden of shape (num_layers, batch_size, hidden_size)
+        output, hidden = self.rnn(rnn_input, hidden)   # output: (batch_size, 1, hidden_size)
+                                                       # hidden: (num_layers, batch_size, hidden_size)
         output = output.squeeze(1)  # output: (batch_size, hidden_size)
         output = self.fc_2(output)  # output: (batch_size, vocab_size)
         return output, hidden, weights
@@ -73,7 +76,8 @@ class AttentionDecoder(nn.Module):
         """
 
         batch_size = features.shape[0]
-        hidden = torch.zeros(batch_size, self.hidden_size, device=features.device)  # hidden: (batch_size, hidden_size)
+        # hidden: (num_layers, batch_size, hidden_size)
+        hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
 
@@ -82,7 +86,7 @@ class AttentionDecoder(nn.Module):
 
         for t in range(self.max_len):
             output, hidden, _ = self._forward(x_t, hidden, features)  # output: (batch_size, vocab_size)
-                                                                      # hidden: (batch_size, hidden_size)
+                                                                      # hidden: (num_layers, batch_size, hidden_size)
             outputs[:, t, :] = output
             # get the most probable word index
             decoded_token = output.argmax(dim=-1)  # x_t: (batch_size,)
@@ -104,7 +108,8 @@ class AttentionDecoder(nn.Module):
         out_seq_len = captions.shape[1] - 1  # -1 because we don't need to predict EOS token
         x = self._tokens_to_x(captions)  # x: (batch_size, seq_len, hidden_size) - ready to go captions
         batch_size = features.shape[0]
-        hidden = torch.zeros(batch_size, self.hidden_size, device=features.device)  # hidden: (batch_size, hidden_size)
+        # hidden: (num_layers, batch_size, hidden_size)
+        hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
         # outputs: (batch_size, seq_len, vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
         for t in range(out_seq_len):
