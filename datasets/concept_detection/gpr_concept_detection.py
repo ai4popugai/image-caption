@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from typing import List
 
 import torch
 from torchtext.data import get_tokenizer
@@ -51,6 +52,16 @@ class GPRConceptsDataset:
             for token in sentence:
                 if token not in self._vocab:
                     self._vocab.append(token)
+
+    def tokens_to_words(self, tokenized_tensor) -> List[str]:
+        """
+        Converts a tensor of token indices back to a list of words using the vocabulary.
+
+        :param: tokenized_tensor (torch.Tensor): The tensor containing token indices.
+        :return List[str]: A list of words representing the original tokenized sequence.
+        """
+        words = [self._vocab[token_idx.item()] for token_idx in tokenized_tensor]
+        return words
 
     def __len__(self):
         return len(self.feature_maps_list)
