@@ -35,11 +35,11 @@ class GPRConceptsDataset:
         self._tokenized_corpus = [self._tokenizer(text) for text in text_corpus]
 
         # get vocabulary
-        self.vocab = [SOS, EOS]
+        self._vocab = [SOS, EOS]
         for sentence in self._tokenized_corpus:
             for token in sentence:
-                if token not in self.vocab:
-                    self.vocab.append(token)
+                if token not in self._vocab:
+                    self._vocab.append(token)
 
     def __len__(self):
         return len(self.feature_maps_list)
@@ -49,6 +49,6 @@ class GPRConceptsDataset:
         feature_map_class = int(os.path.basename(self.feature_maps_list[idx]).split('_')[0])
         description = self._descriptions[str(feature_map_class)]
         tokenized = self._tokenizer(f'{SOS} {description} {EOS}')
-        tokenized_tensor = torch.tensor([self.vocab.index(token) for token in tokenized], dtype=torch.int64)
+        tokenized_tensor = torch.tensor([self._vocab.index(token) for token in tokenized], dtype=torch.int64)
         d, h, w = feature_map.shape
         return {'feature_maps': feature_map.reshape(h * w, d), 'tokens': tokenized_tensor}
