@@ -1,10 +1,12 @@
 import os
 import argparse
 import random
+import shutil
 from typing import List
 
 import cv2
 import lpips
+import numpy as np
 import torch
 import torchvision
 from scenedetect import detect, ContentDetector, FrameTimecode
@@ -56,13 +58,23 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
     keyframes_path = os.path.join(d_dirname, f'{d_name}_keyframes')
     part_dirs_list = [part_dir for part_dir in sorted(os.listdir(dataset_path))]
     for part_dir in part_dirs_list:
-        videos_list = [video for video in sorted(os.listdir(os.path.join(dataset_path, part_dir)))]
+        videos_list = [video for video in sorted(os.listdir(os.path.join(dataset_path, part_dir)))
+                       if video.endswith('.mp4')]
         for video_name in videos_list:
             video_path = os.path.join(dataset_path, part_dir, video_name)
+            print(f'Processing {video_path}')
             dst_dir = os.path.join(keyframes_path, part_dir, video_name)
+            if os.path.isdir(dst_dir):
+                if len(os.listdir(dst_dir)) == n_frames:
+                    print('Keyframes exists\n')
+                    continue
+                else:
+                    shutil.rmtree(dst_dir)
             os.makedirs(dst_dir, exist_ok=False)
 
             scene_list = detect(video_path, ContentDetector())
+            if len(scene_list) == 0:
+                print(f'Can"t process {video_path}!\n')
             if len(scene_list) >= n_frames + 6:
                 scene_list = scene_list[3:-3]
             elif len(scene_list) >= n_frames + 4:
@@ -104,7 +116,7 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
                     if saved_clusters == n_frames:
                         break
 
-            print(f'{video_path} video is ready.')
+            print(f'{video_path} is ready.\n')
 
 
 def main():
