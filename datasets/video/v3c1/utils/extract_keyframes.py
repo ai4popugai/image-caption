@@ -3,10 +3,10 @@ import argparse
 import random
 from typing import List
 
-import cv2
+import lpips
 import torch
 from scenedetect import detect, ContentDetector, FrameTimecode
-from torch import nn
+from torch.utils.data import DataLoader, Dataset
 from torchtext.transforms import ToTensor
 from torchvision.transforms import Compose, Resize, InterpolationMode
 
@@ -15,7 +15,7 @@ from utils.video_utils.video_reader import VideoReader
 FPS = 25
 
 
-class KeyFramesDataset(nn.Module):
+class KeyFramesDataset(Dataset):
     def __init__(self, keyframes_id_list: List[int], reader: VideoReader):
         super().__init__()
         self.keyframes_id_list = keyframes_id_list
@@ -30,7 +30,7 @@ class KeyFramesDataset(nn.Module):
 
     def __getitem__(self, idx: int) -> torch.Tensor:
         frame = self.reader[self.keyframes_id_list[idx]]
-        return  self.frame_transforms(frame)
+        return self.frame_transforms(frame)
 
 
 def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
@@ -60,8 +60,19 @@ def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
                 # keyframe = reader[keyframe_id]
                 # cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
 
-            dataset =
+            # get pretrained to perceptual loss new
+            loss_fn = lpips.LPIPS(net='alex')
+            net = loss_fn.net
+            scaler = loss_fn.scaling_layer
+            del loss_fn
 
+            dataset = KeyFramesDataset(keyframes_id_list, reader)
+            dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+            features = None
+            for batch in enumerate(dataloader):
+                out = net(scaler(batch)).reshape(batch_size, -1)
+                features = out if features is None else torch.cat([features, out], dim=0)
 
             print(f'{video_path} video is ready.')
 
