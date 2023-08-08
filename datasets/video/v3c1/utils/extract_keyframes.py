@@ -37,6 +37,15 @@ class KeyFramesDataset(Dataset):
 
 
 def extract_keyframes(dataset_path: str, n_frames: int,):
+    # setup device
+    device = Trainer.get_device()
+
+    # get pretrained to perceptual loss new
+    loss_fn = lpips.LPIPS(net='alex')
+    net = loss_fn.net.to(device)
+    scaler = loss_fn.scaling_layer
+    del loss_fn
+
     d_dirname, d_name = os.path.split(dataset_path)
     keyframes_path = os.path.join(d_dirname, f'{d_name}_keyframes')
     part_dirs_list = [part_dir for part_dir in sorted(os.listdir(dataset_path))]
@@ -60,15 +69,6 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
                 for _ in range(n_per_scene):
                     keyframe_id = random.randint(scene_start_idx, scene_end_idx)
                     keyframes_id_list.append(keyframe_id)
-
-            # setup device
-            device = Trainer.get_device()
-
-            # get pretrained to perceptual loss new
-            loss_fn = lpips.LPIPS(net='alex')
-            net = loss_fn.net.to(device)
-            scaler = loss_fn.scaling_layer
-            del loss_fn
 
             dataset = KeyFramesDataset(keyframes_id_list, reader)
             dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
