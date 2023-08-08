@@ -28,6 +28,14 @@ class VideoReader:
 
     def __next__(self) -> np.ndarray:
         if self.frame_idx >= self.frames_count:
+            self.frame_idx = 0
             raise StopIteration
         frame = self._get_next_frame()
+        return frame
+
+    def __getitem__(self, frame_idx):
+        if frame_idx >= self.frames_count:
+            raise IndexError(f'Max index is {self.frames_count - 1}, you get {frame_idx}')
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        _, frame = self.cap.read()
         return frame
