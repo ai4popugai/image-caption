@@ -63,18 +63,18 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
         for video_name in videos_list:
             video_path = os.path.join(dataset_path, part_dir, video_name)
             print(f'Processing {video_path}')
+
             dst_dir = os.path.join(keyframes_path, part_dir, video_name)
-            if os.path.isdir(dst_dir):
-                if len(os.listdir(dst_dir)) == n_frames:
-                    print('Keyframes exist\n')
-                    continue
-                else:
-                    shutil.rmtree(dst_dir)
-            os.makedirs(dst_dir, exist_ok=False)
+            if os.path.isdir(dst_dir) and len(os.listdir(dst_dir)) > 0:
+                print('Keyframes exist\n')
+                continue
+            os.makedirs(dst_dir, exist_ok=True)
 
             scene_list = detect(video_path, ContentDetector())
             if len(scene_list) == 0:
-                print(f'Can"t process {video_path}!\n')
+                print(f"Can't process {video_path}!\n")
+                continue
+
             if len(scene_list) >= n_frames + 6:
                 scene_list = scene_list[3:-3]
             elif len(scene_list) >= n_frames + 4:
