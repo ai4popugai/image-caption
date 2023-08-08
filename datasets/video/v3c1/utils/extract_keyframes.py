@@ -82,7 +82,7 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
             for batch in dataloader:
                 batch = preprocess(batch)
                 batch = batch.to(device)
-                out = model(batch).reshape(batch.shape[0], -1).cpu()
+                out = model(batch).reshape(batch.shape[0], -1).cpu().detach()
                 features = out if features is None else torch.cat([features, out], dim=0)
 
             kmeans = KMeans(n_clusters=n_frames, random_state=0)
