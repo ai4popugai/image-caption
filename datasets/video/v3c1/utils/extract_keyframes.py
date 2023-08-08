@@ -1,13 +1,28 @@
 import os
 import argparse
 import random
+from typing import List
 
 import cv2
 from scenedetect import detect, ContentDetector, FrameTimecode
+from torch import nn
 
 from utils.video_utils.video_reader import VideoReader
 
 FPS = 25
+
+
+class KeyFramesDataset(nn.Module):
+    def __init__(self, keyframes_id_list: List[int], reader: VideoReader):
+        super().__init__()
+        self.keyframes_id_list = keyframes_id_list
+        self.reader = reader
+
+    def __len__(self):
+        return len(self.keyframes_id_list)
+
+    def __getitem__(self, idx: int):
+        return self.reader[self.keyframes_id_list[idx]]
 
 
 def extract_keyframes(dataset_path: str, n_frames: int):
