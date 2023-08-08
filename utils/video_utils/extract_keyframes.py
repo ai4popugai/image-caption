@@ -4,18 +4,6 @@ import cv2
 
 import operator
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
-from scipy.signal import argrelextrema
-
-# Setting fixed threshold criteria
-USE_THRESH = False
-# fixed threshold value
-THRESH = 0.6
-# Setting fixed threshold criteria
-USE_TOP_ORDER = False
-# Setting local maxima criteria
-USE_LOCAL_MAXIMA = True
 
 
 class Frame:
@@ -97,9 +85,9 @@ def _rel_change(a, b):
     return x
 
 
-def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, smoothing_len_window: int = 13):
+def extract_keyframes(video_path: str, dst_dir: str, n_frames: int,):
     cap = cv2.VideoCapture(video_path)
-    
+
     prev_frame = None
     
     frame_diffs = []
@@ -123,23 +111,8 @@ def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, smoothing_le
 
     cap.release()
     
-    if USE_TOP_ORDER:
-        # sort the list in descending order
-        frames.sort(key=operator.attrgetter("value"), reverse=True)
-        for keyframe in frames[:n_frames]:
-            cv2.imwrite(os.path.join(dst_dir, f'frame_{str(keyframe.id)}.png'), 
-                        keyframe.frame)
-    
-    if USE_THRESH:
-        for i in range(1, len(frames)):
-            if _rel_change(np.float(frames[i - 1].value), np.float(frames[i].value)) >= THRESH:
-                cv2.imwrite(os.path.join(dst_dir, f'frame_{str(frames[i].id)}.png'), 
-                            frames[i].frame)
-    
-    if USE_LOCAL_MAXIMA:
-        diff_array = np.array(frame_diffs)
-        sm_diff_array = _smooth(diff_array, smoothing_len_window)
-        frame_indexes = np.asarray(argrelextrema(sm_diff_array, np.greater))[0]
-        for i in frame_indexes:
-            cv2.imwrite(os.path.join(dst_dir, f'frame_{str(frames[i - 1].id)}.png'), 
-                        frames[i - 1].frame)
+    # sort the list in descending order
+    frames.sort(key=operator.attrgetter("value"), reverse=True)
+    for keyframe in frames[:n_frames]:
+        cv2.imwrite(os.path.join(dst_dir, f'frame_{str(keyframe.id)}.png'),
+                    keyframe.frame)
