@@ -76,7 +76,7 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
             keyframes_id_list = []
             for scene in scene_list:
                 scene_start_idx = scene[0].frame_num
-                scene_end_idx = scene[1].frame_num
+                scene_end_idx = scene[1].frame_num - 1
                 for _ in range(n_per_scene):
                     keyframe_id = random.randint(scene_start_idx, scene_end_idx)
                     keyframes_id_list.append(keyframe_id)
