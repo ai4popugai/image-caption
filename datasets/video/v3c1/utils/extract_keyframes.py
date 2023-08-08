@@ -24,7 +24,7 @@ class KeyFramesDataset(Dataset):
         self.reader = reader
         self.frame_transforms = Compose([
             ToTensor(),
-            Resize((128, 128), InterpolationMode.BILINEAR, antialias=False)
+            Resize((256, 256), InterpolationMode.BILINEAR, antialias=False)
         ])
 
     def __len__(self):
@@ -36,7 +36,7 @@ class KeyFramesDataset(Dataset):
         return frame
 
 
-def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
+def extract_keyframes(dataset_path: str, n_frames: int,):
     d_dirname, d_name = os.path.split(dataset_path)
     keyframes_path = os.path.join(d_dirname, f'{d_name}_keyframes')
     part_dirs_list = [part_dir for part_dir in sorted(os.listdir(dataset_path))]
@@ -71,7 +71,7 @@ def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
             del loss_fn
 
             dataset = KeyFramesDataset(keyframes_id_list, reader)
-            dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+            dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
 
             features = None
             for batch in dataloader:
