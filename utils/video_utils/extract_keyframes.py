@@ -16,8 +16,6 @@ THRESH = 0.6
 USE_TOP_ORDER = False
 # Setting local maxima criteria
 USE_LOCAL_MAXIMA = True
-# Number of top sorted frames
-NUM_TOP_FRAMES = 20
 
 
 class Frame:
@@ -99,7 +97,7 @@ def _rel_change(a, b):
     return x
 
 
-def extract_keyframes(video_path: str, dst_dir: str, _smoothing_len_window: int = 13):
+def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, smoothing_len_window: int = 13):
     cap = cv2.VideoCapture(video_path)
     
     prev_frame = None
@@ -128,7 +126,7 @@ def extract_keyframes(video_path: str, dst_dir: str, _smoothing_len_window: int 
     if USE_TOP_ORDER:
         # sort the list in descending order
         frames.sort(key=operator.attrgetter("value"), reverse=True)
-        for keyframe in frames[:NUM_TOP_FRAMES]:
+        for keyframe in frames[:n_frames]:
             cv2.imwrite(os.path.join(dst_dir, f'frame_{str(keyframe.id)}.png'), 
                         keyframe.frame)
     
@@ -140,7 +138,7 @@ def extract_keyframes(video_path: str, dst_dir: str, _smoothing_len_window: int 
     
     if USE_LOCAL_MAXIMA:
         diff_array = np.array(frame_diffs)
-        sm_diff_array = _smooth(diff_array, _smoothing_len_window)
+        sm_diff_array = _smooth(diff_array, smoothing_len_window)
         frame_indexes = np.asarray(argrelextrema(sm_diff_array, np.greater))[0]
         for i in frame_indexes:
             cv2.imwrite(os.path.join(dst_dir, f'frame_{str(frames[i - 1].id)}.png'), 
