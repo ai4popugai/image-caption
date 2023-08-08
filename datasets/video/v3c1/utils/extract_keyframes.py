@@ -60,7 +60,7 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
         for video_name in videos_list:
             video_path = os.path.join(dataset_path, part_dir, video_name)
             dst_dir = os.path.join(keyframes_path, part_dir, video_name)
-            os.makedirs(dst_dir, exist_ok=True)
+            os.makedirs(dst_dir, exist_ok=False)
 
             scene_list = detect(video_path, ContentDetector())
             if len(scene_list) >= n_frames + 6:
