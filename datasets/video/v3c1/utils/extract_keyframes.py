@@ -24,7 +24,7 @@ def extract_keyframes(dataset_path: str):
             scene_list = detect(video_path, ContentDetector())
             reader = VideoReader(video_path, fps=FPS)
 
-            for scene in scene_list:
+            for scene in scene_list[1:-1]:
                 scene_start_idx = scene[0].frame_num
                 scene_end_idx = scene[1].frame_num
                 scene_len = scene_end_idx - scene_start_idx
