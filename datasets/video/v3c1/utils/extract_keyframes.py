@@ -25,7 +25,7 @@ class KeyFramesDataset(nn.Module):
         return self.reader[self.keyframes_id_list[idx]]
 
 
-def extract_keyframes(dataset_path: str, n_frames: int):
+def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
     d_dirname, d_name = os.path.split(dataset_path)
     keyframes_path = os.path.join(d_dirname, f'{d_name}_keyframes')
     part_dirs_list = [part_dir for part_dir in sorted(os.listdir(dataset_path))]
@@ -58,10 +58,12 @@ def extract_keyframes(dataset_path: str, n_frames: int):
 def main():
     parser = argparse.ArgumentParser(description="Create keyframes from videos in a dataset.")
     parser.add_argument("--dataset_path", type=str, help="Path to the dataset directory.")
+    parser.add_argument("--n_frames", type=int, help="Desired number of keyframes.")
+    parser.add_argument("--batch_size", type=int, help="Batch size to compute image features.")
 
     args = parser.parse_args()
 
-    extract_keyframes(args.dataset_path)
+    extract_keyframes(args.dataset_path, args.n_frames, args.batch_size)
 
 
 if __name__ == "__main__":
