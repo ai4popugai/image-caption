@@ -6,8 +6,10 @@ from typing import List
 import cv2
 import lpips
 import torch
+import torchvision
 from scenedetect import detect, ContentDetector, FrameTimecode
 from sklearn.cluster import KMeans
+from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
@@ -41,10 +43,13 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
     device = Trainer.get_device()
 
     # get pretrained to perceptual loss new
-    loss_fn = lpips.LPIPS(net='alex')
-    net = loss_fn.net.to(device)
-    scaler = loss_fn.scaling_layer
-    del loss_fn
+    weights = torchvision.models.ResNet50_Weights.DEFAULT
+    model = torchvision.models.resnet50(weights=weights)
+    model = nn.Sequential(*list(model.children())[:-5])
+    model = model.to(device)
+    model.eval()
+
+    preprocess = weights.transforms()
 
     d_dirname, d_name = os.path.split(dataset_path)
     keyframes_path = os.path.join(d_dirname, f'{d_name}_keyframes')
@@ -75,8 +80,9 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
 
             features = None
             for batch in dataloader:
-                batch = scaler(batch).to(device)
-                out = net(batch)[1].reshape(batch.shape[0], -1).cpu()
+                batch = preprocess(batch)
+                batch = batch.to(device)
+                out = model(batch).reshape(batch.shape[0], -1).cpu()
                 features = out if features is None else torch.cat([features, out], dim=0)
 
             kmeans = KMeans(n_clusters=n_frames, random_state=0)
