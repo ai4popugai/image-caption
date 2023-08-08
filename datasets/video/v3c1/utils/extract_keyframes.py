@@ -41,12 +41,12 @@ class KeyFramesDataset(Dataset):
 def extract_keyframes(dataset_path: str, n_frames: int,):
     # setup device
     device = Trainer.get_device()
-    random.seed(42)
+    random.seed(0)
 
     # get pretrained to perceptual loss new
     weights = torchvision.models.ResNet50_Weights.DEFAULT
     model = torchvision.models.resnet50(weights=weights)
-    model = nn.Sequential(*list(model.children())[:-5])
+    model = nn.Sequential(*list(model.children())[:-1])
     model = model.to(device)
     model.eval()
 
