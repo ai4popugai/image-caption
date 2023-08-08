@@ -45,13 +45,12 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
     device = Trainer.get_device()
     random.seed(0)
 
-    # get pretrained to perceptual loss new
+    # setup pretrained embeddings extractor
     weights = torchvision.models.ResNet50_Weights.DEFAULT
     model = torchvision.models.resnet50(weights=weights)
     model = nn.Sequential(*list(model.children())[:-1])
     model = model.to(device)
     model.eval()
-
     preprocess = weights.transforms()
 
     d_dirname, d_name = os.path.split(dataset_path)
@@ -75,6 +74,7 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
                 print(f"Can't process {video_path}!\n")
                 continue
 
+            # cut the first and the last scenes if it is possible
             if len(scene_list) >= n_frames + 6:
                 scene_list = scene_list[3:-3]
             elif len(scene_list) >= n_frames + 4:
@@ -85,6 +85,7 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
             n_per_scene = n_frames // len(scene_list) + 1
             reader = VideoReader(video_path, fps=FPS)
 
+            # form keyframes list
             keyframes_id_list = []
             for scene in scene_list:
                 scene_start_idx = scene[0].frame_num
@@ -103,9 +104,11 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
                 out = model(batch).reshape(batch.shape[0], -1).cpu().detach()
                 features = out if features is None else torch.cat([features, out], dim=0)
 
+            # ensure diversity
             kmeans = KMeans(n_clusters=n_frames, random_state=0)
             cluster_assignments = kmeans.fit_predict(features)
 
+            # store selected keyframes
             saved_clusters = []
             for i, cluster_id in enumerate(cluster_assignments):
                 if cluster_id not in saved_clusters:
@@ -115,7 +118,6 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
                     cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
                     if saved_clusters == n_frames:
                         break
-
             print(f'{video_path} is ready.\n')
 
 
