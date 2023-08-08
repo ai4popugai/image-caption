@@ -3,12 +3,15 @@ import argparse
 import random
 from typing import List
 
+import cv2
 import lpips
 import torch
 from scenedetect import detect, ContentDetector, FrameTimecode
+from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
+from train.train import Trainer
 from utils.video_utils.video_reader import VideoReader
 
 FPS = 25
@@ -57,12 +60,13 @@ def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
                 for _ in range(n_per_scene):
                     keyframe_id = random.randint(scene_start_idx, scene_end_idx)
                     keyframes_id_list.append(keyframe_id)
-                # keyframe = reader[keyframe_id]
-                # cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
+
+            # setup device
+            device = Trainer.get_device()
 
             # get pretrained to perceptual loss new
             loss_fn = lpips.LPIPS(net='alex')
-            net = loss_fn.net
+            net = loss_fn.net.to(device)
             scaler = loss_fn.scaling_layer
             del loss_fn
 
@@ -71,8 +75,22 @@ def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
 
             features = None
             for batch in dataloader:
-                out = net(scaler(batch))[1].reshape(batch_size, -1)
+                batch = scaler(batch).to(device)
+                out = net(batch)[1].reshape(batch.shape[0], -1).cpu()
                 features = out if features is None else torch.cat([features, out], dim=0)
+
+            kmeans = KMeans(n_clusters=n_frames, random_state=0)
+            cluster_assignments = kmeans.fit_predict(features)
+
+            saved_clusters = []
+            for i, cluster_id in enumerate(cluster_assignments):
+                if cluster_id not in saved_clusters:
+                    saved_clusters.append(cluster_id)
+                    keyframe_id = keyframes_id_list[i]
+                    keyframe = reader[keyframe_id]
+                    cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
+                    if saved_clusters == n_frames:
+                        break
 
             print(f'{video_path} video is ready.')
 
