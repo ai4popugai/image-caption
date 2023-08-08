@@ -66,7 +66,7 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
             dst_dir = os.path.join(keyframes_path, part_dir, video_name)
             if os.path.isdir(dst_dir):
                 if len(os.listdir(dst_dir)) == n_frames:
-                    print('Keyframes exists\n')
+                    print('Keyframes exist\n')
                     continue
                 else:
                     shutil.rmtree(dst_dir)
