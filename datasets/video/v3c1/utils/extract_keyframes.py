@@ -4,8 +4,11 @@ import random
 from typing import List
 
 import cv2
+import torch
 from scenedetect import detect, ContentDetector, FrameTimecode
 from torch import nn
+from torchtext.transforms import ToTensor
+from torchvision.transforms import Compose, Resize, InterpolationMode
 
 from utils.video_utils.video_reader import VideoReader
 
@@ -17,12 +20,17 @@ class KeyFramesDataset(nn.Module):
         super().__init__()
         self.keyframes_id_list = keyframes_id_list
         self.reader = reader
+        self.frame_transforms = Compose([
+            ToTensor(),
+            Resize((128, 128), InterpolationMode.BILINEAR, antialias=False)
+        ])
 
     def __len__(self):
         return len(self.keyframes_id_list)
 
-    def __getitem__(self, idx: int):
-        return self.reader[self.keyframes_id_list[idx]]
+    def __getitem__(self, idx: int) -> torch.Tensor:
+        frame = self.reader[self.keyframes_id_list[idx]]
+        return  self.frame_transforms(frame)
 
 
 def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
@@ -51,6 +59,9 @@ def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
                     keyframes_id_list.append(keyframe_id)
                 # keyframe = reader[keyframe_id]
                 # cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
+
+            dataset =
+
 
             print(f'{video_path} video is ready.')
 
