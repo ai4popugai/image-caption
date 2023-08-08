@@ -70,8 +70,8 @@ def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
             dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
             features = None
-            for batch in enumerate(dataloader):
-                out = net(scaler(batch)).reshape(batch_size, -1)
+            for batch in dataloader:
+                out = net(scaler(batch))[1].reshape(batch_size, -1)
                 features = out if features is None else torch.cat([features, out], dim=0)
 
             print(f'{video_path} video is ready.')
@@ -81,11 +81,10 @@ def main():
     parser = argparse.ArgumentParser(description="Create keyframes from videos in a dataset.")
     parser.add_argument("--dataset_path", type=str, help="Path to the dataset directory.")
     parser.add_argument("--n_frames", type=int, help="Desired number of keyframes.")
-    parser.add_argument("--batch_size", type=int, help="Batch size to compute image features.")
 
     args = parser.parse_args()
 
-    extract_keyframes(args.dataset_path, args.n_frames, args.batch_size)
+    extract_keyframes(args.dataset_path, args.n_frames)
 
 
 if __name__ == "__main__":
