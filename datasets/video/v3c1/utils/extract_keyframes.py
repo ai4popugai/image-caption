@@ -7,8 +7,7 @@ import lpips
 import torch
 from scenedetect import detect, ContentDetector, FrameTimecode
 from torch.utils.data import DataLoader, Dataset
-from torchtext.transforms import ToTensor
-from torchvision.transforms import Compose, Resize, InterpolationMode
+from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
 from utils.video_utils.video_reader import VideoReader
 
@@ -30,7 +29,8 @@ class KeyFramesDataset(Dataset):
 
     def __getitem__(self, idx: int) -> torch.Tensor:
         frame = self.reader[self.keyframes_id_list[idx]]
-        return self.frame_transforms(frame)
+        frame = self.frame_transforms(frame)
+        return frame
 
 
 def extract_keyframes(dataset_path: str, n_frames: int, batch_size: int = 8):
