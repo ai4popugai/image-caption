@@ -63,7 +63,12 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
             os.makedirs(dst_dir, exist_ok=True)
 
             scene_list = detect(video_path, ContentDetector())
-            scene_list = scene_list[3:-3]
+            if len(scene_list) >= n_frames + 6:
+                scene_list = scene_list[3:-3]
+            elif len(scene_list) >= n_frames + 4:
+                scene_list = scene_list[2:-2]
+            elif len(scene_list) >= n_frames + 2:
+                scene_list = scene_list[1:-1]
 
             n_per_scene = n_frames // len(scene_list) + 1
             reader = VideoReader(video_path, fps=FPS)
