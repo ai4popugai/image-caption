@@ -41,6 +41,7 @@ class KeyFramesDataset(Dataset):
 def extract_keyframes(dataset_path: str, n_frames: int,):
     # setup device
     device = Trainer.get_device()
+    random.seed(42)
 
     # get pretrained to perceptual loss new
     weights = torchvision.models.ResNet50_Weights.DEFAULT
