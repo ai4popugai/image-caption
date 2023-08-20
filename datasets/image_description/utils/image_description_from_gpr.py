@@ -11,11 +11,11 @@ from train.train import Trainer
 
 
 def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, dataset_dir: str, name_prefix: str = '',
-                   num_leave_layers: int = 4):
+                   num_removed_layers: int = 4):
     """
     Function creates a new dataset from an existing one.
     All images from GPR dataset pass through EfficientNet without the last layer and are stored in the new dataset.
-    :param num_leave_layers: number of layers to leave in the model from start.
+    :param num_removed_layers: number of layers to leave in the model from start.
     :param name_prefix: prefix for the name of the new dataset. If empty, the name of the snapshot is used.
     :param dataset_dir: directory where the new dataset will be stored
     :param snapshot_name: name of the snapshot from which we take the model
@@ -29,7 +29,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
     # device = torch.device('cpu')
 
     dst_dir = os.path.join(dataset_dir, f'{name_prefix}_{run}_{phase}_{os.path.splitext(snapshot_name)[0]}'
-                                        f'_num_leave_layers_{num_leave_layers}')
+                                        f'_num_removed_layers_{num_removed_layers}')
     emd_dir = os.path.join(dst_dir, FEATURE_MAPS_KEYS)
     os.makedirs(emd_dir, exist_ok=True)
 
@@ -46,7 +46,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
     model.load_state_dict(checkpoint['model_state_dict'], strict=True)
 
     # create feature extractor
-    model = EfficientNetFeatureMapExtractor(model, num_leave_layers=num_leave_layers)
+    model = EfficientNetFeatureMapExtractor(model, num_removed_layers=num_removed_layers)
 
     # datasets and loaders
     dataset = GPRDataset(resolution=run_instance.resolution)
@@ -85,8 +85,8 @@ if __name__ == "__main__":
     parser.add_argument("--snapshot_name", type=str, help="Name of the snapshot from which to take the model")
     parser.add_argument("--dataset_dir", type=str, help="Directory where the new dataset will be stored")
     parser.add_argument("--name_prefix", type=str, help='Prefix for the name of the new dataset')
-    parser.add_argument("--num_leave_layers", type=str, default=4, help='Num layers to leave from start')
+    parser.add_argument("--num_removed_layers", type=str, default=4, help='Num layers to leave from start')
     args = parser.parse_args()
 
     create_dataset(args.experiment, args.run, args.phase, args.snapshot_name, args.dataset_dir, args.name_prefix,
-                   args.num_leave_layers,)
+                   args.num_removed_layers,)

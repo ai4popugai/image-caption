@@ -16,9 +16,9 @@ class EfficientNet(BaseClassificationModel):
 
 
 class EfficientNetFeatureMapExtractor(BaseClassificationModel):
-    def __init__(self, model: EfficientNet, num_leave_layers: int = 4):
+    def __init__(self, model: EfficientNet, num_removed_layers: int = 4):
         super().__init__()
-        self.model = nn.Sequential(*list(model.get_model().features)[:-num_leave_layers])
+        self.model = nn.Sequential(*list(model.get_model().features)[:-num_removed_layers])
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         x = batch[FRAMES_KEY]

@@ -1,15 +1,12 @@
 import os
 import argparse
 import random
-import shutil
 from typing import List
 
 import cv2
-import lpips
-import numpy as np
 import torch
 import torchvision
-from scenedetect import detect, ContentDetector, FrameTimecode
+from scenedetect import detect, ContentDetector
 from sklearn.cluster import KMeans
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
