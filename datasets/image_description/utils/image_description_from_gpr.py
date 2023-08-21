@@ -6,8 +6,8 @@ import torch
 
 from datasets import FEATURE_MAPS_KEYS, FRAMES_KEY, LABELS_KEY
 from datasets.classification.gpr import GPRDataset
-from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNetFeatureMapExtractor
-from experiments.utils import setup_run_instance, setup_pretrained_model
+from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNetFeatureMapExtractor, EfficientNet
+from experiments.utils import setup_run_instance
 from train.train import Trainer
 
 
@@ -38,7 +38,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
     run_instance = setup_run_instance(experiment, run, phase)
 
     # Setup pretrained model
-    model = setup_pretrained_model(run_instance, snapshot_name)
+    model = run_instance.setup_pretrained_model(snapshot_name)
 
     # create feature extractor
     model = EfficientNetFeatureMapExtractor(model, num_removed_layers=num_removed_layers)

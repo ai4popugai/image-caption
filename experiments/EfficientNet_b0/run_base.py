@@ -52,6 +52,23 @@ class RunBase(Run):
     def setup_model(self) -> BaseClassificationModel:
         return EfficientNet(num_classes=self._num_classes)
 
+    def setup_pretrained_model(self, snapshot_name: str):
+        """
+        Script set up model by experiment, run, phase and snapshot.
+
+        :param snapshot_name: name of the snapshot from which we take the model
+        :return: model with loaded weights.
+        """
+
+        model = self.setup_model()
+
+        # load snapshot
+        snapshot_path = os.path.join(self.snapshot_dir, snapshot_name)
+        checkpoint = torch.load(snapshot_path)
+        model.load_state_dict(checkpoint['model_state_dict'], strict=True)
+
+        return model
+
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         dataset = GPRDataset(resolution=self.resolution)
 
