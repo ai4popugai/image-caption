@@ -18,6 +18,6 @@ def setup_run_instance(experiment: str, run: str, phase: str,) -> RunBase:
     # Convert experiment, run, and phase to module paths
     run_module = __import__(f'experiments.{experiment}.{run}', fromlist=[phase])
     phase_module = getattr(run_module, phase)
-    run_instance = phase_module.Phase1()
+    run_instance = phase_module.Phase()
 
     return run_instance

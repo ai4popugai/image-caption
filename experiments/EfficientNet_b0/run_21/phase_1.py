@@ -9,7 +9,7 @@ from experiments.EfficientNet_b0.run_base import RunBase
 from optim_utils.iter_policy.linear_policy import LinearIterationPolicy
 
 
-class Phase1(RunBase):
+class Phase(RunBase):
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
@@ -40,4 +40,4 @@ class Phase1(RunBase):
 
 
 if __name__ == '__main__':
-    Phase1().train(start_snapshot=None)
+    Phase().train(start_snapshot=None)

@@ -9,7 +9,7 @@ from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.run_base import RunBase
 
 
-class Phase1(RunBase):
+class Phase(RunBase):
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
@@ -43,4 +43,4 @@ class Phase1(RunBase):
 
 if __name__ == '__main__':
     start_snapshot = 'EfficientNet_b0/run_32/snapshot_1200.pth'
-    Phase1().train(start_snapshot=start_snapshot)
+    Phase().train(start_snapshot=start_snapshot)

@@ -9,7 +9,7 @@ from experiments.EfficientNet_b0.run_base import RunBase
 from optim_utils.iter_policy.cosine_policy import CosineAnnealingIterationPolicy
 
 
-class Phase1(RunBase):
+class Phase(RunBase):
     """"
     Resume run_17
     """
@@ -45,4 +45,4 @@ class Phase1(RunBase):
 if __name__ == '__main__':
     # start_snapshot = 'EfficientNet_b0/run_18/snapshot_9000.pth'
     start_snapshot = 'EfficientNet_b0/run_17/snapshot_7800.pth'
-    Phase1().train(start_snapshot=start_snapshot)
+    Phase().train(start_snapshot=start_snapshot)
