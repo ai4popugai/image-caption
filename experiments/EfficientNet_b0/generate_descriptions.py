@@ -3,11 +3,13 @@ import os
 from typing import Tuple
 
 import cv2
+import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import Compose, ToTensor, Resize, InterpolationMode
 
-from datasets import FRAMES_KEY, LABELS_KEY
+from datasets import FRAMES_KEY, LABELS_KEY, LOGITS_KEY
+from datasets.classification.gpr import GPRDataset
 from experiments.utils import setup_run_instance
 from train.train import Trainer
 
@@ -51,13 +53,26 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     model.to(device)
     model.eval()
 
+    descriptions = GPRDataset().read_descriptions()
+    descriptions = np.array(list(descriptions.values()))
+
     dataset = InferenceDataset(src_dir, run_instance.resolution)
     dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
 
-    for batch in dataloader:
+    class_labels = None
+    for idx, batch in enumerate(dataloader):
         batch = Trainer.normalize(batch, run_instance.normalizer)
         batch = Trainer.batch_to_device(batch, device)
         result = model(batch)
+        class_labels_batch = torch.argmax(result[LOGITS_KEY], dim=1).cpu()
+        class_labels = class_labels_batch if class_labels is None \
+            else torch.cat([class_labels, class_labels_batch], dim=0)
+    class_descriptions = descriptions[class_labels.numpy()]
+
+    for idx, ff in enumerate(sorted(os.listdir(src_dir))):
+        desc_path = os.path.join(src_dir, ff, 'descriptions.txt')
+        with open(desc_path, 'w') as f:
+            f.write(class_descriptions[idx])
 
 
 if __name__ == "__main__":
