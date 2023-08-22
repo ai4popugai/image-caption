@@ -61,12 +61,13 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
 
     class_labels = None
     for idx, batch in enumerate(dataloader):
-        batch = Trainer.normalize(batch, run_instance.normalizer)
-        batch = Trainer.batch_to_device(batch, device)
-        result = model(batch)
-        class_labels_batch = torch.argmax(result[LOGITS_KEY], dim=1).cpu()
-        class_labels = class_labels_batch if class_labels is None \
-            else torch.cat([class_labels, class_labels_batch], dim=0)
+        with torch.no_grad():
+            batch = Trainer.normalize(batch, run_instance.normalizer)
+            batch = Trainer.batch_to_device(batch, device)
+            result = model(batch)
+            class_labels_batch = torch.argmax(result[LOGITS_KEY], dim=1).cpu()
+            class_labels = class_labels_batch if class_labels is None \
+                else torch.cat([class_labels, class_labels_batch], dim=0)
     class_descriptions = descriptions[class_labels.numpy()]
 
     for idx, ff in enumerate(sorted(os.listdir(src_dir))):
