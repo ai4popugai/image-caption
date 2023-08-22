@@ -15,6 +15,7 @@ from metrics.classification.mean_precision import MeanPrecision
 from metrics.classification.mean_recall import MeanRecall
 from models.classification.base_model import BaseClassificationModel
 from normalize.classification.normalize import BatchNormalizer
+from train import MODEL_STATE_DICT_KEY
 from train.run import Run
 
 
@@ -65,7 +66,7 @@ class RunBase(Run):
         # load snapshot
         snapshot_path = os.path.join(self.snapshot_dir, snapshot_name)
         checkpoint = torch.load(snapshot_path)
-        model.load_state_dict(checkpoint['model_state_dict'], strict=True)
+        model.load_state_dict(checkpoint[MODEL_STATE_DICT_KEY], strict=True)
 
         return model
 

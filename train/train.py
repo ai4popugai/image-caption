@@ -12,6 +12,7 @@ from augmentations.classification.augs import BaseAug
 from metrics.base_metric import BaseMetric
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from optim_utils.iter_policy.policy import LrPolicy
+from train import MODEL_STATE_DICT_KEY, OPTIMIZER_STATE_DICT_KEY, GLOBAL_STEP_KEY
 
 
 class Trainer:
@@ -73,10 +74,6 @@ class Trainer:
         self.show_iters = show_iters
         self.normalizer = normalizer
         self.force_snapshot_loading = force_snapshot_loading
-
-        self.model_state_dict_key = 'model_state_dict'
-        self.optimizer_state_dict_key = 'optimizer_state_dict'
-        self.global_step_key = 'global_step'
 
         if os.path.exists(self.logs_dir) is False:
             os.makedirs(self.logs_dir)
@@ -163,14 +160,14 @@ class Trainer:
     def _load_snapshot(self, model: nn.Module, snapshot_path: str, strict_weight_loading: bool,
                        reset_optimizer: bool) -> int:
         checkpoint = torch.load(snapshot_path, map_location=self.device)
-        model.load_state_dict(checkpoint[self.model_state_dict_key], strict=strict_weight_loading)
+        model.load_state_dict(checkpoint[MODEL_STATE_DICT_KEY], strict=strict_weight_loading)
         if reset_optimizer is False:
-            if self.optimizer_state_dict_key in checkpoint:
-                self.optimizer.load_state_dict(checkpoint[self.optimizer_state_dict_key])
+            if OPTIMIZER_STATE_DICT_KEY in checkpoint:
+                self.optimizer.load_state_dict(checkpoint[OPTIMIZER_STATE_DICT_KEY])
             else:
                 print('No optimizer state dict in snapshot. Optimizer is reset.')
         print(f'Loaded snapshot from {snapshot_path}')
-        return checkpoint[self.global_step_key]
+        return checkpoint[GLOBAL_STEP_KEY]
 
     def _detect_last_snapshot_path(self) -> str or None:
         snapshot_paths = [os.path.join(self.snapshot_dir, name) for name in os.listdir(self.snapshot_dir)]
@@ -180,9 +177,9 @@ class Trainer:
 
     def _save_snapshot(self, model: nn.Module, snapshot_path: str, global_step: int):
         torch.save({
-            self.model_state_dict_key: model.state_dict(),
-            self.optimizer_state_dict_key: self.optimizer.state_dict(),
-            self.global_step_key: global_step,
+            MODEL_STATE_DICT_KEY: model.state_dict(),
+            OPTIMIZER_STATE_DICT_KEY: self.optimizer.state_dict(),
+            GLOBAL_STEP_KEY: global_step,
 
         }, snapshot_path)
         print(f'Saved snapshot to {snapshot_path}')
