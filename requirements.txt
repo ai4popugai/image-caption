@@ -41,8 +41,8 @@ zipp==3.16.2
 yolov7_package
 
 torch~=2.0.1
-torchvision~=0.16.0.dev20230725
-clip~=1.0
+torchvision~=0.15.0
+clip
 scenedetect~=0.6.2
 torchtext~=0.15.2
 matplotlib~=3.7.2
