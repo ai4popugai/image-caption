@@ -3,7 +3,7 @@ from typing import Dict
 import torch
 
 from datasets import FRAMES_KEY, LOGITS_KEY
-from models.base_model import BaseModel
+from nn_models.base_model import BaseModel
 
 
 class BaseClassificationModel(BaseModel):

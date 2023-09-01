@@ -5,8 +5,8 @@ import torch
 from torch import nn
 
 from datasets import FRAMES_KEY, EMBS_KEY
-from models.base_model import BaseModel
-from models.classification.base_model import BaseClassificationModel
+from nn_models.base_model import BaseModel
+from nn_models.classification.base_model import BaseClassificationModel
 
 
 class FeatureExtractor(BaseClassificationModel):

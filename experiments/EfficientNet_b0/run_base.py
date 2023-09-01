@@ -13,7 +13,7 @@ from loss.classification.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
 from metrics.classification.mean_precision import MeanPrecision
 from metrics.classification.mean_recall import MeanRecall
-from models.classification.base_model import BaseClassificationModel
+from nn_models.classification.base_model import BaseClassificationModel
 from normalize.classification.normalize import BatchNormalizer
 from train import MODEL_STATE_DICT_KEY
 from train.run import Run

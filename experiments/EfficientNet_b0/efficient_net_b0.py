@@ -5,7 +5,7 @@ import torchvision.models
 from torch import nn
 
 from datasets import FEATURE_MAPS_KEYS, FRAMES_KEY
-from models.classification.base_model import BaseClassificationModel
+from nn_models.classification.base_model import BaseClassificationModel
 
 
 class EfficientNet(BaseClassificationModel):
