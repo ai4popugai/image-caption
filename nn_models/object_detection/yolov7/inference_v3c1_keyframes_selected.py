@@ -18,9 +18,11 @@ def inference(v3c1_keyframes_dir: str, threshold: float):
         for class_id, box, score in zip(classes[0], boxes[0], scores[0]):
             if score >= threshold:
                 objects.append({det.names[class_id]: box})
-                store_path = os.path.join(img_folder, 'objects.json')
-                with open(store_path, 'w') as f:
-                    json.dump(objects, f)
+        store_path = os.path.join(img_folder, 'objects.json')
+        if os.path.isfile(store_path):
+            os.remove(store_path)
+        with open(store_path, 'w') as f:
+            json.dump(objects, f)
 
 
 if __name__ == '__main__':
