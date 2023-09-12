@@ -3,17 +3,14 @@ import os
 
 app = Flask(__name__)
 
-# Adjust the UPLOAD_FOLDER path to reflect the new structure
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'web')
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'web', 'upload')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Update the path to the templates folder
-app.template_folder = os.path.join(os.getcwd(), 'web', 'templates')
 
 
 @app.route('/')
 def index():
-    return render_template('upload.html')
+    return render_template('main.html')
 
 
 @app.route('/upload', methods=['POST'])
@@ -33,4 +30,4 @@ def upload_file():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
