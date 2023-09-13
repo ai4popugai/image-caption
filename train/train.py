@@ -170,7 +170,7 @@ class Trainer:
         return checkpoint[GLOBAL_STEP_KEY]
 
     def _detect_last_snapshot_path(self) -> str or None:
-        snapshot_paths = [os.path.join(self.snapshot_dir, name) for name in os.listdir(self.snapshot_dir)]
+        snapshot_paths = [os.path.join(self.snapshot_dir, name) for name in sorted(os.listdir(self.snapshot_dir))]
         if len(snapshot_paths) == 0:
             return None
         return max(snapshot_paths, key=os.path.getctime)
