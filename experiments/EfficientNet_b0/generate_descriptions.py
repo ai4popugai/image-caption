@@ -15,11 +15,11 @@ from train.train import Trainer
 
 
 class InferenceDataset(Dataset):
-    def __init__(self, src_dir: str, resolution: Tuple[int, int]):
+    def __init__(self, frames_dir: str, resolution: Tuple[int, int]):
         """
         Dataset class for inference
 
-        :param src_dir: directory with frames
+        :param frames_dir: directory with frames
         :param resolution: resolution
         """
         self.frame_transforms = Compose([
@@ -28,7 +28,7 @@ class InferenceDataset(Dataset):
         ])
 
         image_extensions = (".jpg", ".jpeg", ".png")
-        self.frames_list = [os.path.join(src_dir, file) for file in sorted(os.listdir(src_dir)) if
+        self.frames_list = [os.path.join(frames_dir, file) for file in sorted(os.listdir(frames_dir)) if
                             file.endswith(image_extensions)]
 
     def __len__(self):
@@ -40,7 +40,7 @@ class InferenceDataset(Dataset):
         return {FRAMES_KEY: frame, LABELS_KEY: torch.tensor(-1)}
 
 
-def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: str, src_dir: str, ):
+def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: str, frames_dir: str, ):
     """
     Script to create description for each frame.
 
@@ -48,7 +48,7 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     :param run: name of the run (e.g., "run_16")
     :param phase: name of the phase (e.g., "phase_1")
     :param snapshot_name: name of the snapshot from which we take the model
-    :param src_dir: directory with frames.
+    :param frames_dir: directory with frames.
     :return: None
     """
     device = torch.device('cpu')
@@ -64,7 +64,7 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     descriptions = GPRDataset().read_descriptions()
     descriptions = np.array(list(descriptions.values()))
 
-    dataset = InferenceDataset(src_dir, run_instance.resolution)
+    dataset = InferenceDataset(frames_dir, run_instance.resolution)
     dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
 
     class_labels = None
@@ -85,8 +85,8 @@ if __name__ == "__main__":
     parser.add_argument("--run", type=str, help="Name of the run (e.g., 'run_16')")
     parser.add_argument("--phase", type=str, help="Name of the phase (e.g., 'phase_1')")
     parser.add_argument("--snapshot_name", type=str, help="Name of the snapshot from which to take the model")
-    parser.add_argument("--src_dir", type=str, help="Directory with selected descriptions' dataset")
+    parser.add_argument("--frames_dir", type=str, help="Directory with selected descriptions' dataset")
 
     args = parser.parse_args()
 
-    generate_descriptions(args.experiment, args.run, args.phase, args.snapshot_name, args.src_dir, )
+    generate_descriptions(args.experiment, args.run, args.phase, args.snapshot_name, args.frames_dir, )
