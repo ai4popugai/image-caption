@@ -27,7 +27,7 @@ def main(videos_dir: str, n_frames: int):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract keyframes from videos')
     parser.add_argument('--videos_dir', type=str, help='Path to directory containing videos')
-    parser.add_argument('--n_frames', type=int, default=10, help='Number of keyframes to extract per video')
+    parser.add_argument('--n_frames', type=int, default=20, help='Number of keyframes to extract per video')
     args = parser.parse_args()
 
     main(args.videos_dir, args.n_frames)
