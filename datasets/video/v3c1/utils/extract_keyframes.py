@@ -12,7 +12,7 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
-from db.db import SQLiteDb
+from db import SQLiteDb
 from train.train import Trainer
 from utils.video_utils.video_reader import VideoReader
 

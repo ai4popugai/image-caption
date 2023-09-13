@@ -2,7 +2,10 @@ import glob
 import os
 import sqlite3
 
-from db import VIDEO_ID_KEY, KEYFRAME_ID_KEY, OBJECTS_KEY, CONCEPT_KEY
+VIDEO_ID_KEY = 'video_id'
+KEYFRAME_ID_KEY = 'keyframe_id'
+OBJECTS_KEY = 'objects'
+CONCEPT_KEY = 'concept'
 
 
 class SQLiteDb:
