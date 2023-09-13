@@ -32,7 +32,7 @@ def main(videos_dir: str, n_frames: int):
         extract_keyframes(video_path, keyframes_dir, n_frames, database=database)
 
         # generate description
-        generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir)
+        generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir, database)
 
 
 if __name__ == '__main__':

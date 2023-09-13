@@ -10,6 +10,7 @@ from torchvision.transforms import Compose, ToTensor, Resize, InterpolationMode
 
 from datasets import FRAMES_KEY, LABELS_KEY, LOGITS_KEY
 from datasets.classification.gpr import GPRDataset
+from db import SQLiteDb
 from experiments.utils import setup_run_instance
 from train.train import Trainer
 
@@ -40,7 +41,8 @@ class InferenceDataset(Dataset):
         return {FRAMES_KEY: frame, LABELS_KEY: torch.tensor(-1)}
 
 
-def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: str, frames_dir: str, ):
+def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: str, frames_dir: str,
+                          database: SQLiteDb = None,):
     """
     Script to create description for each frame.
 
@@ -49,6 +51,7 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     :param phase: name of the phase (e.g., "phase_1")
     :param snapshot_name: name of the snapshot from which we take the model
     :param frames_dir: directory with frames.
+    :param database: database for which to write descriptions.
     :return: None
     """
     device = torch.device('cpu')
@@ -77,6 +80,12 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
             class_labels = class_labels_batch if class_labels is None \
                 else torch.cat([class_labels, class_labels_batch], dim=0)
     class_descriptions = descriptions[class_labels.numpy()]
+
+    if database is not None:
+        video_id = os.path.basename(frames_dir)
+        for (frame_path, description) in zip(dataset.frames_list, class_descriptions):
+            keyframe_id = os.path.basename(frame_path)
+            database.add_concept_to_row(video_id, keyframe_id, description)
 
 
 if __name__ == "__main__":
