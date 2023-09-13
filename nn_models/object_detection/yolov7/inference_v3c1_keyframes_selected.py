@@ -7,25 +7,27 @@ from yolov7_package import Yolov7Detector
 import cv2
 
 
-def inference(v3c1_keyframes_dir: str, threshold: float):
+def inference(frames_dir: str, threshold: float = 0.5):
     det = Yolov7Detector(traced=False)
-    img_folder_list = [os.path.join(v3c1_keyframes_dir, img_folder)
-                       for img_folder in sorted(os.listdir(v3c1_keyframes_dir))]
-    for img_folder in img_folder_list:
-        img_path = glob.glob(f'{img_folder}/*.png')[0]
-        img = cv2.imread(img_path)
+
+    image_extensions = (".jpg", ".jpeg", ".png")
+    frames_list = [os.path.join(frames_dir, file) for file in sorted(os.listdir(frames_dir)) if
+                   file.endswith(image_extensions)]
+
+    for frame_path in frames_list:
+        img = cv2.imread(frame_path)
         classes, boxes, scores = det.detect(img)
         objects = []
         for class_id, box, score in zip(classes[0], boxes[0], scores[0]):
             if score >= threshold:
                 objects.append({det.names[class_id]: box})
                 img = det.draw_on_image(img, [box], [score], [class_id])
-        store_path = os.path.join(img_folder, 'objects.json')
+        store_path = os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.json')
         if os.path.isfile(store_path):
             os.remove(store_path)
         with open(store_path, 'w') as f:
             json.dump(objects, f)
-        cv2.imwrite(os.path.join(img_folder, 'objects.png'), img)
+        cv2.imwrite( os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.png'), img)
 
 
 if __name__ == '__main__':
