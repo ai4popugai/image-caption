@@ -2,6 +2,7 @@ import os
 import random
 
 from datasets.video.v3c1.utils.extract_keyframes import extract_keyframes
+from db import SQLiteDb
 from web import KEYFRAMES_DIR_KEY
 
 
@@ -9,6 +10,8 @@ def main(videos_dir: str, n_frames: int,):
     random.seed(0)
 
     videos_list = [video for video in sorted(os.listdir(videos_dir)) if video.endswith('.mp4')]
+
+    database = SQLiteDb(os.path.basename(videos_dir))
     # process videos one by one
     for video_name in videos_list:
         # setup paths
@@ -17,4 +20,4 @@ def main(videos_dir: str, n_frames: int,):
         os.makedirs(keyframes_path, exist_ok=True)
 
         # extract keyframes
-        extract_keyframes(video_path, keyframes_path, n_frames)
+        extract_keyframes(video_path, keyframes_path, n_frames, database=database)
