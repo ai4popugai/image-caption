@@ -6,9 +6,12 @@ import os
 from yolov7_package import Yolov7Detector
 import cv2
 
+from db import SQLiteDb
 
-def inference(frames_dir: str, threshold: float = 0.5):
+
+def inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None,):
     det = Yolov7Detector(traced=False)
+    video_id = os.path.basename(frames_dir)
 
     image_extensions = (".jpg", ".jpeg", ".png")
     frames_list = [os.path.join(frames_dir, file) for file in sorted(os.listdir(frames_dir)) if
@@ -22,12 +25,14 @@ def inference(frames_dir: str, threshold: float = 0.5):
             if score >= threshold:
                 objects.append({det.names[class_id]: box})
                 img = det.draw_on_image(img, [box], [score], [class_id])
-        store_path = os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.json')
-        if os.path.isfile(store_path):
-            os.remove(store_path)
-        with open(store_path, 'w') as f:
-            json.dump(objects, f)
-        cv2.imwrite( os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.png'), img)
+        if database is None:
+            store_path = os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.json')
+            with open(store_path, 'w') as f:
+                json.dump(objects, f)
+            cv2.imwrite( os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.png'), img)
+        else:
+            keyframe_id = os.path.basename(frame_path)
+            database.add_objects_to_row(video_id, keyframe_id, objects)
 
 
 if __name__ == '__main__':
