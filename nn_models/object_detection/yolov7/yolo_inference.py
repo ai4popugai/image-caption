@@ -3,6 +3,7 @@ import glob
 import json
 import os
 
+import torch
 from yolov7_package import Yolov7Detector
 import cv2
 
@@ -11,8 +12,7 @@ from train.train import Trainer
 
 
 def yolo_inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None,):
-    device = Trainer.get_device()
-    det = Yolov7Detector(traced=False, device=device)
+    det = Yolov7Detector(traced=False)
     video_id = os.path.basename(frames_dir)
 
     image_extensions = (".jpg", ".jpeg", ".png")
