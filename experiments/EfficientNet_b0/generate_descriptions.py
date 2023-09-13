@@ -16,6 +16,12 @@ from train.train import Trainer
 
 class InferenceDataset(Dataset):
     def __init__(self, src_dir: str, resolution: Tuple[int, int]):
+        """
+        Dataset class for inference
+
+        :param src_dir: directory with frames
+        :param resolution: resolution
+        """
         self.frame_transforms = Compose([
             ToTensor(),
             Resize(resolution, InterpolationMode.BILINEAR, antialias=False)
