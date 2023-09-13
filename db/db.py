@@ -20,3 +20,8 @@ class SQLiteDb:
             cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},"
                            f"{OBJECTS_KEY},{CONCEPT_KEY})")
 
+    def add_new_key(self, video_id, keyframe_id):
+        with sqlite3.connect(self._db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"INSERT INTO {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY}) "
+                           f"VALUES ('{video_id}', '{keyframe_id}')")
