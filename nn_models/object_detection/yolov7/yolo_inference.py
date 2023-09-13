@@ -34,7 +34,9 @@ def yolo_inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb =
             cv2.imwrite(os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.png'), img)
         else:
             keyframe_id = os.path.basename(frame_path)
-            database.add_objects_to_row(video_id, keyframe_id, objects)
+            # Convert the list of dictionaries to a JSON string
+            objects_json = json.dumps(objects)
+            database.add_objects_to_row(video_id, keyframe_id, objects_json)
 
 
 if __name__ == '__main__':
