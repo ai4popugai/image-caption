@@ -16,7 +16,7 @@ PHASE = 'phase_2'
 SNAPSHOT_NAME = 'snapshot_3600.pth'
 
 
-def main(videos_dir: str, n_frames: int):
+def preprocess_videos(videos_dir: str, n_frames: int):
     random.seed(0)
 
     videos_list = [video for video in sorted(os.listdir(videos_dir)) if video.endswith('.mp4')]
@@ -45,4 +45,4 @@ if __name__ == '__main__':
     parser.add_argument('--n_frames', type=int, default=20, help='Number of keyframes to extract per video')
     args = parser.parse_args()
 
-    main(args.videos_dir, args.n_frames)
+    preprocess_videos(args.videos_dir, args.n_frames)
