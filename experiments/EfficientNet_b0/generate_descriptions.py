@@ -54,7 +54,7 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     :param database: database for which to write descriptions.
     :return: None
     """
-    device = torch.device('cpu')
+    device = Trainer.get_device()
 
     # Setup run instance
     run_instance = setup_run_instance(experiment, run, phase)
