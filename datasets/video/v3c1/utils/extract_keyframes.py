@@ -108,7 +108,6 @@ def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, database: SQ
                 database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
             if saved_clusters == n_frames:
                 break
-    print(f'{video_path} is ready.\n')
 
 
 def extract_keyframes_for_dataset(dataset_path: str, n_frames: int,):
