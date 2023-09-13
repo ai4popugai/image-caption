@@ -2,12 +2,13 @@ import argparse
 import os
 import random
 
-from datasets.video.v3c1.utils import KEYFRAMES_DIR_KEY
-from datasets.video.v3c1.utils.extract_keyframes import extract_keyframes
 from db import SQLiteDb
 from experiments.EfficientNet_b0.generate_descriptions import generate_descriptions
 
 # setup concept detection model constants
+from keyframes_exctraction import KEYFRAMES_DIR_KEY
+from keyframes_exctraction.extract_keyframes import extract_keyframes
+
 EXPERIMENT = 'EfficientNet_b0'
 RUN = 'run_32'
 PHASE = 'phase_2'
