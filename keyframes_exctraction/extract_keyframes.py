@@ -48,7 +48,7 @@ class KeyFramesDataset(Dataset):
         return frame
 
 
-def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, database: SQLiteDb = None):
+def extract_keyframes(video_path: str, keyframes_path: str, n_frames: int, database: SQLiteDb = None):
     reader = VideoReader(video_path, fps=FPS)
     scene_list = detect(video_path, ContentDetector())
     if len(scene_list) == 0:
@@ -58,7 +58,7 @@ def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, database: SQ
             keyframe_index = i * step
             keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
             keyframe = reader[keyframe_index]
-            cv2.imwrite(os.path.join(dst_dir, keyframe_id), keyframe)
+            cv2.imwrite(os.path.join(keyframes_path, keyframe_id), keyframe)
             if database is not None:
                 database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
         return
@@ -104,7 +104,7 @@ def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, database: SQ
             keyframe_index = keyframes_id_list[i]
             keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
             keyframe = reader[keyframe_index]
-            cv2.imwrite(os.path.join(dst_dir, keyframe_id), keyframe)
+            cv2.imwrite(os.path.join(keyframes_path, keyframe_id), keyframe)
             if database is not None:
                 database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
             if saved_clusters == n_frames:
