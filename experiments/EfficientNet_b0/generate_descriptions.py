@@ -26,8 +26,10 @@ class InferenceDataset(Dataset):
             ToTensor(),
             Resize(resolution, InterpolationMode.BILINEAR, antialias=False)
         ])
-        dir_list = [os.path.join(src_dir, desc_dir) for desc_dir in sorted(os.listdir(src_dir))]
-        self.frames_list = [os.path.join(desc_dir, os.listdir(desc_dir)[0]) for desc_dir in dir_list]
+
+        image_extensions = (".jpg", ".jpeg", ".png")
+        self.frames_list = [os.path.join(src_dir, file) for file in os.listdir(src_dir) if
+                            file.endswith(image_extensions)]
 
     def __len__(self):
         return len(self.frames_list)
@@ -38,7 +40,7 @@ class InferenceDataset(Dataset):
         return {FRAMES_KEY: frame, LABELS_KEY: torch.tensor(-1)}
 
 
-def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: str, src_dir: str,):
+def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: str, src_dir: str, ):
     """
     Script to create description for each frame.
 
@@ -92,5 +94,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    generate_descriptions(args.experiment, args.run, args.phase, args.snapshot_name, args.src_dir,)
-
+    generate_descriptions(args.experiment, args.run, args.phase, args.snapshot_name, args.src_dir, )
