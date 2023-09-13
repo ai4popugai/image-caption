@@ -19,3 +19,4 @@ class SQLiteDb:
             cursor = connect.cursor()
             cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},"
                            f"{OBJECTS_KEY},{CONCEPT_KEY})")
+
