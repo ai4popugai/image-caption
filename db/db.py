@@ -14,7 +14,7 @@ class SQLiteDb:
         self._create_db()
 
     def _create_db(self):
-        with sqlite3.connect(self.db_path) as connect:
+        with sqlite3.connect(self._db_path) as connect:
             cursor = connect.cursor()
             cursor.execute(f"CREATE TABLE {self._db_path}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},"
                            f"{OBJECTS_KEY},{CONCEPT_KEY})")
