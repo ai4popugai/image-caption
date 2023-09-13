@@ -25,14 +25,14 @@ def main(videos_dir: str, n_frames: int):
     for video_name in videos_list:
         # setup paths
         video_path = os.path.join(videos_dir, video_name)
-        keyframes_path = os.path.join(videos_dir, KEYFRAMES_DIR_KEY, video_name)
-        os.makedirs(keyframes_path, exist_ok=True)
+        keyframes_dir = os.path.join(videos_dir, KEYFRAMES_DIR_KEY, video_name)
+        os.makedirs(keyframes_dir, exist_ok=True)
 
         # extract keyframes
-        extract_keyframes(video_path, keyframes_path, n_frames, database=database)
+        extract_keyframes(video_path, keyframes_dir, n_frames, database=database)
 
         # generate description
-        generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_path)
+        generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir)
 
 
 if __name__ == '__main__':

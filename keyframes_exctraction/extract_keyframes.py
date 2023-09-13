@@ -48,7 +48,7 @@ class KeyFramesDataset(Dataset):
         return frame
 
 
-def extract_keyframes(video_path: str, keyframes_path: str, n_frames: int, database: SQLiteDb = None):
+def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, database: SQLiteDb = None):
     reader = VideoReader(video_path, fps=FPS)
     scene_list = detect(video_path, ContentDetector())
     if len(scene_list) == 0:
@@ -58,7 +58,7 @@ def extract_keyframes(video_path: str, keyframes_path: str, n_frames: int, datab
             keyframe_index = i * step
             keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
             keyframe = reader[keyframe_index]
-            cv2.imwrite(os.path.join(keyframes_path, keyframe_id), keyframe)
+            cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
             if database is not None:
                 database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
         return
@@ -104,7 +104,7 @@ def extract_keyframes(video_path: str, keyframes_path: str, n_frames: int, datab
             keyframe_index = keyframes_id_list[i]
             keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
             keyframe = reader[keyframe_index]
-            cv2.imwrite(os.path.join(keyframes_path, keyframe_id), keyframe)
+            cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
             if database is not None:
                 database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
             if saved_clusters == n_frames:
@@ -119,11 +119,11 @@ def extract_keyframes_for_dataset(dataset_path: str, n_frames: int,):
     for video_name in videos_list:
         # setup paths
         video_path = os.path.join(dataset_path, video_name)
-        keyframes_path = os.path.join(dataset_path, KEYFRAMES_DIR_KEY, video_name)
-        os.makedirs(keyframes_path, exist_ok=True)
+        keyframes_dir = os.path.join(dataset_path, KEYFRAMES_DIR_KEY, video_name)
+        os.makedirs(keyframes_dir, exist_ok=True)
 
         # extract keyframes
-        extract_keyframes(video_path, keyframes_path, n_frames)
+        extract_keyframes(video_path, keyframes_dir, n_frames)
 
 
 def main():
