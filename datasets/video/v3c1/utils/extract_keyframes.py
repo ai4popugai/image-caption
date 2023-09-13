@@ -12,6 +12,7 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
+from datasets.video.v3c1.utils import KEYFRAMES_DIR_KEY
 from db import SQLiteDb
 from train.train import Trainer
 from utils.video_utils.video_reader import VideoReader
@@ -113,20 +114,16 @@ def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, database: SQ
 def extract_keyframes_for_dataset(dataset_path: str, n_frames: int,):
     random.seed(0)
 
-    d_dirname, d_name = os.path.split(dataset_path)
-    keyframes_path = os.path.join(d_dirname, f'{d_name}_keyframes')
-    part_dirs_list = [part_dir for part_dir in sorted(os.listdir(dataset_path))]
-    for part_dir in part_dirs_list:
-        videos_list = [video for video in sorted(os.listdir(os.path.join(dataset_path, part_dir)))
-                       if video.endswith('.mp4')]
-        for video_name in videos_list:
-            video_path = os.path.join(dataset_path, part_dir, video_name)
-            print(f'Processing {video_path}')
-            dst_dir = os.path.join(keyframes_path, part_dir, video_name)
-            os.makedirs(dst_dir, exist_ok=True)
-            if os.path.isdir(dst_dir) and len(os.listdir(dst_dir)) > 0:
-                print('Keyframes exist\n')
-            extract_keyframes(video_path, dst_dir, n_frames)
+    videos_list = [video for video in sorted(os.listdir(dataset_path)) if video.endswith('.mp4')]
+
+    for video_name in videos_list:
+        # setup paths
+        video_path = os.path.join(dataset_path, video_name)
+        keyframes_path = os.path.join(dataset_path, KEYFRAMES_DIR_KEY, video_name)
+        os.makedirs(keyframes_path, exist_ok=True)
+
+        # extract keyframes
+        extract_keyframes(video_path, keyframes_path, n_frames)
 
 
 def main():

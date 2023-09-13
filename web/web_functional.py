@@ -2,9 +2,16 @@ import argparse
 import os
 import random
 
+from datasets.video.v3c1.utils import KEYFRAMES_DIR_KEY
 from datasets.video.v3c1.utils.extract_keyframes import extract_keyframes
 from db import SQLiteDb
-from web import KEYFRAMES_DIR_KEY
+from experiments.EfficientNet_b0.generate_descriptions import generate_descriptions
+
+# setup concept detection model constants
+EXPERIMENT = 'EfficientNet_b0'
+RUN = 'run_32'
+PHASE = 'phase_2'
+SNAPSHOT_NAME = 'snapshot_3600.pth'
 
 
 def main(videos_dir: str, n_frames: int):
@@ -22,6 +29,9 @@ def main(videos_dir: str, n_frames: int):
 
         # extract keyframes
         extract_keyframes(video_path, keyframes_path, n_frames, database=database)
+
+        # generate description
+        generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_path)
 
 
 if __name__ == '__main__':
