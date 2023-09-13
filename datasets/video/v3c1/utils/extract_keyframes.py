@@ -6,7 +6,7 @@ from typing import List
 import cv2
 import torch
 import torchvision
-from scenedetect import detect, ContentDetector
+from scenedetect import detect, ContentDetector, FrameTimecode
 from sklearn.cluster import KMeans
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
@@ -16,6 +16,15 @@ from train.train import Trainer
 from utils.video_utils.video_reader import VideoReader
 
 FPS = 25
+
+# setup pretrained embeddings extractor
+DEVICE = Trainer.get_device()
+WEIGHTS = torchvision.models.ResNet50_Weights.DEFAULT
+MODEL = torchvision.models.resnet50(weights=WEIGHTS)
+MODEL = nn.Sequential(*list(MODEL.children())[:-1])
+MODEL = MODEL.to(DEVICE)
+MODEL.eval()
+PREPROCESS = WEIGHTS.transforms()
 
 
 class KeyFramesDataset(Dataset):
@@ -37,18 +46,66 @@ class KeyFramesDataset(Dataset):
         return frame
 
 
-def extract_keyframes(dataset_path: str, n_frames: int,):
-    # setup device
-    device = Trainer.get_device()
-    random.seed(0)
+def extract_keyframes(video_path: str, dst_dir: str, n_frames: int):
+    reader = VideoReader(video_path, fps=FPS)
+    scene_list = detect(video_path, ContentDetector())
+    if len(scene_list) == 0:
+        # create by my own
+        step = reader.frames_count // n_frames
+        for i in range(n_frames):
+            keyframe_id = i * step
+            keyframe = reader[keyframe_id]
+            cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
+        return
 
-    # setup pretrained embeddings extractor
-    weights = torchvision.models.ResNet50_Weights.DEFAULT
-    model = torchvision.models.resnet50(weights=weights)
-    model = nn.Sequential(*list(model.children())[:-1])
-    model = model.to(device)
-    model.eval()
-    preprocess = weights.transforms()
+    # cut the first and the last scenes if it is possible
+    if len(scene_list) >= n_frames + 6:
+        scene_list = scene_list[3:-3]
+    elif len(scene_list) >= n_frames + 4:
+        scene_list = scene_list[2:-2]
+    elif len(scene_list) >= n_frames + 2:
+        scene_list = scene_list[1:-1]
+
+    n_per_scene = n_frames // len(scene_list) + 1
+
+    # form keyframes list
+    keyframes_id_list = []
+    for scene in scene_list:
+        scene_start_idx = scene[0].frame_num
+        scene_end_idx = scene[1].frame_num - 1
+        for _ in range(n_per_scene):
+            keyframe_id = random.randint(scene_start_idx, scene_end_idx)
+            keyframes_id_list.append(keyframe_id)
+
+    dataset = KeyFramesDataset(keyframes_id_list, reader)
+    dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
+
+    features = None
+    for batch in dataloader:
+        batch = PREPROCESS(batch)
+        batch = batch.to(DEVICE)
+        out = MODEL(batch).reshape(batch.shape[0], -1).cpu().detach()
+        features = out if features is None else torch.cat([features, out], dim=0)
+
+    # ensure diversity
+    kmeans = KMeans(n_clusters=n_frames, random_state=0)
+    cluster_assignments = kmeans.fit_predict(features)
+
+    # store selected keyframes
+    saved_clusters = []
+    for i, cluster_id in enumerate(cluster_assignments):
+        if cluster_id not in saved_clusters:
+            saved_clusters.append(cluster_id)
+            keyframe_id = keyframes_id_list[i]
+            keyframe = reader[keyframe_id]
+            cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
+            if saved_clusters == n_frames:
+                break
+    print(f'{video_path} is ready.\n')
+
+
+def extract_keyframes_for_dataset(dataset_path: str, n_frames: int,):
+    random.seed(0)
 
     d_dirname, d_name = os.path.split(dataset_path)
     keyframes_path = os.path.join(d_dirname, f'{d_name}_keyframes')
@@ -59,63 +116,11 @@ def extract_keyframes(dataset_path: str, n_frames: int,):
         for video_name in videos_list:
             video_path = os.path.join(dataset_path, part_dir, video_name)
             print(f'Processing {video_path}')
-
             dst_dir = os.path.join(keyframes_path, part_dir, video_name)
+            os.makedirs(dst_dir, exist_ok=True)
             if os.path.isdir(dst_dir) and len(os.listdir(dst_dir)) > 0:
                 print('Keyframes exist\n')
-                continue
-            os.makedirs(dst_dir, exist_ok=True)
-
-            scene_list = detect(video_path, ContentDetector())
-            if len(scene_list) == 0:
-                print(f"Can't process {video_path}!\n")
-                continue
-
-            # cut the first and the last scenes if it is possible
-            if len(scene_list) >= n_frames + 6:
-                scene_list = scene_list[3:-3]
-            elif len(scene_list) >= n_frames + 4:
-                scene_list = scene_list[2:-2]
-            elif len(scene_list) >= n_frames + 2:
-                scene_list = scene_list[1:-1]
-
-            n_per_scene = n_frames // len(scene_list) + 1
-            reader = VideoReader(video_path, fps=FPS)
-
-            # form keyframes list
-            keyframes_id_list = []
-            for scene in scene_list:
-                scene_start_idx = scene[0].frame_num
-                scene_end_idx = scene[1].frame_num - 1
-                for _ in range(n_per_scene):
-                    keyframe_id = random.randint(scene_start_idx, scene_end_idx)
-                    keyframes_id_list.append(keyframe_id)
-
-            dataset = KeyFramesDataset(keyframes_id_list, reader)
-            dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
-
-            features = None
-            for batch in dataloader:
-                batch = preprocess(batch)
-                batch = batch.to(device)
-                out = model(batch).reshape(batch.shape[0], -1).cpu().detach()
-                features = out if features is None else torch.cat([features, out], dim=0)
-
-            # ensure diversity
-            kmeans = KMeans(n_clusters=n_frames, random_state=0)
-            cluster_assignments = kmeans.fit_predict(features)
-
-            # store selected keyframes
-            saved_clusters = []
-            for i, cluster_id in enumerate(cluster_assignments):
-                if cluster_id not in saved_clusters:
-                    saved_clusters.append(cluster_id)
-                    keyframe_id = keyframes_id_list[i]
-                    keyframe = reader[keyframe_id]
-                    cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
-                    if saved_clusters == n_frames:
-                        break
-            print(f'{video_path} is ready.\n')
+            extract_keyframes(video_path, dst_dir, n_frames)
 
 
 def main():
@@ -125,7 +130,7 @@ def main():
 
     args = parser.parse_args()
 
-    extract_keyframes(args.dataset_path, args.n_frames)
+    extract_keyframes_for_dataset(args.dataset_path, args.n_frames)
 
 
 if __name__ == "__main__":
