@@ -48,7 +48,7 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     :param run: name of the run (e.g., "run_16")
     :param phase: name of the phase (e.g., "phase_1")
     :param snapshot_name: name of the snapshot from which we take the model
-    :param src_dir: directory with selected descriptions' dataset.
+    :param src_dir: directory with frames.
     :return: None
     """
     device = Trainer.get_device()
@@ -77,11 +77,6 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
             class_labels = class_labels_batch if class_labels is None \
                 else torch.cat([class_labels, class_labels_batch], dim=0)
     class_descriptions = descriptions[class_labels.numpy()]
-
-    for idx, ff in enumerate(sorted(os.listdir(src_dir))):
-        desc_path = os.path.join(src_dir, ff, 'descriptions.txt')
-        with open(desc_path, 'w') as f:
-            f.write(class_descriptions[idx])
 
 
 if __name__ == "__main__":
