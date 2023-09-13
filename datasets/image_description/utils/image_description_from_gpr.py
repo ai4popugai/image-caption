@@ -8,7 +8,7 @@ from datasets import FEATURE_MAPS_KEYS, FRAMES_KEY, LABELS_KEY
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNetFeatureMapExtractor, EfficientNet
 from experiments.utils import setup_run_instance
-from train.train import Trainer
+from train import Trainer
 
 
 def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, dataset_dir: str, name_prefix: str = '',

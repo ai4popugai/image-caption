@@ -12,7 +12,7 @@ from augmentations.classification.augs import BaseAug
 from metrics.base_metric import BaseMetric
 from normalize.base_normalizer import BaseNormalizer
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
-from train.train import Trainer
+from train import Trainer
 
 
 class Run(ABC):

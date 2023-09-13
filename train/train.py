@@ -12,7 +12,11 @@ from augmentations.classification.augs import BaseAug
 from metrics.base_metric import BaseMetric
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from optim_utils.iter_policy.policy import LrPolicy
-from train import MODEL_STATE_DICT_KEY, OPTIMIZER_STATE_DICT_KEY, GLOBAL_STEP_KEY
+
+
+MODEL_STATE_DICT_KEY = 'model_state_dict'
+OPTIMIZER_STATE_DICT_KEY = 'optimizer_state_dict'
+GLOBAL_STEP_KEY = 'global_step'
 
 
 class Trainer:

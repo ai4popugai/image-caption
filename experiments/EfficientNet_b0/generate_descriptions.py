@@ -12,7 +12,7 @@ from datasets import FRAMES_KEY, LABELS_KEY, LOGITS_KEY
 from datasets.classification.gpr import GPRDataset
 from db import SQLiteDb
 from experiments.utils import setup_run_instance
-from train.train import Trainer
+from train import Trainer
 
 
 class InferenceDataset(Dataset):

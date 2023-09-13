@@ -2,7 +2,7 @@ import torch
 import clip
 from PIL import Image
 
-from train.train import Trainer
+from train import Trainer
 
 # device = Trainer.get_device()
 device = torch.device("cpu")
