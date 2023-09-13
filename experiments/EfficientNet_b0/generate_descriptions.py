@@ -28,7 +28,7 @@ class InferenceDataset(Dataset):
         ])
 
         image_extensions = (".jpg", ".jpeg", ".png")
-        self.frames_list = [os.path.join(src_dir, file) for file in os.listdir(src_dir) if
+        self.frames_list = [os.path.join(src_dir, file) for file in sorted(os.listdir(src_dir)) if
                             file.endswith(image_extensions)]
 
     def __len__(self):
@@ -51,7 +51,7 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     :param src_dir: directory with frames.
     :return: None
     """
-    device = Trainer.get_device()
+    device = torch.device('cpu')
 
     # Setup run instance
     run_instance = setup_run_instance(experiment, run, phase)
