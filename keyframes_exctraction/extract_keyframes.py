@@ -85,6 +85,7 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
     dataset = KeyFramesDataset(keyframes_id_list, reader)
     dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
 
+    # get features for clusterization
     features = None
     for batch in dataloader:
         batch = PREPROCESS(batch)
