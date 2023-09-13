@@ -46,7 +46,7 @@ class KeyFramesDataset(Dataset):
         return frame
 
 
-def extract_keyframes(video_path: str, dst_dir: str, n_frames: int):
+def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, db_name=None):
     reader = VideoReader(video_path, fps=FPS)
     scene_list = detect(video_path, ContentDetector())
     if len(scene_list) == 0:
