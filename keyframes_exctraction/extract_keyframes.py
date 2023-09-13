@@ -107,7 +107,7 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
             cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
             if database is not None:
                 database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
-            if saved_clusters == n_frames:
+            if len(saved_clusters) == n_frames:
                 break
 
 
