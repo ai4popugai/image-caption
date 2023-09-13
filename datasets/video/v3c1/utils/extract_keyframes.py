@@ -12,6 +12,7 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
+from db.db import SQLiteDb
 from train.train import Trainer
 from utils.video_utils.video_reader import VideoReader
 
@@ -46,16 +47,19 @@ class KeyFramesDataset(Dataset):
         return frame
 
 
-def extract_keyframes(video_path: str, dst_dir: str, n_frames: int):
+def extract_keyframes(video_path: str, dst_dir: str, n_frames: int, database: SQLiteDb = None):
     reader = VideoReader(video_path, fps=FPS)
     scene_list = detect(video_path, ContentDetector())
     if len(scene_list) == 0:
         # create by my own
         step = reader.frames_count // n_frames
         for i in range(n_frames):
-            keyframe_id = i * step
-            keyframe = reader[keyframe_id]
-            cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
+            keyframe_index = i * step
+            keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
+            keyframe = reader[keyframe_index]
+            cv2.imwrite(os.path.join(dst_dir, keyframe_id), keyframe)
+            if database is not None:
+                database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
         return
 
     # cut the first and the last scenes if it is possible
@@ -96,9 +100,12 @@ def extract_keyframes(video_path: str, dst_dir: str, n_frames: int):
     for i, cluster_id in enumerate(cluster_assignments):
         if cluster_id not in saved_clusters:
             saved_clusters.append(cluster_id)
-            keyframe_id = keyframes_id_list[i]
-            keyframe = reader[keyframe_id]
-            cv2.imwrite(os.path.join(dst_dir, f'frame_{"%05d" % keyframe_id}.png'), keyframe)
+            keyframe_index = keyframes_id_list[i]
+            keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
+            keyframe = reader[keyframe_index]
+            cv2.imwrite(os.path.join(dst_dir, keyframe_id), keyframe)
+            if database is not None:
+                database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
             if saved_clusters == n_frames:
                 break
     print(f'{video_path} is ready.\n')
