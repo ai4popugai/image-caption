@@ -34,8 +34,9 @@ class SQLiteDb:
     def add_concept_to_row(self, video_id, keyframe_id, concept):
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
-            cursor.execute(f"UPDATE {self.db_name} SET {CONCEPT_KEY} = '{concept}' "
-                           f"WHERE {VIDEO_ID_KEY} = '{video_id}' AND {KEYFRAME_ID_KEY} = '{keyframe_id}'")
+            cursor.execute(f"UPDATE {self.db_name} SET {CONCEPT_KEY} = ? "
+                           f"WHERE {VIDEO_ID_KEY} = '{video_id}' AND {KEYFRAME_ID_KEY} = '{keyframe_id}'",
+                           (concept,))
             connect.commit()
 
     def add_objects_to_row(self, video_id, keyframe_id, objects):
