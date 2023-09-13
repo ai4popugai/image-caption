@@ -60,7 +60,7 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
             keyframe = reader[keyframe_index]
             cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
             if database is not None:
-                database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
+                database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
         return
 
     # cut the first and the last scenes if it is possible
@@ -106,7 +106,7 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
             keyframe = reader[keyframe_index]
             cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
             if database is not None:
-                database.add_new_key(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
+                database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
             if saved_clusters == n_frames:
                 break
 
