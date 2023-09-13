@@ -8,6 +8,7 @@ from experiments.EfficientNet_b0.generate_descriptions import generate_descripti
 # setup concept detection model constants
 from keyframes_exctraction import KEYFRAMES_DIR_KEY
 from keyframes_exctraction.extract_keyframes import extract_keyframes
+from nn_models.object_detection.yolov7 import yolo_inference
 
 EXPERIMENT = 'EfficientNet_b0'
 RUN = 'run_32'
@@ -33,6 +34,9 @@ def main(videos_dir: str, n_frames: int):
 
         # generate description
         generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir, database)
+
+        # detect objects
+        yolo_inference(videos_dir, database=database)
 
 
 if __name__ == '__main__':
