@@ -36,7 +36,7 @@ def preprocess_videos(videos_dir: str, n_frames: int):
         generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir, database)
 
         # detect objects
-        yolo_inference(videos_dir, database=database)
+        yolo_inference(keyframes_dir, database=database)
 
 
 if __name__ == '__main__':
