@@ -9,7 +9,7 @@ import cv2
 from db import SQLiteDb
 
 
-def inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None,):
+def yolo_inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None,):
     det = Yolov7Detector(traced=False)
     video_id = os.path.basename(frames_dir)
 
@@ -29,7 +29,7 @@ def inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None
             store_path = os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.json')
             with open(store_path, 'w') as f:
                 json.dump(objects, f)
-            cv2.imwrite( os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.png'), img)
+            cv2.imwrite(os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.png'), img)
         else:
             keyframe_id = os.path.basename(frame_path)
             database.add_objects_to_row(video_id, keyframe_id, objects)
@@ -37,7 +37,7 @@ def inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Object detection script')
-    parser.add_argument('--v3c1_keyframes_dir', required=True, help='Path to the directory containing keyframes')
+    parser.add_argument('--frames_dir', required=True, help='Path to the directory containing keyframes')
     parser.add_argument('--threshold', type=float, default=0.5, help='Detection threshold')
     args = parser.parse_args()
-    inference(args.v3c1_keyframes_dir, args.threshold)
+    yolo_inference(args.frames_dir, args.threshold)
