@@ -44,3 +44,10 @@ class SQLiteDb:
             cursor.execute(f"UPDATE {self.db_name} SET {OBJECTS_KEY} = '{objects}' "
                            f"WHERE {VIDEO_ID_KEY} = '{video_id}' AND {KEYFRAME_ID_KEY} = '{keyframe_id}'")
             connect.commit()
+
+    def get_rows_by_concept(self, concept):
+        with sqlite3.connect(self.db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"SELECT * FROM {self.db_name} WHERE {CONCEPT_KEY} = ?", (concept,))
+            rows = cursor.fetchall()
+            return rows
