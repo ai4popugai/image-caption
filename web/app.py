@@ -9,7 +9,6 @@ from web.web_functional import preprocess_videos
 NUM_KEY_FRAMES = 25
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
 
 WEB_EXECUTION_FOLDER = os.path.join(os.getcwd(), 'web_exe')
 os.makedirs(WEB_EXECUTION_FOLDER, exist_ok=True)
