@@ -1,7 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, flash, redirect, url_for
 import os
+import threading
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'web', 'upload')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -14,19 +16,21 @@ def index():
 
 
 @app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return "No file part"
+def upload_videos():
+    files = request.files.getlist('file')
 
-    file = request.files['file']
+    if not files:
+        return "No selected files"
 
-    if file.filename == '':
-        return "No selected file"
+    for file in files:
+        if file.filename == '':
+            continue
 
-    if file:
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filename)
-        return "File uploaded successfully"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], os.path.dirname(file.filename), file.filename))
+
+    flash(f'{len(files)} video(s) uploaded successfully.')
+
+    return "Videos uploaded successfully."
 
 
 if __name__ == '__main__':
