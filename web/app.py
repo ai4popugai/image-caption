@@ -1,3 +1,4 @@
+import atexit
 import sys
 import shutil
 
@@ -85,19 +86,20 @@ def handle_object_class():
 
 
 @app.route('/exit', methods=['GET'])
-def exit_app():
-    shutil.rmtree(WEB_EXECUTION_FOLDER, ignore_errors=True)
+def cleanup():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is not None:
+        func()
 
-    # Include JavaScript to close the browser window
-    close_window_script = """
-    <script>
-        window.close();
-    </script>
-    """
+    # Delete the WEB_EXECUTION_FOLDER and its contents
+    if os.path.exists(WEB_EXECUTION_FOLDER):
+        shutil.rmtree(WEB_EXECUTION_FOLDER)
 
-    # Return the script to close the window and forcibly exit the Python script
-    return close_window_script
+    # Exit the Python script
+    sys.exit(0)
 
 
 if __name__ == '__main__':
+    atexit.register(cleanup)
+
     app.run(debug=False)
