@@ -21,7 +21,7 @@ os.makedirs(WEB_EXECUTION_FOLDER, exist_ok=True)
 UPLOAD_FOLDER = os.path.join(WEB_EXECUTION_FOLDER, 'upload')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-DB_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'db')
+DB_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'db.db')
 DB = SQLiteDb(DB_PATH)
 
 PROCESSING_THREAD = threading.Thread(target=preprocess_videos,
