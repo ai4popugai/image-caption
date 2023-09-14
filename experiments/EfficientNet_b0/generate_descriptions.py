@@ -60,7 +60,7 @@ def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: 
     run_instance = setup_run_instance(experiment, run, phase)
 
     # Setup pretrained model
-    model = run_instance.setup_pretrained_model(snapshot_name)
+    model = run_instance.setup_pretrained_model(snapshot_name, device)
     model.to(device)
     model.eval()
 

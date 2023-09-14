@@ -53,10 +53,11 @@ class RunBase(Run):
     def setup_model(self) -> BaseClassificationModel:
         return EfficientNet(num_classes=self._num_classes)
 
-    def setup_pretrained_model(self, snapshot_name: str):
+    def setup_pretrained_model(self, snapshot_name: str, device: torch.device):
         """
         Script set up model by experiment, run, phase and snapshot.
 
+        :param device: device to map weights
         :param snapshot_name: name of the snapshot from which we take the model
         :return: model with loaded weights.
         """
@@ -65,7 +66,7 @@ class RunBase(Run):
 
         # load snapshot
         snapshot_path = os.path.join(self.snapshot_dir, snapshot_name)
-        checkpoint = torch.load(snapshot_path, map_location=Trainer.get_device())
+        checkpoint = torch.load(snapshot_path, map_location=device)
         model.load_state_dict(checkpoint[MODEL_STATE_DICT_KEY], strict=True)
 
         return model
