@@ -1,4 +1,5 @@
 import sys
+import shutil
 
 from flask import Flask, request, render_template, flash, redirect, url_for
 import os
@@ -81,6 +82,21 @@ def handle_object_class():
     print(matches)
 
     return redirect(url_for('render_main_page'))
+
+
+@app.route('/exit', methods=['GET'])
+def exit_app():
+    shutil.rmtree(WEB_EXECUTION_FOLDER, ignore_errors=True)
+
+    # Include JavaScript to close the browser window
+    close_window_script = """
+    <script>
+        window.close();
+    </script>
+    """
+
+    # Return the script to close the window and forcibly exit the Python script
+    return close_window_script
 
 
 if __name__ == '__main__':
