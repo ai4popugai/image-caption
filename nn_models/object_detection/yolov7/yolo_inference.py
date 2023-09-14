@@ -6,10 +6,11 @@ from yolov7_package import Yolov7Detector
 import cv2
 
 from db import SQLiteDb
+DET = Yolov7Detector(traced=False)
+YOLO_NAMES = DET.names
 
 
 def yolo_inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None,):
-    det = Yolov7Detector(traced=False)
     video_id = os.path.basename(frames_dir)
 
     image_extensions = (".jpg", ".jpeg", ".png")
@@ -18,12 +19,12 @@ def yolo_inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb =
 
     for frame_path in frames_list:
         img = cv2.imread(frame_path)
-        classes, boxes, scores = det.detect(img)
+        classes, boxes, scores = DET.detect(img)
         objects = []
         for class_id, box, score in zip(classes[0], boxes[0], scores[0]):
             if score >= threshold:
-                objects.append({det.names[class_id]: box})
-                img = det.draw_on_image(img, [box], [score], [class_id])
+                objects.append({YOLO_NAMES[class_id]: box})
+                img = DET.draw_on_image(img, [box], [score], [class_id])
         if database is None:
             store_path = os.path.join(frames_dir, f'{os.path.basename(frame_path)}_objects.json')
             with open(store_path, 'w') as f:
