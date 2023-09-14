@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, flash, redirect, url_for
 import os
 import threading
 
+from datasets.classification.gpr import GPRDataset
 from db import SQLiteDb
 from web.web_functional import preprocess_videos
 
@@ -48,7 +49,15 @@ def process_uploaded_videos():
     preprocessing_thread = threading.Thread(target=preprocess_videos, args=(UPLOAD_FOLDER, 50, DB))
     preprocessing_thread.start()
 
-    return "Video processing started."
+    # Render the template with the dropdown menus
+    return redirect(url_for('render_main_page'))
+
+
+@app.route('/render_main_page')
+def render_main_page():
+    categories = GPRDataset().read_descriptions()
+    print(categories)
+    return render_template('categories.html',  categories=categories)
 
 
 if __name__ == '__main__':

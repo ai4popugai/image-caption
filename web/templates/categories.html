@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Categories</title>
+</head>
+<body>
+    <h1>Categories</h1>
+    <label for="category">Category:</label>
+    <select id="category">
+        {% for key, value in categories.items() %}
+        <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+    </select>
+</body>
+</html>
