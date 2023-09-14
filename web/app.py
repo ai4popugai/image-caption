@@ -2,14 +2,20 @@ from flask import Flask, request, render_template, flash, redirect, url_for
 import os
 import threading
 
+from db import SQLiteDb
 from web.web_functional import preprocess_videos
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'web', 'upload')
+WEB_EXECUTION_FOLDER = os.path.join(os.getcwd(), 'web_exe')
+os.makedirs(WEB_EXECUTION_FOLDER, exist_ok=True)
+
+UPLOAD_FOLDER = os.path.join(WEB_EXECUTION_FOLDER, 'upload')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+DB_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'db')
+DB = SQLiteDb(DB_PATH)
 
 
 @app.route('/')
@@ -28,7 +34,7 @@ def upload_videos():
         if file.filename == '':
             continue
 
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], os.path.dirname(file.filename), file.filename))
+        file.save(os.path.join(UPLOAD_FOLDER, os.path.dirname(file.filename), file.filename))
 
     flash(f'{len(files)} video(s) uploaded successfully.')
 
@@ -39,7 +45,7 @@ def upload_videos():
 @app.route('/process_videos')
 def process_uploaded_videos():
     # Apply your preprocess_videos method to the UPLOAD folder
-    preprocessing_thread = threading.Thread(target=preprocess_videos, args=(app.config['UPLOAD_FOLDER'], 50))
+    preprocessing_thread = threading.Thread(target=preprocess_videos, args=(UPLOAD_FOLDER, 50, DB))
     preprocessing_thread.start()
 
     return "Video processing started."
