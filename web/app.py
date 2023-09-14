@@ -63,6 +63,7 @@ def render_main_page():
 def handle_concept():
     selected_category = request.form.get('selected_category')
 
+    print(f'target concept: {selected_category}')
     matches = DB.get_rows_by_concept(selected_category)
     print(matches)
 
@@ -73,7 +74,9 @@ def handle_concept():
 def handle_object_class():
     selected_object_class = request.form.get('selected_object_class')
 
-    print(selected_object_class)
+    print(f'target object class: {selected_object_class}')
+    matches = DB.get_rows_by_object(selected_object_class)
+    print(matches)
 
     return redirect(url_for('render_main_page'))
 

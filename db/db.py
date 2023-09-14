@@ -45,9 +45,17 @@ class SQLiteDb:
                            f"WHERE {VIDEO_ID_KEY} = '{video_id}' AND {KEYFRAME_ID_KEY} = '{keyframe_id}'")
             connect.commit()
 
-    def get_rows_by_concept(self, concept):
+    def get_rows_by_concept(self, target_concept):
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
-            cursor.execute(f"SELECT * FROM {self.db_name} WHERE {CONCEPT_KEY} = ?", (concept,))
+            cursor.execute(f"SELECT * FROM {self.db_name} WHERE {CONCEPT_KEY} = ?", (target_concept,))
             rows = cursor.fetchall()
             return rows
+
+    def get_rows_by_object(self, target_object):
+        with sqlite3.connect(self.db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"SELECT * FROM {self.db_name} WHERE {OBJECTS_KEY} LIKE ?", (f'%"{target_object}":%',))
+            rows = cursor.fetchall()
+            return rows
+
