@@ -94,7 +94,8 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
         features = out if features is None else torch.cat([features, out], dim=0)
 
     # ensure diversity
-    kmeans = KMeans(n_clusters=n_frames, random_state=0)
+    kmeans = KMeans(n_clusters=n_frames if len(keyframes_id_list) > n_frames else len(keyframes_id_list),
+                    random_state=0)
     cluster_assignments = kmeans.fit_predict(features)
 
     # store selected keyframes
