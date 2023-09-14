@@ -4,7 +4,7 @@ import threading
 
 from datasets.classification.gpr import GPRDataset
 from db import SQLiteDb
-from web.web_functional import preprocess_videos
+from web.preprocess_video import preprocess_videos
 
 NUM_KEY_FRAMES = 25
 
