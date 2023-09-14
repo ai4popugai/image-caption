@@ -16,12 +16,11 @@ PHASE = 'phase_2'
 SNAPSHOT_NAME = 'snapshot_3600.pth'
 
 
-def preprocess_videos(videos_dir: str, n_frames: int):
+def preprocess_videos(videos_dir: str, n_frames: int, database: SQLiteDb = None,):
     random.seed(0)
 
     videos_list = [video for video in sorted(os.listdir(videos_dir)) if video.endswith('.mp4')]
 
-    database = SQLiteDb(os.path.basename(videos_dir))
     # process videos one by one
     for video_name in videos_list:
         # setup paths
@@ -45,4 +44,5 @@ if __name__ == '__main__':
     parser.add_argument('--n_frames', type=int, default=20, help='Number of keyframes to extract per video')
     args = parser.parse_args()
 
+    database = SQLiteDb(os.path.basename(args.videos_dir))
     preprocess_videos(args.videos_dir, args.n_frames)

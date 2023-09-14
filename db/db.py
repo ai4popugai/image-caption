@@ -9,9 +9,8 @@ CONCEPT_KEY = 'concept'
 
 
 class SQLiteDb:
-    def __init__(self, db_name):
-        self.db_dir = os.environ["SQLITE_DB_DIR"]
-
+    def __init__(self, db_path):
+        self.db_dir, db_name = os.path.split(db_path)
         self.version = len(glob.glob(os.path.join(self.db_dir, f"{db_name}*")))
         self.db_name = f"{db_name}_{self.version}"
         self.db_path = os.path.join(self.db_dir, self.db_name)
