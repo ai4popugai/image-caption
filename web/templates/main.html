@@ -6,10 +6,10 @@
 </head>
 <body>
     <h1>Categories</h1>
-    <form method="POST" action="/handle_category">
+    <form method="POST" action="/handle_concept">
         <label for="category">Category:</label>
         <select id="category" name="selected_category">
-            {% for key, value in categories.items() %}
+            {% for value in categories %}
             <option value="{{ value }}">{{ value }}</option>
             {% endfor %}
         </select>
