@@ -18,7 +18,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 DB_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'db')
 DB = SQLiteDb(DB_PATH)
 
-PROCESSING_THREAD = threading.Thread(target=preprocess_videos, args=(UPLOAD_FOLDER, 50, DB))
+PROCESSING_THREAD = threading.Thread(target=preprocess_videos, args=(UPLOAD_FOLDER, 10, DB))
 
 
 @app.route('/')
@@ -50,6 +50,20 @@ def render_main_page():
     PROCESSING_THREAD.join()
     categories = GPRDataset().read_descriptions()
     return render_template('main.html',  categories=categories)
+
+
+@app.route('/handle_category', methods=['POST'])
+def handle_category():
+    selected_category = request.form.get('selected_category')
+
+    # Now you have the selected category, and you can perform any necessary actions with it.
+    # For example, you can pass it to a function or store it in a session.
+
+    # You can also redirect the user to another page based on their selection.
+    # For now, let's just print the selected category to the console:
+    print("Selected category:", selected_category)
+
+    return redirect(url_for('render_main_page'))
 
 
 if __name__ == '__main__':
