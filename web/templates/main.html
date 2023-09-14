@@ -2,14 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Categories</title>
+    <title>Main Page</title>
+
+    <!-- Add CSS for spacing -->
+    <style>
+        .dropdown {
+            margin-bottom: 20px; /* You can adjust the margin to your desired spacing */
+        }
+    </style>
 </head>
 <body>
-    <h1>Categories</h1>
-    <form method="POST" action="/handle_concept">
+    <h1>Main Page</h1>
+
+    <!-- Dropdown menu for categories -->
+    <form method="POST" action="/handle_concept" class="dropdown">
         <label for="category">Category:</label>
         <select id="category" name="selected_category">
             {% for value in categories %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Dropdown menu for object_classes -->
+    <form method="POST" action="/handle_object_class" class="dropdown">
+        <label for="object_class">Object Class:</label>
+        <select id="object_class" name="selected_object_class">
+            {% for value in object_classes %}
             <option value="{{ value }}">{{ value }}</option>
             {% endfor %}
         </select>
