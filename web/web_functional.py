@@ -44,5 +44,5 @@ if __name__ == '__main__':
     parser.add_argument('--n_frames', type=int, default=20, help='Number of keyframes to extract per video')
     args = parser.parse_args()
 
-    database = SQLiteDb(os.path.basename(args.videos_dir))
+    database = SQLiteDb(os.path.join(os.environ['SQLITE_DB_DIR'], os.path.basename(args.videos_dir)))
     preprocess_videos(args.videos_dir, args.n_frames)
