@@ -18,6 +18,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 DB_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'db')
 DB = SQLiteDb(DB_PATH)
 
+PROCESSING_THREAD = threading.Thread(target=preprocess_videos, args=(UPLOAD_FOLDER, 50, DB))
+
 
 @app.route('/')
 def index():
@@ -37,26 +39,16 @@ def upload_videos():
 
         file.save(os.path.join(UPLOAD_FOLDER, os.path.dirname(file.filename), file.filename))
 
-    flash(f'{len(files)} video(s) uploaded successfully.')
+    PROCESSING_THREAD.start()
 
     # Redirect the user to the process_videos route
-    return redirect(url_for('process_uploaded_videos'))
-
-
-@app.route('/process_videos')
-def process_uploaded_videos():
-    # Apply your preprocess_videos method to the UPLOAD folder
-    preprocessing_thread = threading.Thread(target=preprocess_videos, args=(UPLOAD_FOLDER, 50, DB))
-    preprocessing_thread.start()
-
-    # Render the template with the dropdown menus
     return redirect(url_for('render_main_page'))
 
 
 @app.route('/render_main_page')
 def render_main_page():
+    PROCESSING_THREAD.join()
     categories = GPRDataset().read_descriptions()
-    print(categories)
     return render_template('categories.html',  categories=categories)
 
 
