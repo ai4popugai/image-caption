@@ -21,7 +21,8 @@ class GPRDataset(Dataset):
         images_dir = os.path.join(root, 'images')
         self.description_path = os.path.join(root, 'categories.json')
         self.resolution = resolution
-        self.frames_list = [os.path.join(images_dir, file_name) for file_name in sorted(os.listdir(images_dir))]
+        self.frames_list = [os.path.join(images_dir, file_name) for file_name in sorted(os.listdir(images_dir))] \
+            if os.path.isdir(os.path.join(images_dir)) else []
         self.frame_transforms = Compose([
             ToTensor(),
             Resize(resolution, InterpolationMode.BILINEAR, antialias=False)
