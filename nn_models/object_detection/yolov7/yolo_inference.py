@@ -1,14 +1,11 @@
 import argparse
-import glob
 import json
 import os
 
-import torch
 from yolov7_package import Yolov7Detector
 import cv2
 
 from db import SQLiteDb
-from train import Trainer
 
 
 def yolo_inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None,):
