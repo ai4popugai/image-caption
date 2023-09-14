@@ -4,6 +4,7 @@ import threading
 
 from datasets.classification.gpr import GPRDataset
 from db import SQLiteDb
+from nn_models.object_detection.yolov7.yolo_inference import YOLO_NAMES
 from web.preprocess_video import preprocess_videos
 
 NUM_KEY_FRAMES = 25
@@ -52,7 +53,10 @@ def render_main_page():
     PROCESSING_THREAD.join()
     categories = GPRDataset().read_descriptions()
     categories = sorted(list(categories.values()))
-    return render_template('main.html',  categories=categories)
+
+    object_classes = sorted(YOLO_NAMES)
+
+    return render_template('main.html', categories=categories, object_classes=object_classes)
 
 
 @app.route('/handle_concept', methods=['POST'])
@@ -61,6 +65,15 @@ def handle_concept():
 
     matches = DB.get_rows_by_concept(selected_category)
     print(matches)
+
+    return redirect(url_for('render_main_page'))
+
+
+@app.route('/handle_object_class', methods=['POST'])
+def handle_object_class():
+    selected_object_class = request.form.get('selected_object_class')
+
+    print(selected_object_class)
 
     return redirect(url_for('render_main_page'))
 
