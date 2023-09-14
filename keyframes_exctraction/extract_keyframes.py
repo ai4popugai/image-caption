@@ -52,7 +52,7 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
     reader = VideoReader(video_path, fps=FPS)
     scene_list = detect(video_path, ContentDetector())
     if len(scene_list) == 0:
-        # create by my own
+        # fallback fir case if scene detect algorythm is failed
         step = reader.frames_count // n_frames
         for i in range(n_frames):
             keyframe_index = i * step
