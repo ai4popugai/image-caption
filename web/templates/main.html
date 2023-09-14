@@ -16,7 +16,7 @@
 
     <!-- Dropdown menu for categories -->
     <form method="POST" action="/handle_concept" class="dropdown">
-        <label for="category">Category:</label>
+        <label for="category">Concept:</label>
         <select id="category" name="selected_category">
             {% for value in categories %}
             <option value="{{ value }}">{{ value }}</option>
