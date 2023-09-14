@@ -1,3 +1,5 @@
+import sys
+
 from flask import Flask, request, render_template, flash, redirect, url_for
 import os
 import threading
@@ -11,7 +13,7 @@ NUM_KEY_FRAMES = 25
 
 app = Flask(__name__)
 
-WEB_EXECUTION_FOLDER = os.path.join(os.getcwd(), 'web_exe')
+WEB_EXECUTION_FOLDER = os.path.join(os.getcwd(), 'web_runtime')
 os.makedirs(WEB_EXECUTION_FOLDER, exist_ok=True)
 
 UPLOAD_FOLDER = os.path.join(WEB_EXECUTION_FOLDER, 'upload')
