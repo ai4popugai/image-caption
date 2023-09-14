@@ -33,7 +33,7 @@ class GPRDataset(Dataset):
         Metgod reads json self.description_path and returns dict with categories descriptions
         :return: desciptions dict
         """
-        with open(self.description_path, 'r') as f:
+        with open(self.description_path, 'r', encoding='utf8') as f:
             descriptions = json.load(f)
         return descriptions
 
