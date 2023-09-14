@@ -49,7 +49,7 @@ def upload_videos():
 def render_main_page():
     PROCESSING_THREAD.join()
     categories = GPRDataset().read_descriptions()
-    return render_template('categories.html',  categories=categories)
+    return render_template('main.html',  categories=categories)
 
 
 if __name__ == '__main__':
