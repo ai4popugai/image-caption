@@ -96,10 +96,8 @@ def cleanup():
         shutil.rmtree(WEB_EXECUTION_FOLDER)
 
     # Exit the Python script
-    sys.exit(0)
+    os._exit(0)
 
 
 if __name__ == '__main__':
-    atexit.register(cleanup)
-
     app.run(debug=False)
