@@ -18,15 +18,15 @@ class AttentionDecoder(nn.Module):
         # linear layer to transform context vector from keys_hidden_size to hidden_size
         self.fc_0 = nn.Linear(keys_hidden_size, hidden_size)
 
-        # linear layer to transform input embeddings from embedding_size to hidden_size
-        self.fc_1 = nn.Linear(embedding_size, hidden_size)
-
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
         self.vocab_size = vocab_size
 
         # embedding layer to convert words indices to embeddings
         self.embedding = nn.Embedding(vocab_size, embedding_size)
+
+        # linear layer to transform input embeddings from embedding_size to hidden_size
+        self.fc_1 = nn.Linear(embedding_size, hidden_size)
 
         # rnn cell
         self.num_layers = num_layers
