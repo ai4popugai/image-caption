@@ -42,7 +42,7 @@ class AttentionDecoder(nn.Module):
         embeddings = self.embedding(tokenized_word)  # embeddings: (batch_size, embedding_size)
         return self.fc_1(embeddings)  # x: (batch_size, hidden_size)
 
-    def _forward(self, s_hidden: torch.Tensor, keys: torch.Tensor) \
+    def _forward(self, s_hidden: torch.Tensor, keys: torch.Tensor, force: torch.Tensor = None) \
             -> (torch.Tensor, torch.Tensor, torch.Tensor):
         """
         One step forward of the decoder, given the hidden state s_hidden and the keys (feature maps).
@@ -50,6 +50,7 @@ class AttentionDecoder(nn.Module):
 
         :param s_hidden: hidden state of the previous time step (num_layers, batch_size, hidden_size).
         :param keys: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
+        :param force: (batch_size, hidden_size) tensor from input ground true y_i-1.
         :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
         """
         # I get hidden state (batch_size, 1, hidden_size) from the last layer of GRU to the attention layer
@@ -57,7 +58,7 @@ class AttentionDecoder(nn.Module):
         # weights: (batch_size, 1, seq_len)
         context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
         # rnn_input: (batch_size, 1, hidden_size + hidden_size)
-        rnn_input = torch.cat([s_hidden[-1].unsqueeze(1), context], dim=-1)
+        rnn_input = torch.cat([force.unsqueeze(1) if force is not None else s_hidden[-1].unsqueeze(1), context], dim=-1)
         # GRU takes input of shape (batch_size, 1, 2 * hidden_size
         # and hidden of shape (num_layers, batch_size, hidden_size)
         y_t, s = self.rnn(rnn_input, s_hidden)  # output: (batch_size, 1, hidden_size)
@@ -78,20 +79,23 @@ class AttentionDecoder(nn.Module):
         batch_size = features.shape[0]
         assert batch_size == 1, "In inference mode batch size must be 1."
         # s_hidden: (num_layers, batch_size, hidden_size)
-        s_hidden = self._token_to_hidden(self.sos_tokenized)\
-            .repeat(batch_size).repeat(self.num_layers).to(features.device)
+        s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
+        # force: (batch_size, hidden_size)
+        force = self._token_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
 
         for t in range(self.max_len):
-            y_t, s_hidden, _ = self._forward(s_hidden, features)  # output: (batch_size, vocab_size)
-                                                                  # s_hidden: (num_layers, batch_size, hidden_size)
+            y_t, s_hidden, _ = self._forward(s_hidden, features, force=force)  # output: (batch_size, vocab_size)
+            # s_hidden: (num_layers, batch_size, hidden_size)
             outputs[:, t, :] = y_t
             # get the most probable word index
             decoded_token = y_t.argmax(dim=-1)  # decoded_token: (batch_size,)
             # check if decoded_token is EOS token
             if (decoded_token == self.eos_tokenized).all().item():
                 return outputs[:, :t + 1, :]
+            # set force to None
+            force = None
 
         return outputs
 
