@@ -50,15 +50,15 @@ class AttentionDecoder(nn.Module):
         embeddings = self.embedding(tokenized_word)  # embeddings: (batch_size, embedding_size)
         return self.fc_1(embeddings)  # x: (batch_size, hidden_size)
 
-    def _forward(self, s_hidden: torch.Tensor, keys: torch.Tensor, force: torch.Tensor = None) \
+    def _forward(self, decoder_input: torch.Tensor, s_hidden: torch.Tensor, keys: torch.Tensor,) \
             -> (torch.Tensor, torch.Tensor, torch.Tensor):
         """
         One step forward of the decoder, given the hidden state s_hidden and the keys (feature maps).
         s_hidden is the hidden state of the previous time step.
 
+        :param decoder_input: (batch_size, hidden_size) tensor from input ground true y_i-1 or previous predicted word.
         :param s_hidden: hidden state of the previous time step (num_layers, batch_size, hidden_size).
         :param keys: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
-        :param force: (batch_size, hidden_size) tensor from input ground true y_i-1.
         :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
         """
         # I get hidden state (batch_size, 1, hidden_size) from the last layer of GRU to the attention layer
@@ -68,7 +68,7 @@ class AttentionDecoder(nn.Module):
         context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
 
         # rnn_input: (batch_size, 1, hidden_size + hidden_size)
-        rnn_input = torch.cat([force.unsqueeze(1) if force is not None else s_hidden[-1].unsqueeze(1), context], dim=-1)
+        rnn_input = torch.cat([decoder_input.unsqueeze(1), context], dim=-1)
 
         # GRU takes input of shape (batch_size, 1, 2 * hidden_size
         # and hidden of shape (num_layers, batch_size, hidden_size)
@@ -93,14 +93,15 @@ class AttentionDecoder(nn.Module):
         # s_hidden: (num_layers, batch_size, hidden_size)
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
 
-        # force: (batch_size, hidden_size), always start with SOS token
-        force = self._tokenized_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
+        # decoder_input: (batch_size, hidden_size), always start with SOS token
+        decoder_input = self._tokenized_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1))\
+            .to(features.device)
 
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
 
         for t in range(self.max_len):
-            y_t, s_hidden, _ = self._forward(s_hidden, features, force=force)  # output: (batch_size, vocab_size)
+            y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)  # y_t: (batch_size, vocab_size)
             # s_hidden: (num_layers, batch_size, hidden_size)
 
             outputs[:, t, :] = y_t
@@ -112,8 +113,8 @@ class AttentionDecoder(nn.Module):
             if (decoded_token == self.eos_tokenized).all().item():
                 return outputs[:, :t + 1, :]
 
-            # set force to None
-            force = None
+            # set new decoder_input
+            decoder_input = self._tokenized_to_hidden(decoded_token)
 
         return outputs
 
@@ -133,16 +134,17 @@ class AttentionDecoder(nn.Module):
         # s_hidden: (num_layers, batch_size, hidden_size)
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
 
-        # force: (batch_size, hidden_size), always start with <sos> token
-        force = self._tokenized_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
+        # decoder_input: (batch_size, hidden_size), always start with <sos> token
+        decoder_input = self._tokenized_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1))\
+            .to(features.device)
 
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
 
         for t in range(out_seq_len):
-            y_t, s_hidden, _ = self._forward(s_hidden, features, force=force)
+            y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)
             outputs[:, t, :] = y_t
-            force = self._tokenized_to_hidden(captions[t]) if teacher_forcing else None
+            decoder_input = self._tokenized_to_hidden(captions[t] if teacher_forcing else y_t.argmax(dim=-1))
         return outputs
 
     def forward(self, features: torch.Tensor,
