@@ -72,12 +72,12 @@ class AttentionDecoder(nn.Module):
 
         # GRU takes input of shape (batch_size, 1, 2 * hidden_size
         # and hidden of shape (num_layers, batch_size, hidden_size)
-        y_t, s = self.rnn(rnn_input, s_hidden)  # output: (batch_size, 1, hidden_size)
+        y_t, s_hidden = self.rnn(rnn_input, s_hidden)  # output: (batch_size, 1, hidden_size)
         # s_hidden: (num_layers, batch_size, hidden_size)
 
         y_t = y_t.squeeze(1)  # output: (batch_size, hidden_size)
         y_t = self.fc_2(y_t)  # output: (batch_size, vocab_size)
-        return y_t, s, weights
+        return y_t, s_hidden, weights
 
     def _forward_inference(self, features: torch.Tensor) -> torch.Tensor:
         """
