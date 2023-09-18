@@ -70,8 +70,8 @@ class AttentionDecoder(nn.Module):
         # rnn_input: (batch_size, 1, hidden_size + hidden_size)
         rnn_input = torch.cat([decoder_input.unsqueeze(1), context], dim=-1)
 
-        # GRU takes input of shape (batch_size, 1, 2 * hidden_size
-        # and hidden of shape (num_layers, batch_size, hidden_size)
+        # GRU takes rnn_input: (batch_size, 1, 2 * hidden_size
+        # and s_hidden: (num_layers, batch_size, hidden_size)
         y_t, s_hidden = self.rnn(rnn_input, s_hidden)  # output: (batch_size, 1, hidden_size)
         # s_hidden: (num_layers, batch_size, hidden_size)
 
