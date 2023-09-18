@@ -40,7 +40,7 @@ class AttentionDecoder(nn.Module):
         self.sos_tokenized = sos_tokenized
         self.eos_tokenized = eos_tokenized
 
-    def _token_to_hidden(self, tokenized_word: torch.Tensor) -> torch.Tensor:
+    def _tokenized_to_hidden(self, tokenized_word: torch.Tensor) -> torch.Tensor:
         """
         Convert tokenized word firstly to embeddings and then to s_hidden.
 
@@ -94,7 +94,7 @@ class AttentionDecoder(nn.Module):
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
 
         # force: (batch_size, hidden_size), always start with SOS token
-        force = self._token_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
+        force = self._tokenized_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
 
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
@@ -134,7 +134,7 @@ class AttentionDecoder(nn.Module):
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
 
         # force: (batch_size, hidden_size), always start with <sos> token
-        force = self._token_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
+        force = self._tokenized_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
 
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
@@ -142,7 +142,7 @@ class AttentionDecoder(nn.Module):
         for t in range(out_seq_len):
             y_t, s_hidden, _ = self._forward(s_hidden, features, force=force)
             outputs[:, t, :] = y_t
-            force = self._token_to_hidden(captions[t]) if teacher_forcing else None
+            force = self._tokenized_to_hidden(captions[t]) if teacher_forcing else None
         return outputs
 
     def forward(self, features: torch.Tensor,
