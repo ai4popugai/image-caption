@@ -134,7 +134,7 @@ class AttentionDecoder(nn.Module):
         # s_hidden: (num_layers, batch_size, hidden_size)
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
 
-        # decoder_input: (batch_size, hidden_size), always start with <sos> token
+        # decoder_input: (batch_size, hidden_size), always start with SOS token
         decoder_input = self._tokenized_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1))\
             .to(features.device)
 
