@@ -32,17 +32,15 @@ class AttentionDecoder(nn.Module):
         self.sos_tokenized = sos_tokenized
         self.eos_tokenized = eos_tokenized
 
-    def _tokens_to_hidden(self, tokenized_words: torch.Tensor) -> torch.Tensor:
+    def _token_to_hidden(self, tokenized_word: torch.Tensor) -> torch.Tensor:
         """
-        Convert tokenized words firstly to embeddings and then to x.
+        Convert tokenized word firstly to embeddings and then to s_hidden.
 
-        :param tokenized_words: (batch_size, seq_len) or (batch_size,) - tokenized words.
-        :return: (batch_size, seq_len, hidden_size) or (batch_size, hidden_size) - ready to go x.
+        :param tokenized_word: (batch_size,) - tokenized words.
+        :return: (batch_size, hidden_size) - vector that can be treated as s_hidden.
         """
-        embeddings = self.embedding(tokenized_words)  # embeddings: (batch_size, seq_len, embedding_size)
-        # or (batch_size, embedding_size)
-        return self.fc_1(embeddings)  # x: (batch_size, seq_len, hidden_size)
-        # or (batch_size, hidden_size) - ready to go captions
+        embeddings = self.embedding(tokenized_word)  # embeddings: (batch_size, embedding_size)
+        return self.fc_1(embeddings)  # x: (batch_size, hidden_size)
 
     def _forward(self, s_hidden: torch.Tensor, keys: torch.Tensor) \
             -> (torch.Tensor, torch.Tensor, torch.Tensor):
@@ -80,7 +78,7 @@ class AttentionDecoder(nn.Module):
         batch_size = features.shape[0]
         assert batch_size == 1, "In inference mode batch size must be 1."
         # s_hidden: (num_layers, batch_size, hidden_size)
-        s_hidden = self._tokens_to_hidden(self.sos_tokenized)\
+        s_hidden = self._token_to_hidden(self.sos_tokenized)\
             .repeat(batch_size).repeat(self.num_layers).to(features.device)
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
@@ -106,7 +104,7 @@ class AttentionDecoder(nn.Module):
         :return: (batch_size, seq_len - 1, vocab_size) - predictions for each token in the sequence except EOS token.
         """
         out_seq_len = captions.shape[1] - 1  # -1 because we don't need to predict SOS token
-        x = self._tokens_to_hidden(captions)  # x: (batch_size, seq_len, hidden_size) - ready to go captions' vectors
+        x = self._token_to_hidden(captions)  # x: (batch_size, seq_len, hidden_size) - ready to go captions' vectors
         batch_size = features.shape[0]
         # hidden: (num_layers, batch_size, hidden_size)
         hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
