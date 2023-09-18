@@ -14,20 +14,28 @@ class AttentionDecoder(nn.Module):
         super().__init__()
         # attention mechanism for feature maps and hidden state
         self.attention = BahdanauAttention(hidden_size, keys_hidden_size)
+
         # linear layer to transform context vector from keys_hidden_size to hidden_size
         self.fc_0 = nn.Linear(keys_hidden_size, hidden_size)
+
         # linear layer to transform input embeddings from embedding_size to hidden_size
         self.fc_1 = nn.Linear(embedding_size, hidden_size)
+
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
         self.vocab_size = vocab_size
+
         # embedding layer to convert words indices to embeddings
         self.embedding = nn.Embedding(vocab_size, embedding_size)
+
         # rnn cell
         self.num_layers = num_layers
+
         self.rnn = nn.GRU(hidden_size + hidden_size, hidden_size, num_layers=self.num_layers, batch_first=True)
+
         # linear layer to make final predictions
         self.fc_2 = nn.Linear(hidden_size, vocab_size)
+
         self.max_len = max_len
         self.sos_tokenized = sos_tokenized
         self.eos_tokenized = eos_tokenized
@@ -56,13 +64,17 @@ class AttentionDecoder(nn.Module):
         # I get hidden state (batch_size, 1, hidden_size) from the last layer of GRU to the attention layer
         context, weights = self.attention(s_hidden[-1].unsqueeze(1), keys)  # context: (batch_size, 1, keys_hidden_size)
         # weights: (batch_size, 1, seq_len)
+
         context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
+
         # rnn_input: (batch_size, 1, hidden_size + hidden_size)
         rnn_input = torch.cat([force.unsqueeze(1) if force is not None else s_hidden[-1].unsqueeze(1), context], dim=-1)
+
         # GRU takes input of shape (batch_size, 1, 2 * hidden_size
         # and hidden of shape (num_layers, batch_size, hidden_size)
         y_t, s = self.rnn(rnn_input, s_hidden)  # output: (batch_size, 1, hidden_size)
-        # hidden: (num_layers, batch_size, hidden_size)
+        # s_hidden: (num_layers, batch_size, hidden_size)
+
         y_t = y_t.squeeze(1)  # output: (batch_size, hidden_size)
         y_t = self.fc_2(y_t)  # output: (batch_size, vocab_size)
         return y_t, s, weights
@@ -80,20 +92,26 @@ class AttentionDecoder(nn.Module):
         assert batch_size == 1, "In inference mode batch size must be 1."
         # s_hidden: (num_layers, batch_size, hidden_size)
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
+
         # force: (batch_size, hidden_size), always start with SOS token
         force = self._token_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
+
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
 
         for t in range(self.max_len):
             y_t, s_hidden, _ = self._forward(s_hidden, features, force=force)  # output: (batch_size, vocab_size)
             # s_hidden: (num_layers, batch_size, hidden_size)
+
             outputs[:, t, :] = y_t
+
             # get the most probable word index
             decoded_token = y_t.argmax(dim=-1)  # decoded_token: (batch_size,)
+
             # check if decoded_token is EOS token
             if (decoded_token == self.eos_tokenized).all().item():
                 return outputs[:, :t + 1, :]
+
             # set force to None
             force = None
 
@@ -111,10 +129,13 @@ class AttentionDecoder(nn.Module):
         captions = captions[:, 1:]  # because we don't need to predict SOS token
         out_seq_len = captions.shape[1]
         batch_size = features.shape[0]
+
         # s_hidden: (num_layers, batch_size, hidden_size)
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
+
         # force: (batch_size, hidden_size), always start with <sos> token
         force = self._token_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
+
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
 
