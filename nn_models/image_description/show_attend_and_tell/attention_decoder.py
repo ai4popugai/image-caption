@@ -80,7 +80,7 @@ class AttentionDecoder(nn.Module):
         assert batch_size == 1, "In inference mode batch size must be 1."
         # s_hidden: (num_layers, batch_size, hidden_size)
         s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
-        # force: (batch_size, hidden_size)
+        # force: (batch_size, hidden_size), always start with SOS token
         force = self._token_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
         # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
@@ -99,39 +99,45 @@ class AttentionDecoder(nn.Module):
 
         return outputs
 
-    def _forward_training(self, features: torch.Tensor, captions: torch.Tensor) -> torch.Tensor:
+    def _forward_training(self, features: torch.Tensor, captions: torch.Tensor, teacher_forcing: bool) -> torch.Tensor:
         """
         Forward pass in training mode. Captions are provided.
 
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
         :param captions: captions to train on (batch_size, seq_len).
+        :param teacher_forcing: if True, train with teacher forcing.
         :return: (batch_size, seq_len - 1, vocab_size) - predictions for each token in the sequence except EOS token.
         """
-        out_seq_len = captions.shape[1] - 1  # -1 because we don't need to predict SOS token
-        x = self._token_to_hidden(captions)  # x: (batch_size, seq_len, hidden_size) - ready to go captions' vectors
+        captions = captions[:, 1:]  # because we don't need to predict SOS token
+        out_seq_len = captions.shape[1]
         batch_size = features.shape[0]
-        # hidden: (num_layers, batch_size, hidden_size)
-        hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
-        # outputs: (batch_size, seq_len, vocab_size)
+        # s_hidden: (num_layers, batch_size, hidden_size)
+        s_hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=features.device)
+        # force: (batch_size, hidden_size), always start with <sos> token
+        force = self._token_to_hidden(self.sos_tokenized.unsqueeze(0).expand(batch_size, -1)).to(features.device)
+        # outputs: (batch_size, max_len, vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
+
         for t in range(out_seq_len):
-            x_t = x.select(1, t)  # x_t: (batch_size, hidden_size)
-            output, hidden, _ = self._forward(x_t, hidden, features)
-            outputs[:, t, :] = output
+            y_t, s_hidden, _ = self._forward(s_hidden, features, force=force)
+            outputs[:, t, :] = y_t
+            force = self._token_to_hidden(captions[t]) if teacher_forcing else None
         return outputs
 
-    def forward(self, features: torch.Tensor, captions: torch.Tensor = None) -> Dict[str, torch.Tensor]:
+    def forward(self, features: torch.Tensor,
+                captions: torch.Tensor = None, teacher_forcing: bool = False,) -> Dict[str, torch.Tensor]:
         """
         The main method of the decoder. If captions are provided, the method will run in training mode.
 
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
         NOTE it can be another type of features, but it must be meaningful for the attention layer.
         :param captions: captions to train on (batch_size, seq_len).
+        :param teacher_forcing: if True, train with teacher forcing.
         :return: output predictions (batch_size, seq_len - 1, vocab_size) if captions are provided,
         else (batch_size, any_seq_len, vocab_size)
         """
         if captions is not None:
-            outputs = self._forward_training(features, captions)  # (batch_size, seq_len, vocab_size)
+            outputs = self._forward_training(features, captions, teacher_forcing)  # (batch_size, seq_len, vocab_size)
         else:
             # in that case sequence length is not known
             outputs = self._forward_inference(features)  # (batch_size, any_seq_len <= self.max_len, vocab_size)
