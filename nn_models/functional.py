@@ -4,11 +4,12 @@ import torch.nn.functional as F
 
 
 class BahdanauAttention(nn.Module):
-    def __init__(self, query_hidden_size: int, keys_hidden_size: int):
+    def __init__(self, query_hidden_size: int, keys_hidden_size: int, hidden_size: int = 512):
         super(BahdanauAttention, self).__init__()
-        self.Wa = nn.Linear(query_hidden_size, keys_hidden_size)
-        self.Ua = nn.Linear(keys_hidden_size, keys_hidden_size)
-        self.Va = nn.Linear(keys_hidden_size, 1)
+        self.hidden_size = hidden_size
+        self.Wa = nn.Linear(query_hidden_size, self.hidden_size)
+        self.Ua = nn.Linear(keys_hidden_size, self.hidden_size)
+        self.Va = nn.Linear(self.hidden_size, 1)
 
     def forward(self, query: torch.Tensor, keys: torch.Tensor):
         scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
