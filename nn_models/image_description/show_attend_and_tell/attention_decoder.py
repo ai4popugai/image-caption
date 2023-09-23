@@ -13,10 +13,8 @@ class AttentionDecoder(nn.Module):
                  num_layers=4, max_len=15, ):
         super().__init__()
         # attention mechanism for feature maps and hidden state
-        self.attention = BahdanauAttention(hidden_size, keys_hidden_size)
-
-        # linear layer to transform context vector from keys_hidden_size to hidden_size
-        self.fc_0 = nn.Linear(keys_hidden_size, hidden_size)
+        self.attention = BahdanauAttention(query_hidden_size=hidden_size,
+                                           keys_hidden_size=keys_hidden_size, hidden_size=hidden_size)
 
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
@@ -62,10 +60,8 @@ class AttentionDecoder(nn.Module):
         :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
         """
         # I get hidden state (batch_size, 1, hidden_size) from the last layer of GRU to the attention layer
-        context, weights = self.attention(s_hidden[-1].unsqueeze(1), keys)  # context: (batch_size, 1, keys_hidden_size)
+        context, weights = self.attention(s_hidden[-1].unsqueeze(1), keys)  # context: (batch_size, 1, hidden_size)
         # weights: (batch_size, 1, seq_len)
-
-        context = self.fc_0(context)  # context: (batch_size, 1, hidden_size)
 
         # rnn_input: (batch_size, 1, hidden_size + hidden_size)
         rnn_input = torch.cat([decoder_input.unsqueeze(1), context], dim=-1)
