@@ -35,6 +35,6 @@ if __name__ == '__main__':
     keys = torch.rand(8, 5, 256)
     attention = BahdanauAttention(128, 256)
     context, weights = attention(query, keys)
-    print(context.shape)  # torch.Size([8, 1, 256])
+    print(context.shape)  # torch.Size([8, 1, 512])
     print(weights.shape)  # torch.Size([8, 1, 5])
 
