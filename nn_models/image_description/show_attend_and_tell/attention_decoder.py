@@ -13,8 +13,8 @@ class AttentionDecoder(nn.Module):
                  num_layers=4, max_len=15, ):
         super().__init__()
         # attention mechanism for feature maps and hidden state
-        self.attention = BahdanauAttention(query_hidden_size=hidden_size,
-                                           keys_hidden_size=keys_hidden_size, hidden_size=hidden_size)
+        self.attention = BahdanauAttention(query_hidden_size=hidden_size, keys_hidden_size=keys_hidden_size,
+                                           hidden_size=hidden_size, out_hidden_size=hidden_size)
 
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
