@@ -19,9 +19,9 @@ class BahdanauAttention(nn.Module):
         self.query_hidden_size = query_hidden_size
         self.keys_hidden_size = keys_hidden_size
         self.out_hidden_size = out_hidden_size
-        self.Wq = nn.Linear(self.query_hidden_size, self.hidden_size)
-        self.Wk = nn.Linear(self.keys_hidden_size, self.hidden_size)
-        self.Wv = nn.Linear(self.keys_hidden_size, self.hidden_size)
+        self.Wq = nn.Linear(self.query_hidden_size, self.hidden_size, bias=False)
+        self.Wk = nn.Linear(self.keys_hidden_size, self.hidden_size, bias=False)
+        self.Wv = nn.Linear(self.keys_hidden_size, self.hidden_size, bias=False)
         self.Wout = nn.Linear(self.hidden_size, self.out_hidden_size)
 
     def forward(self, query: torch.Tensor, keys: torch.Tensor):
