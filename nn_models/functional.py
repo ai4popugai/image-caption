@@ -19,25 +19,25 @@ class BahdanauAttention(nn.Module):
         self.query_hidden_size = query_hidden_size
         self.keys_hidden_size = keys_hidden_size
         self.out_hidden_size = out_hidden_size
-        self.Wa = nn.Linear(self.query_hidden_size, self.hidden_size)
-        self.Ua = nn.Linear(self.keys_hidden_size, self.hidden_size)
-        self.Va = nn.Linear(self.hidden_size, 1)
-        self.Ya = nn.Linear(self.keys_hidden_size, self.out_hidden_size)
+        self.Wq = nn.Linear(self.query_hidden_size, self.hidden_size)
+        self.Wk = nn.Linear(self.keys_hidden_size, self.hidden_size)
+        self.Wv = nn.Linear(self.keys_hidden_size, self.hidden_size)
+        self.Wout = nn.Linear(self.hidden_size, self.out_hidden_size)
 
     def forward(self, query: torch.Tensor, keys: torch.Tensor):
-        scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
-        scores = scores.squeeze(2).unsqueeze(1)
+        scores = torch.bmm(self.Wq(query), self.Wk(keys).permute(0, 2, 1))
         weights = F.softmax(scores, dim=-1)
-        context = torch.bmm(weights, keys)
-        context = self.Ya(context)
+        context = torch.bmm(weights, self.Wv(keys))
+        context = self.Wout(context)
         return context, weights
 
 
 if __name__ == '__main__':
     query = torch.rand(8, 1, 128)
     keys = torch.rand(8, 5, 256)
-    attention = BahdanauAttention(128, 256, 512)
+    attention = BahdanauAttention(query_hidden_size=128, keys_hidden_size=256,
+                                  hidden_size=512, out_hidden_size=1024)
     context, weights = attention(query, keys)
-    print(context.shape)  # torch.Size([8, 1, 512])
+    print(context.shape)  # torch.Size([8, 1, 1024])
     print(weights.shape)  # torch.Size([8, 1, 5])
 
