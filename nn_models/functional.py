@@ -25,9 +25,9 @@ class BahdanauAttention(nn.Module):
         self.Wout = nn.Linear(self.hidden_size, self.out_hidden_size)
 
     def forward(self, query: torch.Tensor, keys: torch.Tensor):
-        scores = torch.bmm(self.Wq(query), self.Wk(keys).permute(0, 2, 1))
+        scores = torch.matmul(self.Wq(query), self.Wk(keys).transpose(-1, -2))
         weights = F.softmax(scores, dim=-1)
-        context = torch.bmm(weights, self.Wv(keys))
+        context = torch.matmul(weights, self.Wv(keys))
         context = self.Wout(context)
         return context, weights
 
