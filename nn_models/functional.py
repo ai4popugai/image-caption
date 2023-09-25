@@ -1,6 +1,15 @@
+import math
+
 import torch
 from torch import nn
 import torch.nn.functional as F
+
+
+def dot_product_attention(query: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, scaled: bool = False):
+    scores = torch.matmul(query, keys.transpose(-1, -2)) / math.sqrt(query.shape[-1] if scaled else 1)
+    weights = F.softmax(scores, dim=-1)
+    context = torch.matmul(weights, values)
+    return context, weights
 
 
 class BahdanauAttention(nn.Module):
@@ -25,19 +34,18 @@ class BahdanauAttention(nn.Module):
         self.Wout = nn.Linear(self.hidden_size, self.out_hidden_size)
 
     def forward(self, query: torch.Tensor, keys: torch.Tensor):
-        scores = torch.matmul(self.Wq(query), self.Wk(keys).transpose(-1, -2))
-        weights = F.softmax(scores, dim=-1)
-        context = torch.matmul(weights, self.Wv(keys))
+        query, keys, values = self.Wq(query), self.Wk(keys), self.Wv(keys)
+        context, weights = dot_product_attention(query, keys, values)
         context = self.Wout(context)
         return context, weights
 
 
 if __name__ == '__main__':
-    query = torch.rand(8, 1, 128)
-    keys = torch.rand(8, 5, 256)
+    q = torch.rand(8, 1, 128)
+    k = torch.rand(8, 5, 256)
     attention = BahdanauAttention(query_hidden_size=128, keys_hidden_size=256,
                                   hidden_size=512, out_hidden_size=1024)
-    context, weights = attention(query, keys)
-    print(context.shape)  # torch.Size([8, 1, 1024])
-    print(weights.shape)  # torch.Size([8, 1, 5])
+    c, att_w = attention(q, k)
+    print(c.shape)  # torch.Size([8, 1, 1024])
+    print(att_w.shape)  # torch.Size([8, 1, 5])
 
