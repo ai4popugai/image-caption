@@ -20,7 +20,7 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x: torch.Tensor):
         bs, seg_len, depth = x.shape
-        if x.shape[-1] != self.hidden_size:
+        if depth != self.hidden_size:
             raise RuntimeError(f'Could not apply positional encoding to tensor with depth {depth}, '
                                f'only depth={self.hidden_size} allowed')
         return x + self.position_embeddings.to(x.device)[:seg_len, :]
