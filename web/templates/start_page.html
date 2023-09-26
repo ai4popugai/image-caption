@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upload Video</title>
+    <title>Choose your own or stock videos</title>
+    <style>
+        form:nth-of-type(2) {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Upload Videos</h1>
+    <h1>Choose your own or stock videos</h1>
     <form method="POST" action="/upload" enctype="multipart/form-data">
         <input type="file" name="file" multiple>
         <input type="submit" value="Upload">
+    </form>
+    <form method="POST" action="/move_db">
+        <input type="submit" value="Use stock videos">
     </form>
 </body>
 </html>
