@@ -14,6 +14,7 @@ class AttentionDecoder(nn.Module):
         super().__init__()
         # attention mechanism for feature maps and hidden state
         self.attention = BahdanauAttention(query_hidden_size=hidden_size, keys_hidden_size=keys_hidden_size,
+                                           values_hidden_size=keys_hidden_size,
                                            hidden_size=hidden_size, out_hidden_size=hidden_size)
 
         self.embedding_size = embedding_size
