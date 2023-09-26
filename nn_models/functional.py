@@ -6,8 +6,11 @@ from torch import nn
 import torch.nn.functional as F
 
 
-def dot_product_attention(query: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, scaled: bool = False):
+def dot_product_attention(query: torch.Tensor, keys: torch.Tensor, values: torch.Tensor,
+                          scaled: bool = False, mask: Optional[torch.Tensor] = None):
     scores = torch.matmul(query, keys.transpose(-1, -2)) / math.sqrt(query.shape[-1] if scaled else 1)
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e9)
     weights = F.softmax(scores, dim=-1)
     context = torch.matmul(weights, values)
     return context, weights
@@ -73,7 +76,8 @@ class MultiHeadAttention(nn.Module):
         keys = self.split_heads(self.Wk(keys))
         values = self.split_heads(self.Wv(values))
 
-        context, weights = dot_product_attention(query, keys, values, scaled=True)
+        context, weights = dot_product_attention(query, keys, values,
+                                                 mask=mask, scaled=True)
         context = self.Wout(self.combine_heads(context))
         return context, weights
 
