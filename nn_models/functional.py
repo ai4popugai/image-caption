@@ -17,7 +17,7 @@ def dot_product_attention(query: torch.Tensor, keys: torch.Tensor, values: torch
 
 
 class BahdanauAttention(nn.Module):
-    def __init__(self, query_hidden_size: int, keys_hidden_size: int,  values_hidden_size: int,
+    def __init__(self, query_hidden_size: int, keys_hidden_size: int, values_hidden_size: int,
                  out_hidden_size: int,  hidden_size: int = 512,):
         """
         Bahdanau attention mechanism
