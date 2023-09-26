@@ -34,8 +34,8 @@ class BahdanauAttention(nn.Module):
         self.Wv = nn.Linear(self.keys_hidden_size, self.hidden_size, bias=False)
         self.Wout = nn.Linear(self.hidden_size, self.out_hidden_size)
 
-    def forward(self, query: torch.Tensor, keys: torch.Tensor):
-        query, keys, values = self.Wq(query), self.Wk(keys), self.Wv(keys)
+    def forward(self, query: torch.Tensor, keys: torch.Tensor, values: torch.Tensor):
+        query, keys, values = self.Wq(query), self.Wk(keys), self.Wv(values)
         context, weights = dot_product_attention(query, keys, values)
         context = self.Wout(context)
         return context, weights

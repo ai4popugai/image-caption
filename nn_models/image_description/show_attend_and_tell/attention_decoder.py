@@ -60,7 +60,8 @@ class AttentionDecoder(nn.Module):
         :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
         """
         # I get hidden state (batch_size, 1, hidden_size) from the last layer of GRU to the attention layer
-        context, weights = self.attention(s_hidden[-1].unsqueeze(1), keys)  # context: (batch_size, 1, hidden_size)
+        context, weights = self.attention(s_hidden[-1].unsqueeze(1), keys, keys)
+        # context: (batch_size, 1, hidden_size)
         # weights: (batch_size, 1, seq_len)
 
         # rnn_input: (batch_size, 1, hidden_size + hidden_size)
