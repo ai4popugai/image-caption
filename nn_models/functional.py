@@ -91,5 +91,5 @@ if __name__ == '__main__':
                                    hidden_size=512, out_hidden_size=1024, num_heads=4)
     c, att_w = attention(q, k, k)
     print(c.shape)  # torch.Size([8, 1, 1024])
-    print(att_w.shape)  # torch.Size([8, 1, 5])
+    print(att_w.shape)  # torch.Size([8, 4, 1, 5])
 
