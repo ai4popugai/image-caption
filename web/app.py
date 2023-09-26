@@ -15,17 +15,21 @@ NUM_KEY_FRAMES = 25
 
 app = Flask(__name__)
 
+WEB_DEFAULTS_FOLDER = os.path.join(os.getcwd(), 'web_defaults')
+DB_DEFAULT_PATH = os.path.join(WEB_DEFAULTS_FOLDER, 'v3c1_unpacked')
+DB_DEFAULT = SQLiteDb(DB_DEFAULT_PATH)
+
 WEB_EXECUTION_FOLDER = os.path.join(os.getcwd(), 'web_runtime')
 os.makedirs(WEB_EXECUTION_FOLDER, exist_ok=True)
 
 UPLOAD_FOLDER = os.path.join(WEB_EXECUTION_FOLDER, 'upload')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-DB_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'web_db')
-DB = SQLiteDb(DB_PATH)
+DB_RUNTIME_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'web_db')
+DB_RUNTIME = SQLiteDb(DB_RUNTIME_PATH)
 
 PROCESSING_THREAD = threading.Thread(target=preprocess_videos,
-                                     args=(UPLOAD_FOLDER, NUM_KEY_FRAMES, DB))
+                                     args=(UPLOAD_FOLDER, NUM_KEY_FRAMES, DB_RUNTIME))
 
 
 @app.route('/')
@@ -35,6 +39,7 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_videos():
+    DB_RUNTIME.create_db()
     files = request.files.getlist('file')
 
     if not files:
@@ -68,7 +73,7 @@ def handle_concept():
     selected_category = request.form.get('selected_category')
 
     print(f'target concept: {selected_category}')
-    matches = DB.get_rows_by_concept(selected_category)
+    matches = DB_RUNTIME.get_rows_by_concept(selected_category)
     print(matches)
 
     return redirect(url_for('render_main_page'))
@@ -79,7 +84,7 @@ def handle_object_class():
     selected_object_class = request.form.get('selected_object_class')
 
     print(f'target object class: {selected_object_class}')
-    matches = DB.get_rows_by_object(selected_object_class)
+    matches = DB_RUNTIME.get_rows_by_object(selected_object_class)
     print(matches)
 
     return redirect(url_for('render_main_page'))
