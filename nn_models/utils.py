@@ -23,7 +23,7 @@ class PositionalEncoding(nn.Module):
         if x.shape[-1] != self.d_model:
             raise RuntimeError(f'Could not apply positional encoding to tensor with depth {depth}, '
                                f'only depth={self.d_model} allowed')
-        return x + self.position_embeddings.to(x.device).expand(bs, -1, -1)[:, :seg_len, :]
+        return x + self.position_embeddings.to(x.device)[:seg_len, :]
 
 
 class PositionWiseFeedForward(nn.Module):
