@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 from datasets import LOGITS_KEY
-from nn_models import BahdanauAttention
+from nn_models.attention import BahdanauAttention
 
 
 class AttentionDecoder(nn.Module):
