@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+import re
 
 from db import SQLiteDb
 from experiments.EfficientNet_b0.generate_descriptions import generate_descriptions
@@ -16,10 +17,11 @@ PHASE = 'phase_2'
 SNAPSHOT_NAME = 'snapshot_3600.pth'
 
 
-def preprocess_videos(videos_dir: str, n_frames: int, database: SQLiteDb = None,):
+def preprocess_videos(videos_dir: str, n_frames: int, database: SQLiteDb = None, ):
     random.seed(0)
 
-    videos_list = [video for video in sorted(os.listdir(videos_dir)) if video.endswith('.mp4')]
+    videos_list = [video for video in sorted(os.listdir(videos_dir)) if
+                   re.search('\.(mp4|avi|mov|mkv|webm)$', video, re.IGNORECASE)]
 
     # process videos one by one
     for video_name in videos_list:
