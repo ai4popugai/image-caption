@@ -10,10 +10,11 @@ CONCEPT_KEY = 'concept'
 
 class SQLiteDb:
     def __init__(self, db_path):
-        if os.path.isfile(db_path) is False:
-            self._create_db()
+        self.db_path = db_path
 
-    def _create_db(self):
+    def create_db(self):
+        if os.path.isfile(self.db_path) is True:
+            raise RuntimeError('Current database already exists')
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
             cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},"
