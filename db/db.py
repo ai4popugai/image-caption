@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 import sqlite3
 
 VIDEO_ID_KEY = 'video_id'
@@ -11,10 +12,11 @@ CONCEPT_KEY = 'concept'
 class SQLiteDb:
     def __init__(self, db_path):
         self.db_path = db_path
+        self.db_name = os.path.basename(self.db_path)
 
     def create_db(self):
         if os.path.isfile(self.db_path) is True:
-            raise RuntimeError('Current database already exists')
+            os.remove(self.db_path)
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
             cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},"
