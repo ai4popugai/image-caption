@@ -23,6 +23,7 @@ class TransformerEncoder(nn.Module):
             raise RuntimeError('hidden_size must be divisible by num_heads')
         super().__init__()
         self.hidden_size = hidden_size
+        self.num_heads = num_heads
         self.feed_forward = PositionWiseFeedForward(self.hidden_size, d_ff)
         self.multihead_attention = MultiHeadAttention(query_hidden_size=self.hidden_size,
                                                       keys_hidden_size=self.hidden_size,
@@ -38,7 +39,7 @@ class TransformerEncoder(nn.Module):
         if x.shape[-1] != self.hidden_size:
             raise RuntimeError(f'Could not encode tensor with depth {x.shape[-1]}, '
                                f'only depth={self.hidden_size} allowed')
-        attended = self.multihead_attention(query=x, keys=x, values=x)
+        attended, _ = self.multihead_attention(query=x, keys=x, values=x)
         x = self.layer_norm_0(x + self.dropout(attended))
         feed_forward_out = self.feed_forward(x)
         x = self.layer_norm_1(x + self.dropout(feed_forward_out))
