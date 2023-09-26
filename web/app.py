@@ -52,6 +52,7 @@ def upload_videos():
         file.save(os.path.join(UPLOAD_FOLDER, os.path.dirname(file.filename), file.filename))
 
     PROCESSING_THREAD.start()
+    PROCESSING_THREAD.join()
 
     # Redirect the user to the process_videos route
     return redirect(url_for('render_main_page'))
@@ -59,7 +60,6 @@ def upload_videos():
 
 @app.route('/render_main_page')
 def render_main_page():
-    PROCESSING_THREAD.join()
     categories = GPRDataset().read_descriptions()
     categories = sorted(list(categories.values()))
 
