@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 
 import torch
 from torch import nn
@@ -23,7 +24,7 @@ class BahdanauAttention(nn.Module):
         :param hidden_size: inner hidden size and context hidden size
         :param out_hidden_size: hidden size of output hidden context vector
         """
-        super(BahdanauAttention, self).__init__()
+        super().__init__()
         self.hidden_size = hidden_size
         self.query_hidden_size = query_hidden_size
         self.keys_hidden_size = keys_hidden_size
@@ -38,6 +39,27 @@ class BahdanauAttention(nn.Module):
         context, weights = dot_product_attention(query, keys, values)
         context = self.Wout(context)
         return context, weights
+
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, query_hidden_size: int, keys_hidden_size: int,
+                 out_hidden_size: int, num_heads: int,  hidden_size: int = 512):
+        super().__init__()
+        self.num_heads = num_heads
+        self.hidden_size = hidden_size
+        self.d_k = self.hidden_size // self.num_heads
+        self.query_hidden_size = query_hidden_size
+        self.keys_hidden_size = keys_hidden_size
+        self.out_hidden_size = out_hidden_size
+
+    def split_heads(self, x):
+        batch_size, seq_length, d_model = x.size()
+        return x.view(batch_size, self.num_heads, seq_length, self.d_k)
+
+    def forward(self, query: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, mask: Optional[torch.Tensor]):
+        query = self.split_heads(self.Wq(query))
+        keys = self.split_heads(self.Wk(keys))
+        values = self.split_heads(self.Wv(values))
 
 
 if __name__ == '__main__':
