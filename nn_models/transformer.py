@@ -62,11 +62,16 @@ class TransformerDecoder(nn.Module):
         self.layer_norm_1 = nn.LayerNorm(self.hidden_size)
         self.layer_norm_2 = nn.LayerNorm(self.hidden_size)
 
-
     def forward(self, x: torch.Tensor, enc_out: torch.Tensor,
                 mask: Optional[torch.Tensor] = None,
                 mask_enc_out: Optional[torch.Tensor] = None):
-        pass
+        self_attention_out, _ = self.self_attention(query=x, keys=x, values=x, mask=mask)
+        x = self.layer_norm_0(x + self.dropout(self_attention_out))
+        cross_attention_out, _ = self.cross_attention(query=x, keys=enc_out, values=enc_out, mask=mask_enc_out)
+        x = self.layer_norm_1(x + self.dropout(cross_attention_out))
+        feed_forward_out = self.feed_forward(x)
+        x = self.layer_norm_2(x + self.dropout(feed_forward_out))
+        return x
 
 
 if __name__ == "__main__":
@@ -80,12 +85,22 @@ if __name__ == "__main__":
     batch_size = 32
     seq_length = 50
     encoder = TransformerEncoder(hidden_size=hs, d_ff=d_ff, num_heads=num_heads, dropout=0.2)
-    input_tensor = torch.randn(batch_size, seq_length, hs)
+    decoder = TransformerDecoder(hidden_size=hs, d_ff=d_ff, num_heads=num_heads, dropout=0.2)
+    enc_inp_tensor = torch.randn(batch_size, seq_length, hs)
+    dec_inp_tensor = torch.randn(batch_size, seq_length, hs)
 
-    # Apply positional encoding to the input tensor
+    # encoder
     start_time = time.perf_counter()
-    output_tensor = encoder(input_tensor)
-    print(time.perf_counter() - start_time)
+    enc_out_tensor = encoder(enc_inp_tensor)
+    print(f'Passing through encoder time: {time.perf_counter() - start_time}')
 
-    print("Input Tensor Shape:", input_tensor.shape)
-    print("Output Tensor Shape:", output_tensor.shape)
+    # decoder
+    start_time = time.perf_counter()
+    dec_out_tensor = decoder(x=dec_inp_tensor, enc_out=enc_out_tensor)
+    print(f'Passing through decoder time: {time.perf_counter() - start_time}')
+
+    print("Encoder Input Tensor Shape:", enc_inp_tensor.shape)
+    print("Decoder Input Tensor Shape:", dec_inp_tensor.shape)
+
+    print("Encoder Output Tensor Shape:", enc_out_tensor.shape)
+    print("Decoder Output Tensor Shape:", dec_out_tensor.shape)
