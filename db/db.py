@@ -14,9 +14,12 @@ class SQLiteDb:
         self.db_path = db_path
         self.db_name = os.path.basename(self.db_path)
 
-    def create_db(self):
+    def create_db(self, force: bool = False):
         if os.path.isfile(self.db_path) is True:
-            os.remove(self.db_path)
+            if force is True:
+                os.remove(self.db_path)
+            else:
+                raise RuntimeError('Database already exists')
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
             cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},"
