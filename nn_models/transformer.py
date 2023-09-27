@@ -30,8 +30,8 @@ class TransformerEncoder(nn.Module):
         if x.shape[-1] != self.hidden_size:
             raise RuntimeError(f'Could not encode tensor with depth {x.shape[-1]}, '
                                f'only depth={self.hidden_size} allowed')
-        attended, _ = self.self_attention(query=x, keys=x, values=x, mask=mask)
-        x = self.layer_norm_0(x + self.dropout(attended))
+        self_attention_out, _ = self.self_attention(query=x, keys=x, values=x, mask=mask)
+        x = self.layer_norm_0(x + self.dropout(self_attention_out))
         feed_forward_out = self.feed_forward(x)
         x = self.layer_norm_1(x + self.dropout(feed_forward_out))
         return x
@@ -63,6 +63,10 @@ class TransformerDecoder(nn.Module):
         self.layer_norm_2 = nn.LayerNorm(self.hidden_size)
 
 
+    def forward(self, x: torch.Tensor, enc_out: torch.Tensor,
+                mask: Optional[torch.Tensor] = None,
+                mask_enc_out: Optional[torch.Tensor] = None):
+        pass
 
 
 if __name__ == "__main__":
