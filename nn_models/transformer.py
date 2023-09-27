@@ -1,4 +1,5 @@
 import time
+from typing import Optional
 
 import torch
 from torch import nn
@@ -15,25 +16,53 @@ class TransformerEncoder(nn.Module):
         self.hidden_size = hidden_size
         self.num_heads = num_heads
         self.feed_forward = PositionWiseFeedForward(self.hidden_size, d_ff)
-        self.multihead_attention = MultiHeadAttention(query_hidden_size=self.hidden_size,
-                                                      keys_hidden_size=self.hidden_size,
-                                                      values_hidden_size=self.hidden_size,
-                                                      out_hidden_size=self.hidden_size,
-                                                      hidden_size=self.hidden_size,
-                                                      num_heads=self.num_heads)
+        self.self_attention = MultiHeadAttention(query_hidden_size=self.hidden_size,
+                                                 keys_hidden_size=self.hidden_size,
+                                                 values_hidden_size=self.hidden_size,
+                                                 out_hidden_size=self.hidden_size,
+                                                 hidden_size=self.hidden_size,
+                                                 num_heads=self.num_heads)
         self.dropout = nn.Dropout(dropout)
         self.layer_norm_0 = nn.LayerNorm(self.hidden_size)
         self.layer_norm_1 = nn.LayerNorm(self.hidden_size)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None):
         if x.shape[-1] != self.hidden_size:
             raise RuntimeError(f'Could not encode tensor with depth {x.shape[-1]}, '
                                f'only depth={self.hidden_size} allowed')
-        attended, _ = self.multihead_attention(query=x, keys=x, values=x)
+        attended, _ = self.self_attention(query=x, keys=x, values=x, mask=mask)
         x = self.layer_norm_0(x + self.dropout(attended))
         feed_forward_out = self.feed_forward(x)
         x = self.layer_norm_1(x + self.dropout(feed_forward_out))
         return x
+
+
+class TransformerDecoder(nn.Module):
+    def __init__(self, hidden_size: int, d_ff: int, num_heads: int, dropout: float):
+        if hidden_size % num_heads != 0:
+            raise RuntimeError('hidden_size must be divisible by num_heads')
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.num_heads = num_heads
+        self.feed_forward = PositionWiseFeedForward(self.hidden_size, d_ff)
+        self.self_attention = MultiHeadAttention(query_hidden_size=self.hidden_size,
+                                                 keys_hidden_size=self.hidden_size,
+                                                 values_hidden_size=self.hidden_size,
+                                                 out_hidden_size=self.hidden_size,
+                                                 hidden_size=self.hidden_size,
+                                                 num_heads=self.num_heads)
+        self.cross_attention = MultiHeadAttention(query_hidden_size=self.hidden_size,
+                                                  keys_hidden_size=self.hidden_size,
+                                                  values_hidden_size=self.hidden_size,
+                                                  out_hidden_size=self.hidden_size,
+                                                  hidden_size=self.hidden_size,
+                                                  num_heads=self.num_heads)
+        self.dropout = nn.Dropout(dropout)
+        self.layer_norm_0 = nn.LayerNorm(self.hidden_size)
+        self.layer_norm_1 = nn.LayerNorm(self.hidden_size)
+        self.layer_norm_2 = nn.LayerNorm(self.hidden_size)
+
+
 
 
 if __name__ == "__main__":
@@ -56,4 +85,3 @@ if __name__ == "__main__":
 
     print("Input Tensor Shape:", input_tensor.shape)
     print("Output Tensor Shape:", output_tensor.shape)
-
