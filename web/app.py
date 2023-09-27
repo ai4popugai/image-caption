@@ -20,10 +20,8 @@ DB_DEFAULT_PATH = os.path.join(WEB_DEFAULTS_FOLDER, 'v3c1_unpacked')
 DB_DEFAULT = SQLiteDb(DB_DEFAULT_PATH)
 
 WEB_EXECUTION_FOLDER = os.path.join(os.getcwd(), 'web_runtime')
-os.makedirs(WEB_EXECUTION_FOLDER, exist_ok=True)
 
 UPLOAD_FOLDER = os.path.join(WEB_EXECUTION_FOLDER, 'upload')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 DB_RUNTIME_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'web_db')
 DB_RUNTIME = SQLiteDb(DB_RUNTIME_PATH)
@@ -52,6 +50,8 @@ def use_stock_videos():
 
 @app.route('/upload', methods=['POST'])
 def upload_videos():
+    os.makedirs(WEB_EXECUTION_FOLDER, exist_ok=True)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.config[DB_IN_WORK] = DB_RUNTIME
     app.config[DB_IN_WORK].create_db()
     files = request.files.getlist('file')
