@@ -39,6 +39,17 @@ def index():
     return render_template('start_page.html')
 
 
+@app.route('/use_stock_videos', methods=['POST'])
+def use_stock_videos():
+    """
+    Setup DB_DEFAULT as DB_IN_WORK.
+
+    :return: None
+    """
+    app.config[DB_IN_WORK] = DB_DEFAULT
+    return redirect(url_for('render_main_page'))
+
+
 @app.route('/upload', methods=['POST'])
 def upload_videos():
     app.config[DB_IN_WORK] = DB_RUNTIME
