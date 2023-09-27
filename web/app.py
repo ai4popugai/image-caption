@@ -30,6 +30,8 @@ DB_RUNTIME = SQLiteDb(DB_RUNTIME_PATH)
 
 PROCESSING_THREAD = threading.Thread(target=preprocess_videos,
                                      args=(UPLOAD_FOLDER, NUM_KEY_FRAMES, DB_RUNTIME))
+DB_IN_WORK = 'DB_IN_WORK'
+app.config[DB_IN_WORK] = None
 
 
 @app.route('/')
@@ -39,7 +41,8 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_videos():
-    DB_RUNTIME.create_db()
+    app.config[DB_IN_WORK] = DB_RUNTIME
+    app.config[DB_IN_WORK].create_db()
     files = request.files.getlist('file')
 
     if not files:
@@ -73,7 +76,7 @@ def handle_concept():
     selected_category = request.form.get('selected_category')
 
     print(f'target concept: {selected_category}')
-    matches = DB_RUNTIME.get_rows_by_concept(selected_category)
+    matches = app.config[DB_IN_WORK].get_rows_by_concept(selected_category)
     print(matches)
 
     return redirect(url_for('render_main_page'))
@@ -84,7 +87,7 @@ def handle_object_class():
     selected_object_class = request.form.get('selected_object_class')
 
     print(f'target object class: {selected_object_class}')
-    matches = DB_RUNTIME.get_rows_by_object(selected_object_class)
+    matches = app.config[DB_IN_WORK].get_rows_by_object(selected_object_class)
     print(matches)
 
     return redirect(url_for('render_main_page'))
