@@ -7,10 +7,10 @@ class VideoReader:
     If video ends, reader starts to read frames from 0.
     """
 
-    def __init__(self, video_path: str, fps: int, scale_factor: float = 1.):
+    def __init__(self, video_path: str, scale_factor: float = 1.,):
         super().__init__()
         self.cap = cv2.VideoCapture(video_path)
-        self.cap.set(cv2.CAP_PROP_FPS, fps)
+        print(self.cap.get(cv2.CAP_PROP_FPS))
         self.height, self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) * scale_factor), \
                                   int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) * scale_factor)
         self.frames_count = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))

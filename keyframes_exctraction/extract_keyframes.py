@@ -17,8 +17,6 @@ from keyframes_exctraction import KEYFRAMES_DIR_KEY
 from train import Trainer
 from utils.video_utils.video_reader import VideoReader
 
-FPS = 25
-
 # setup pretrained embeddings extractor
 DEVICE = Trainer.get_device()
 WEIGHTS = torchvision.models.ResNet50_Weights.DEFAULT
@@ -49,7 +47,7 @@ class KeyFramesDataset(Dataset):
 
 
 def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, database: SQLiteDb = None):
-    reader = VideoReader(video_path, fps=FPS)
+    reader = VideoReader(video_path)
     scene_list = detect(video_path, ContentDetector())
     if len(scene_list) == 0:
         # fallback fir case if scene detect algorythm is failed
