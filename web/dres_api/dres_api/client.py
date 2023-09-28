@@ -26,7 +26,7 @@ class Client:
         print(f"Successfully logged in.\n"
               f"user: '{login.username}'\n"
               f"role: '{login.role}'\n"
-              f"session: '{login.session_id}'")
+              f"session_id: '{login.session_id}'")
 
         # Store session token for future requests
         self.session_id = login.session_id
