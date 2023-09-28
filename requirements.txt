@@ -79,3 +79,4 @@ wget==3.2
 wsproto==1.2.0
 yolov7-package==0.0.12
 zipp==3.16.2
+pydantic
