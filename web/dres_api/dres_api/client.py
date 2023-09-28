@@ -12,6 +12,7 @@ class Client:
 
         # Setup
         user_api = UserApi()
+        self.submission_api = SubmissionApi()
         user_api.api_client.configuration.host = config.host
 
         try:
@@ -28,8 +29,33 @@ class Client:
               f"session: '{login.session_id}'")
 
         # Store session token for future requests
-        session_id = login.session_id
+        self.session_id = login.session_id
+
+    def submit(self):
+        submission_response = None
+        try:
+            submission_response = self.submission_api.get_api_v1_submit(
+                session=self.session_id,
+                collection=None,
+                item="some_item_name",
+                frame=None,
+                shot=None,
+                timecode="00:00:10:00",
+                text=None
+            )
+        except ApiException as e:
+            if e.status == 401:
+                print("There was an authentication error during submission. Check the session id.")
+            elif e.status == 404:
+                print("There is currently no active task which would accept submissions.")
+            else:
+                print(f"Something unexpected went wrong during the submission: '{e.message}'.")
+                return
+
+        if submission_response is not None and submission_response.status:
+            print("The submission was successfully sent to the server.")
 
 
 if __name__ == '__main__':
     client = Client()
+    client.submit()
