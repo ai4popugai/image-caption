@@ -104,15 +104,20 @@ def handle_object_class():
     return redirect(url_for('render_main_page'))
 
 
-@app.route('/exit', methods=['GET'])
+@app.route('/cleanup', methods=['GET'])
 def cleanup():
+    # Delete the WEB_EXECUTION_FOLDER and its contents
+    if os.path.exists(WEB_EXECUTION_FOLDER):
+        shutil.rmtree(WEB_EXECUTION_FOLDER)
+
+
+@app.route('/exit', methods=['GET'])
+def exit():
     func = request.environ.get('werkzeug.server.shutdown')
     if func is not None:
         func()
 
-    # Delete the WEB_EXECUTION_FOLDER and its contents
-    if os.path.exists(WEB_EXECUTION_FOLDER):
-        shutil.rmtree(WEB_EXECUTION_FOLDER)
+    cleanup()
 
     # Exit the Python script
     os._exit(0)
