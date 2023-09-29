@@ -27,7 +27,7 @@ class Client:
         print(f"Successfully logged in.\n"
               f"user: '{login.username}'\n"
               f"role: '{login.role}'\n"
-              f"session_id: '{login.session_id}'")
+              f"session_id: '{self.session_id}'")
 
     def submit_example(self):
         submission_response = None
