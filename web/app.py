@@ -1,8 +1,6 @@
-import atexit
-import sys
 import shutil
 
-from flask import Flask, request, render_template, flash, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for
 import os
 import threading
 
