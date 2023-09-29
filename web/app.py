@@ -104,6 +104,12 @@ def handle_object_class():
     return redirect(url_for('render_main_page'))
 
 
+@app.route('/to_start_page')
+def to_start_page():
+    cleanup()
+    return render_template('start_page.html')
+
+
 @app.route('/cleanup', methods=['GET'])
 def cleanup():
     # Delete the WEB_EXECUTION_FOLDER and its contents
