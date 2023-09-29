@@ -31,7 +31,7 @@ class Client:
         # Store session token for future requests
         self.session_id = login.session_id
 
-    def submit(self):
+    def submit_example(self):
         submission_response = None
         try:
             submission_response = self.submission_api.get_api_v1_submit(
@@ -58,4 +58,4 @@ class Client:
 
 if __name__ == '__main__':
     client = Client()
-    client.submit()
+    client.submit_example()
