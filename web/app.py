@@ -68,7 +68,6 @@ def upload_videos():
     PROCESSING_THREAD.start()
     PROCESSING_THREAD.join()
 
-    # Redirect the user to the process_videos route
     return redirect(url_for('render_main_page'))
 
 
@@ -112,7 +111,6 @@ def to_start_page():
 
 @app.route('/cleanup', methods=['GET'])
 def cleanup():
-    # Delete the WEB_EXECUTION_FOLDER and its contents
     if os.path.exists(WEB_EXECUTION_FOLDER):
         shutil.rmtree(WEB_EXECUTION_FOLDER)
 
@@ -125,7 +123,6 @@ def exit():
 
     cleanup()
 
-    # Exit the Python script
     os._exit(0)
 
 
