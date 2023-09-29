@@ -54,8 +54,8 @@ def upload_videos():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.config[DB_IN_WORK] = DB_RUNTIME
     app.config[DB_IN_WORK].create_db(force=True)
-    files = request.files.getlist('file')
 
+    files = request.files.getlist('file')
     if not files:
         return "No selected files"
 
