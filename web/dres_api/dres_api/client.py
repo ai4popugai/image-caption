@@ -13,6 +13,7 @@ class Client:
         # Setup
         user_api = UserApi()
         self.submission_api = SubmissionApi()
+        self.session_id = config.token
         user_api.api_client.configuration.host = config.host
 
         try:
@@ -27,9 +28,6 @@ class Client:
               f"user: '{login.username}'\n"
               f"role: '{login.role}'\n"
               f"session_id: '{login.session_id}'")
-
-        # Store session token for future requests
-        self.session_id = login.session_id
 
     def submit_example(self):
         submission_response = None
