@@ -1,6 +1,7 @@
 import os
 import argparse
 import random
+from datetime import timedelta
 from typing import List
 
 import cv2
@@ -46,11 +47,17 @@ class KeyFramesDataset(Dataset):
         return frame
 
 
+def time_formatting(seconds: float) -> str:
+    td = timedelta(seconds=seconds)
+    ms = int(td.microseconds / 1000)
+    return str(td).split(".")[0].zfill(8) + f".{ms:03d}"
+
+
 def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, database: SQLiteDb = None):
     reader = VideoReader(video_path)
     scene_list = detect(video_path, ContentDetector())
     if len(scene_list) == 0:
-        # fallback fir case if scene detect algorythm is failed
+        # fallback for case if scene detect algorythm is failed
         step = reader.frames_count // n_frames
         for i in range(n_frames):
             keyframe_index = i * step
@@ -58,7 +65,8 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
             keyframe = reader[keyframe_index]
             cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
             if database is not None:
-                database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
+                database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id,
+                                     timestamp=time_formatting(keyframe_index/reader.fps))
         return
 
     # cut the first and the last scenes if it is possible
@@ -106,7 +114,8 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
             keyframe = reader[keyframe_index]
             cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
             if database is not None:
-                database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id)
+                database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id,
+                                     timestamp=time_formatting(keyframe_index/reader.fps))
             if len(saved_clusters) == n_frames:
                 break
 

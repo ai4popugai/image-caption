@@ -5,6 +5,7 @@ import sqlite3
 
 VIDEO_ID_KEY = 'video_id'
 KEYFRAME_ID_KEY = 'keyframe_id'
+TIMESTAMP_KEY = 'timestamp'
 OBJECTS_KEY = 'objects'
 CONCEPT_KEY = 'concept'
 
@@ -22,15 +23,15 @@ class SQLiteDb:
                 raise RuntimeError('Database already exists')
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
-            cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},"
+            cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},{TIMESTAMP_KEY},"
                            f"{OBJECTS_KEY},{CONCEPT_KEY})")
             connect.commit()
 
-    def add_new_row(self, video_id, keyframe_id):
+    def add_new_row(self, video_id, keyframe_id, timestamp):
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
-            cursor.execute(f"INSERT INTO {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY}) "
-                           f"VALUES ('{video_id}', '{keyframe_id}')")
+            cursor.execute(f"INSERT INTO {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},{TIMESTAMP_KEY}) "
+                           f"VALUES ('{video_id}', '{keyframe_id}', '{timestamp}')")
             connect.commit()
 
     def add_concept_to_row(self, video_id, keyframe_id, concept):

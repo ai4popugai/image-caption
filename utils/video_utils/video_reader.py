@@ -10,6 +10,7 @@ class VideoReader:
     def __init__(self, video_path: str, scale_factor: float = 1.,):
         super().__init__()
         self.cap = cv2.VideoCapture(video_path)
+        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
         self.height, self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) * scale_factor), \
                                   int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) * scale_factor)
         self.frames_count = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
