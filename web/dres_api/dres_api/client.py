@@ -29,16 +29,24 @@ class Client:
               f"role: '{login.role}'\n"
               f"session_id: '{self.session_id}'")
 
-    def submit_example(self):
+    def example(self, item: str, frame: int, timecode: str,):
+        """
+        Method to submit search result to DRES server.
+
+        :param item: Identifier for the actual media object or media file.
+        :param frame: Frame number for media with temporal progression (e.g. video).
+        :param timecode: Timecode for media with temporal progression (e.g. video).
+        :return:
+        """
         submission_response = None
         try:
             submission_response = self.submission_api.get_api_v1_submit(
                 session=self.session_id,
                 collection=None,
-                item="some_item_name",
-                frame=None,
+                item=item,
+                frame=frame,
                 shot=None,
-                timecode="00:00:10:00",
+                timecode=timecode,
                 text=None
             )
         except ApiException as e:
