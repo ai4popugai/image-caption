@@ -23,6 +23,7 @@ def yolo_inference(frames_dir: str, threshold: float = 0.7, database: SQLiteDb =
         objects = []
         for class_id, box, score in zip(classes[0], boxes[0], scores[0]):
             if score >= threshold:
+                box = [round(coordinate, 3) for coordinate in box]
                 objects.append({YOLO_NAMES[class_id]: box})
                 img = DET.draw_on_image(img, [box], [score], [class_id])
         if database is None:
