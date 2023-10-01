@@ -29,7 +29,7 @@ class Client:
               f"role: '{login.role}'\n"
               f"session_id: '{self.session_id}'")
 
-    def example(self, item: str, frame: int, timecode: str,):
+    def submit(self, item: str, frame: int, timecode: str,):
         """
         Method to submit search result to DRES server.
 
