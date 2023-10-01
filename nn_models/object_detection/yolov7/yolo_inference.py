@@ -10,7 +10,7 @@ DET = Yolov7Detector(traced=False)
 YOLO_NAMES = DET.names
 
 
-def yolo_inference(frames_dir: str, threshold: float = 0.5, database: SQLiteDb = None,):
+def yolo_inference(frames_dir: str, threshold: float = 0.7, database: SQLiteDb = None,):
     video_id = os.path.basename(frames_dir)
 
     image_extensions = (".jpg", ".jpeg", ".png")
