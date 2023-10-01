@@ -37,6 +37,7 @@ app.config[DB_IN_WORK] = None
 def submit_random_match(matches: List[Any]):
     if len(matches) == 0:
         print("Can't submit non-found item.")
+        return
     random_match = random.choice(matches)
     client.submit(item=random_match[0],
                   frame=int(os.path.splitext(random_match[1].split('_')[1])[0]),
