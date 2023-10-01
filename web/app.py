@@ -39,10 +39,10 @@ def submit_random_match(matches: List[Any]):
         print("Can't submit non-found item.")
         return
     random_match = random.choice(matches)
+    print(f'submitting {random_match}')
     client.submit(item=random_match[0],
                   frame=int(os.path.splitext(random_match[1].split('_')[1])[0]),
                   timecode=random_match[2])
-    print(f'submitted {random_match}')
 
 
 @app.route('/')
