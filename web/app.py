@@ -28,8 +28,6 @@ UPLOAD_FOLDER = os.path.join(WEB_EXECUTION_FOLDER, 'upload')
 DB_RUNTIME_PATH = os.path.join(WEB_EXECUTION_FOLDER, 'web_db')
 DB_RUNTIME = SQLiteDb(DB_RUNTIME_PATH)
 
-PROCESSING_THREAD = threading.Thread(target=preprocess_videos,
-                                     args=(UPLOAD_FOLDER, NUM_KEY_FRAMES, DB_RUNTIME))
 DB_IN_WORK = 'DB_IN_WORK'
 app.config[DB_IN_WORK] = None
 
@@ -78,8 +76,7 @@ def upload_videos():
 
         file.save(os.path.join(UPLOAD_FOLDER, os.path.dirname(file.filename), file.filename))
 
-    PROCESSING_THREAD.start()
-    PROCESSING_THREAD.join()
+    preprocess_videos(UPLOAD_FOLDER, NUM_KEY_FRAMES, DB_RUNTIME)
 
     return redirect(url_for('render_main_page'))
 
