@@ -1,4 +1,6 @@
+import random
 import shutil
+from typing import List, Any
 
 from flask import Flask, request, render_template, redirect, url_for
 import os
@@ -6,12 +8,14 @@ import threading
 
 from datasets.classification.gpr import GPRDataset
 from db import SQLiteDb
+from dres_api.client import Client
 from nn_models.object_detection.yolov7.yolo_inference import YOLO_NAMES
 from web.preprocess_video import preprocess_videos
 
 NUM_KEY_FRAMES = 25
 
 app = Flask(__name__)
+client = Client()
 
 WEB_DEFAULTS_FOLDER = os.path.join(os.getcwd(), 'web_defaults')
 DB_DEFAULT_PATH = os.path.join(WEB_DEFAULTS_FOLDER, 'v3c1')
@@ -28,6 +32,16 @@ PROCESSING_THREAD = threading.Thread(target=preprocess_videos,
                                      args=(UPLOAD_FOLDER, NUM_KEY_FRAMES, DB_RUNTIME))
 DB_IN_WORK = 'DB_IN_WORK'
 app.config[DB_IN_WORK] = None
+
+
+def submit_random_match(matches: List[Any]):
+    if len(matches) == 0:
+        print("Can't submit non-found item.")
+    random_match = random.choice(matches)
+    client.submit(item=random_match[0],
+                  frame=int(os.path.splitext(random_match[1].split('_')[1])[0]),
+                  timecode=random_match[2])
+    print(f'submitted {random_match}')
 
 
 @app.route('/')
@@ -86,6 +100,7 @@ def handle_concept():
     print(f'target concept: {selected_category}')
     matches = app.config[DB_IN_WORK].get_rows_by_concept(selected_category)
     print(matches)
+    submit_random_match(matches)
 
     return redirect(url_for('render_main_page'))
 
@@ -97,6 +112,7 @@ def handle_object_class():
     print(f'target object class: {selected_object_class}')
     matches = app.config[DB_IN_WORK].get_rows_by_object(selected_object_class)
     print(matches)
+    submit_random_match(matches)
 
     return redirect(url_for('render_main_page'))
 
