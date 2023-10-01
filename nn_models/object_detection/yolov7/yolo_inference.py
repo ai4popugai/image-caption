@@ -40,6 +40,6 @@ def yolo_inference(frames_dir: str, threshold: float = 0.7, database: SQLiteDb =
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Object detection script')
     parser.add_argument('--frames_dir', required=True, help='Path to the directory containing keyframes')
-    parser.add_argument('--threshold', type=float, default=0.5, help='Detection threshold')
+    parser.add_argument('--threshold', type=float, default=0.7, help='Detection threshold')
     args = parser.parse_args()
     yolo_inference(args.frames_dir, args.threshold)
