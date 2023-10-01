@@ -1,3 +1,4 @@
+import os
 import time
 from dres_api import UserApi, ClientRunInfoApi, SubmissionApi, LogApi
 from dres_api.configuration import Configuration
@@ -8,7 +9,7 @@ from omegaconf import OmegaConf
 
 class Client:
     def __init__(self):
-        config = OmegaConf.load('credentials.yaml')
+        config = OmegaConf.load(f'{ os.path.dirname(os.path.abspath(__file__))}/credentials.yaml')
 
         # Setup
         user_api = UserApi()
@@ -64,4 +65,4 @@ class Client:
 
 if __name__ == '__main__':
     client = Client()
-    client.submit_example()
+    client.submit(item='example.mp4', frame=12, timecode='00:00:00.000')
