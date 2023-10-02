@@ -1,6 +1,6 @@
 import random
 import shutil
-from typing import List, Any
+from typing import List, Any, Optional
 
 from flask import Flask, request, render_template, redirect, url_for
 import os
@@ -32,15 +32,19 @@ DB_IN_WORK = 'DB_IN_WORK'
 app.config[DB_IN_WORK] = None
 
 
-def submit_random_match(matches: List[Any]):
-    if len(matches) == 0:
-        print("Can't submit non-found item.")
-        return
-    random_match = random.choice(matches)
+def submit_match(random_match):
     print(f'submitting {random_match}')
     client.submit(item=random_match[0],
                   frame=int(os.path.splitext(random_match[1].split('_')[1])[0]),
                   timecode=random_match[2])
+
+
+def submit_random_match(matches: List[str]):
+    if len(matches) == 0:
+        print("Can't submit non-found item.")
+    else:
+        random_match = random.choice(matches)
+        submit_match(random_match)
 
 
 @app.route('/')
@@ -117,7 +121,11 @@ def handle_object_class():
 
 @app.route('/handle_random_object_class', methods=['POST'])
 def handle_random_object_class():
-    print('sosi)')
+    random_match = app.config[DB_IN_WORK].get_random_row_with_non_emptaddy_objects()
+    if random_match is not None:
+        submit_match(random_match)
+    else:
+        print('There is no object in processed video. Nothing to submit')
     return redirect(url_for('render_main_page'))
 
 
