@@ -5,10 +5,11 @@ import torch
 from torch import nn
 
 from nn_models.attention import MultiHeadAttention
+from nn_models.positional_encoding import PositionalEncoding
 from nn_models.utils import PositionWiseFeedForward
 
 
-class TransformerEncoder(nn.Module):
+class TransformerEncoderUnit(nn.Module):
     def __init__(self, hidden_size: int, d_ff: int, num_heads: int, dropout: float):
         if hidden_size % num_heads != 0:
             raise RuntimeError('hidden_size must be divisible by num_heads')
@@ -37,7 +38,7 @@ class TransformerEncoder(nn.Module):
         return x
 
 
-class TransformerDecoder(nn.Module):
+class TransformerDecoderUnit(nn.Module):
     def __init__(self, hidden_size: int, d_ff: int, num_heads: int, dropout: float):
         if hidden_size % num_heads != 0:
             raise RuntimeError('hidden_size must be divisible by num_heads')
@@ -74,18 +75,29 @@ class TransformerDecoder(nn.Module):
         return x
 
 
+class TransformerEncoder(nn.Module):
+    def __init__(self, num_layers: int, hidden_size: int, d_ff: int, num_heads: int, dropout: float,
+                 max_seq_len: int = 200):
+        super().__init__()
+        self.encoder = nn.ModuleList([TransformerEncoderUnit(hidden_size=hidden_size,
+                                                             d_ff=d_ff,
+                                                             num_heads=num_heads,
+                                                             dropout=dropout) for _ in range(num_layers)])
+        self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
+
+
 if __name__ == "__main__":
     # Example usage
     hs = 512
-    d_ff = 2048
-    num_heads = 4
+    dff = 2048
+    nh = 4
     max_seq_length = 100
 
     # Create a random input tensor (batch_size, seq_length, hidden_size)
     batch_size = 32
     seq_length = 50
-    encoder = TransformerEncoder(hidden_size=hs, d_ff=d_ff, num_heads=num_heads, dropout=0.2)
-    decoder = TransformerDecoder(hidden_size=hs, d_ff=d_ff, num_heads=num_heads, dropout=0.2)
+    encoder = TransformerEncoderUnit(hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
+    decoder = TransformerDecoderUnit(hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
     enc_inp_tensor = torch.randn(batch_size, seq_length, hs)
     dec_inp_tensor = torch.randn(batch_size, seq_length, hs)
 
