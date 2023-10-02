@@ -9,7 +9,7 @@ from train import Trainer
 
 
 class AttentionDecoder(nn.Module):
-    def __init__(self, vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int,
+    def __init__(self, trg_vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int,
                  sos_token: torch.Tensor, eos_token: torch.Tensor,
                  num_layers=4, max_len=15, teacher_forcing: bool = False,):
         super().__init__()
@@ -21,10 +21,10 @@ class AttentionDecoder(nn.Module):
 
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
-        self.vocab_size = vocab_size
+        self.trg_vocab_size = trg_vocab_size
 
         # embedding layer to convert words indices to embeddings
-        self.embedding = nn.Embedding(vocab_size, embedding_size)
+        self.embedding = nn.Embedding(trg_vocab_size, embedding_size)
 
         # linear layer to transform input embeddings from embedding_size to hidden_size
         self.fc_1 = nn.Linear(embedding_size, hidden_size)
@@ -35,7 +35,7 @@ class AttentionDecoder(nn.Module):
         self.rnn = nn.GRU(hidden_size + hidden_size, hidden_size, num_layers=self.num_layers, batch_first=True)
 
         # linear layer to make final predictions
-        self.fc_2 = nn.Linear(hidden_size, vocab_size)
+        self.fc_2 = nn.Linear(hidden_size, trg_vocab_size)
 
         self.max_len = max_len
         self.sos_token = sos_token
@@ -60,7 +60,7 @@ class AttentionDecoder(nn.Module):
         :param decoder_input: (batch_size, hidden_size) tensor from input ground true y_i-1 or previous predicted word.
         :param s_hidden: hidden state of the previous time step (num_layers, batch_size, hidden_size).
         :param keys: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
-        :return: decoded word (batch_size, vocab_size), hidden state (batch_size, hidden_size) and attention weights.
+        :return: decoded word (batch_size, trg_vocab_size), hidden state (batch_size, hidden_size) and attention weights.
         """
         # I get hidden state (batch_size, 1, hidden_size) from the last layer of GRU to the attention layer
         context, weights = self.attention(query=s_hidden[-1].unsqueeze(1), keys=keys, values=keys)
@@ -76,7 +76,7 @@ class AttentionDecoder(nn.Module):
         # s_hidden: (num_layers, batch_size, hidden_size)
 
         y_t = y_t.squeeze(1)  # output: (batch_size, hidden_size)
-        y_t = self.fc_2(y_t)  # output: (batch_size, vocab_size)
+        y_t = self.fc_2(y_t)  # output: (batch_size, trg_vocab_size)
         return y_t, s_hidden, weights
 
     def _forward_inference(self, features: torch.Tensor) -> torch.Tensor:
@@ -85,7 +85,7 @@ class AttentionDecoder(nn.Module):
         Decode the sequence step by step, until the EOS token is predicted or the max_len is reached.
 
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
-        :return: (batch_size, any_seq_len, vocab_size) - predictions for each token in the sequence.
+        :return: (batch_size, any_seq_len, trg_vocab_size) - predictions for each token in the sequence.
         """
 
         batch_size = features.shape[0]
@@ -96,11 +96,11 @@ class AttentionDecoder(nn.Module):
         # decoder_input: (batch_size, hidden_size), always start with SOS token
         decoder_input = self._token_to_hidden(self.sos_token.to(features.device)).expand(batch_size, -1)
 
-        # outputs: (batch_size, max_len, vocab_size)
-        outputs = torch.zeros(batch_size, self.max_len, self.vocab_size, device=features.device)
+        # outputs: (batch_size, max_len, trg_vocab_size)
+        outputs = torch.zeros(batch_size, self.max_len, self.trg_vocab_size, device=features.device)
 
         for t in range(self.max_len):
-            y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)  # y_t: (batch_size, vocab_size)
+            y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)  # y_t: (batch_size, trg_vocab_size)
             # s_hidden: (num_layers, batch_size, hidden_size)
 
             outputs[:, t, :] = y_t
@@ -123,7 +123,7 @@ class AttentionDecoder(nn.Module):
 
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
         :param captions: captions to train on (batch_size, seq_len_captions).
-        :return: (batch_size, seq_len_captions - 1, vocab_size) - predictions for each token in the sequence
+        :return: (batch_size, seq_len_captions - 1, trg_vocab_size) - predictions for each token in the sequence
         except SOS token.
         """
         captions = captions[:, 1:]  # because we don't need to predict SOS token
@@ -136,8 +136,8 @@ class AttentionDecoder(nn.Module):
         # decoder_input: (batch_size, hidden_size), always start with SOS token
         decoder_input = self._token_to_hidden(self.sos_token.to(features.device)).expand(batch_size, -1)
 
-        # outputs: (batch_size, max_len, vocab_size)
-        outputs = torch.zeros(batch_size, out_seq_len, self.vocab_size, device=features.device)
+        # outputs: (batch_size, max_len, trg_vocab_size)
+        outputs = torch.zeros(batch_size, out_seq_len, self.trg_vocab_size, device=features.device)
 
         for t in range(out_seq_len):
             y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)
@@ -153,14 +153,14 @@ class AttentionDecoder(nn.Module):
         :param features: feature maps from the encoder (batch_size, seq_len, keys_hidden_size).
         NOTE it can be another type of features, but it must be meaningful for the attention layer.
         :param captions: captions to train on (batch_size, seq_len).
-        :return: output predictions (batch_size, seq_len - 1, vocab_size) if captions are provided,
-        else (batch_size, any_seq_len, vocab_size)
+        :return: output predictions (batch_size, seq_len - 1, trg_vocab_size) if captions are provided,
+        else (batch_size, any_seq_len, trg_vocab_size)
         """
         if captions is not None:
-            outputs = self._forward_training(features, captions)  # (batch_size, seq_len, vocab_size)
+            outputs = self._forward_training(features, captions)  # (batch_size, seq_len, trg_vocab_size)
         else:
             # in that case sequence length is not known
-            outputs = self._forward_inference(features)  # (batch_size, any_seq_len <= self.max_len, vocab_size)
+            outputs = self._forward_inference(features)  # (batch_size, any_seq_len <= self.max_len, trg_vocab_size)
 
         return {LOGITS_KEY: outputs}
     
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     sos = torch.tensor(0)
     eos = torch.tensor(1)
     m_len = 500
-    decoder = AttentionDecoder(vocab_size=vs, embedding_size=es,
+    decoder = AttentionDecoder(trg_vocab_size=vs, embedding_size=es,
                                hidden_size=hs, keys_hidden_size=keys_hs,
                                sos_token=sos, eos_token=eos, max_len=m_len
                                )
