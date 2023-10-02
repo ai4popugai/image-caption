@@ -121,7 +121,8 @@ def handle_object_class():
 
 @app.route('/handle_random_object_class', methods=['POST'])
 def handle_random_object_class():
-    random_match = app.config[DB_IN_WORK].get_random_row_with_non_emptaddy_objects()
+    print(f'random object class')
+    random_match = app.config[DB_IN_WORK].get_random_row_with_non_empty_objects()
     if random_match is not None:
         submit_match(random_match)
     else:
@@ -131,7 +132,12 @@ def handle_random_object_class():
 
 @app.route('/handle_random_concept', methods=['POST'])
 def handle_random_concept():
-    print('sosi)')
+    print(f'random concept')
+    random_match = app.config[DB_IN_WORK].get_random_row()
+    if random_match is not None:
+        submit_match(random_match)
+    else:
+        print('CRITICAL ERROR: your db is empty')
     return redirect(url_for('render_main_page'))
 
 
