@@ -115,6 +115,18 @@ def handle_object_class():
     return redirect(url_for('render_main_page'))
 
 
+@app.route('/handle_random_object_class', methods=['POST'])
+def handle_random_object_class():
+    print('sosi)')
+    return redirect(url_for('render_main_page'))
+
+
+@app.route('/handle_random_concept', methods=['POST'])
+def handle_random_concept():
+    print('sosi)')
+    return redirect(url_for('render_main_page'))
+
+
 @app.route('/to_start_page')
 def to_start_page():
     cleanup()
