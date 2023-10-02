@@ -69,14 +69,6 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
                                      timestamp=time_formatting(keyframe_index/reader.fps))
         return
 
-    # cut the first and the last scenes if it is possible
-    if len(scene_list) >= n_frames + 6:
-        scene_list = scene_list[3:-3]
-    elif len(scene_list) >= n_frames + 4:
-        scene_list = scene_list[2:-2]
-    elif len(scene_list) >= n_frames + 2:
-        scene_list = scene_list[1:-1]
-
     n_per_scene = n_frames // len(scene_list) + 1
 
     # form keyframes list
@@ -88,6 +80,7 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
             keyframe_id = random.randint(scene_start_idx, scene_end_idx)
             keyframes_id_list.append(keyframe_id)
 
+    keyframes_id_list = sorted(keyframes_id_list)
     dataset = KeyFramesDataset(keyframes_id_list, reader)
     dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
 
