@@ -183,7 +183,7 @@ if __name__ == '__main__':
     seq_length_features = 48
     seq_length_captions = 15
     dec_inp_features = torch.randn(bs, seq_length_features, keys_hs).to(device)
-    dec_inp_captions = torch.randn(bs, seq_length_captions, keys_hs).to(device)
+    dec_inp_captions = torch.randn(bs, seq_length_captions).to(device)
     dec_out = decoder(dec_inp_features, dec_inp_captions)
     print("Decoder Input Features Shape:", dec_inp_features.shape)
     print("Decoder Output Tensor Shape:", dec_out[LOGITS_KEY].shape)
