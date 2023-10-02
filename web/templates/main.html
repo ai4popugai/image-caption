@@ -12,6 +12,12 @@
         .button-spacing {
             margin-bottom: 10px; /* Add 10 pixels of margin to the top */
         }
+        .submit-button {
+            margin-right: 10px; /* Adjust the margin-right for the "Submit" button */
+        }
+        .random-button {
+            margin-left: 50px; /* Adjust the margin-left for the "Submit Random" button */
+        }
     </style>
 </head>
 <body>
@@ -25,7 +31,8 @@
             <option value="{{ value }}">{{ value }}</option>
             {% endfor %}
         </select>
-        <button type="submit">Submit</button>
+        <button type="submit" class="submit-button">Submit</button>
+        <button type="submit" class="random-button" formaction="/handle_random_concept">Submit Random</button>
     </form>
 
     <!-- Dropdown menu for object_classes -->
@@ -36,7 +43,8 @@
             <option value="{{ value }}">{{ value }}</option>
             {% endfor %}
         </select>
-        <button type="submit">Submit</button>
+        <button type="submit" class="submit-button">Submit</button>
+        <button type="submit" class="random-button" formaction="/handle_random_object_class">Submit Random</button>
     </form>
 
     <form method="GET" action="/to_start_page" class="button-spacing">
@@ -46,6 +54,5 @@
     <form method="GET" action="/exit">
         <button type="submit">Exit</button>
     </form>
-
 </body>
 </html>
