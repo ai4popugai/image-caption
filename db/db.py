@@ -1,5 +1,6 @@
 import glob
 import os
+import random
 import shutil
 import sqlite3
 
@@ -63,3 +64,13 @@ class SQLiteDb:
             rows = cursor.fetchall()
             return rows
 
+    def get_random_row_with_non_empty_objects(self):
+        with sqlite3.connect(self.db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(
+                f"SELECT * FROM {self.db_name} WHERE {OBJECTS_KEY} IS NOT NULL AND {OBJECTS_KEY} != '[]'")
+            rows = cursor.fetchall()
+            if rows:
+                return random.choice(rows)
+            else:
+                return None
