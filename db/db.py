@@ -74,3 +74,13 @@ class SQLiteDb:
                 return random.choice(rows)
             else:
                 return None
+
+    def get_random_row(self):
+        with sqlite3.connect(self.db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"SELECT * FROM {self.db_name}")
+            rows = cursor.fetchall()
+            if rows:
+                return random.choice(rows)
+            else:
+                return None
