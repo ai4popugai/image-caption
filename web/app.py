@@ -1,10 +1,9 @@
 import random
 import shutil
-from typing import List, Any, Optional
+from typing import List
 
 from flask import Flask, request, render_template, redirect, url_for
 import os
-import threading
 
 from datasets.classification.gpr import GPRDataset
 from db import SQLiteDb
