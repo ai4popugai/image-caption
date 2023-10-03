@@ -117,6 +117,19 @@ class TransformerTextEncoder(nn.Module):
         return x
 
 
+class TransformerTextDecoder(nn.Module):
+    def __init__(self, trg_vocab_size: int,
+                 num_layers: int, hidden_size: int, d_ff: int, num_heads: int, dropout: float,
+                 max_seq_len: int = 200):
+        super().__init__()
+        self.embedder = nn.Embedding(trg_vocab_size, hidden_size)
+        self.encoder = nn.ModuleList([TransformerEncoderUnit(hidden_size=hidden_size,
+                                                             d_ff=d_ff,
+                                                             num_heads=num_heads,
+                                                             dropout=dropout) for _ in range(num_layers)])
+        self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
+
+
 if __name__ == "__main__":
     # Example usage
     hs = 512
