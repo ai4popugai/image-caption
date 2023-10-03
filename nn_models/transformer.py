@@ -36,6 +36,13 @@ class TransformerEncoderUnit(nn.Module):
         self.layer_norm_1 = nn.LayerNorm(self.hidden_size)
 
     def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None):
+        """
+        The main class method
+
+        :param x: input tensor with shape (batch_size, seq_len, hidden_size).
+        :param mask: mask for self- attention with shape (batch_size, seq_len, seq_len).
+        :return: encoded tensor with shape (batch_size, seq_len, hidden_size).
+        """
         if x.shape[-1] != self.hidden_size:
             raise RuntimeError(f'Could not encode tensor with depth {x.shape[-1]}, '
                                f'only depth={self.hidden_size} allowed')
@@ -84,16 +91,16 @@ class TransformerDecoderUnit(nn.Module):
 
     def forward(self, x: torch.Tensor, keys: torch.Tensor,
                 mask: Optional[torch.Tensor] = None,
-                mask_keys: Optional[torch.Tensor] = None):
+                mask_cross: Optional[torch.Tensor] = None):
         """
         The main class method
 
-        :param x: input tensor with shape (batch_size, seq_len, hidden_size)
-        :param keys: tensor with shape (batch_size, seq_len, keys_hidden_size) for cross attention,
+        :param x: input tensor with shape (batch_size, trg_seq_len, hidden_size)
+        :param keys: tensor with shape (batch_size, keys_seq_len, keys_hidden_size) for cross attention,
         usually encoder output.
-        :param mask: mask to masking x tokens.
-        :param mask_keys: mask to cross_attention_keys.
-        :return:
+        :param mask: mask for self- attention (batch_size, trg_seq_len, trg_seq_len).
+        :param mask_cross: mask for cross- attention (batch_size, trg_seq_len, keys_seq_len)
+        :return: decoded tensor with shape (batch_size, trg_seg_len, hidden_size)
         """
         if keys.shape[-1] != self.keys_hidden_size:
             raise RuntimeError(f'Cross attention keys hidden size '
@@ -102,7 +109,7 @@ class TransformerDecoderUnit(nn.Module):
         x = self.layer_norm_0(x + self.dropout(self_attention_out))
         cross_attention_out, _ = self.cross_attention(query=x,
                                                       keys=keys, values=keys,
-                                                      mask=mask_keys)
+                                                      mask=mask_cross)
         x = self.layer_norm_1(x + self.dropout(cross_attention_out))
         feed_forward_out = self.feed_forward(x)
         x = self.layer_norm_2(x + self.dropout(feed_forward_out))
@@ -126,7 +133,7 @@ class TransformerTextEncoder(nn.Module):
         Encoder gets as input Tensor with shape (batch_size, seq_len).
 
         :param x: tensor with shape (batch_size, seq_len).
-        :param mask: self- attention mask
+        :param mask: self- attention mask with shape (batch_size, seq_len, seq_len)
         :return: tensor with shape (batch_size, seq_len, hidden_size)
         """
         x = self.embedder(x)
@@ -150,7 +157,7 @@ class TransformerTextDecoder(nn.Module):
                                                              dropout=dropout) for _ in range(num_layers)])
         self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
 
-    def get_cross_attention_key_mask(self, keys: torch.Tensor):
+    def get_self_attention_key_mask(self, x: torch.Tensor):
         pass
 
 
