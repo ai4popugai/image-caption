@@ -89,6 +89,12 @@ class TransformerDecoderUnit(nn.Module):
         self.layer_norm_1 = nn.LayerNorm(self.hidden_size)
         self.layer_norm_2 = nn.LayerNorm(self.hidden_size)
 
+    @staticmethod
+    def get_self_attention_mask(x: torch.Tensor):
+        bs, trg_seq_len, _ = x.shape
+        mask = torch.tril(torch.ones((trg_seq_len, trg_seq_len), dtype=torch.bool))
+        return mask.unsqueeze(0).expand(bs, -1, -1)
+
     def forward(self, x: torch.Tensor, keys: torch.Tensor,
                 mask: Optional[torch.Tensor] = None,
                 mask_cross: Optional[torch.Tensor] = None):
@@ -102,6 +108,8 @@ class TransformerDecoderUnit(nn.Module):
         :param mask_cross: mask for cross- attention (batch_size, trg_seq_len, keys_seq_len)
         :return: decoded tensor with shape (batch_size, trg_seg_len, hidden_size)
         """
+        if mask is None:
+            mask = self.get_self_attention_mask(x)
         if keys.shape[-1] != self.keys_hidden_size:
             raise RuntimeError(f'Cross attention keys hidden size '
                                f'{keys.shape[-1]} != {self.keys_hidden_size} missmatch')
@@ -156,12 +164,6 @@ class TransformerTextDecoder(nn.Module):
                                                              num_heads=num_heads,
                                                              dropout=dropout) for _ in range(num_layers)])
         self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
-
-    @staticmethod
-    def get_self_attention_mask(x: torch.Tensor):
-        bs, trg_seq_len, _ = x.shape
-        mask = torch.tril(torch.ones((trg_seq_len, trg_seq_len), dtype=torch.bool))
-        return mask.unsqueeze(0).expand(bs, -1, -1)
 
 
 if __name__ == "__main__":

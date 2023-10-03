@@ -79,6 +79,10 @@ class MultiHeadAttention(nn.Module):
         keys = self.split_heads(self.Wk(keys))
         values = self.split_heads(self.Wv(values))
 
+        if mask is not None:
+            # unsqueeze mask to further broadcasting
+            mask = mask.unsqueeze(1)
+
         context, weights = dot_product_attention(query, keys, values,
                                                  mask=mask, scaled=True)
         context = self.Wout(self.combine_heads(context))
