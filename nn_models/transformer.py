@@ -164,6 +164,7 @@ class TransformerTextDecoder(nn.Module):
                                                              num_heads=num_heads,
                                                              dropout=dropout) for _ in range(num_layers)])
         self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
+        self.fc = nn.Linear(hidden_size, trg_vocab_size)
 
     def forward(self, x: torch.Tensor, keys: torch.Tensor,
                 mask: Optional[torch.Tensor] = None,
@@ -171,17 +172,18 @@ class TransformerTextDecoder(nn.Module):
         """
         Decoder gets as input Tensor with shape (batch_size, seq_len).
 
-        :param x: input tensor with shape (batch_size, trg_seq_len, hidden_size)
+        :param x: input tensor with shape (batch_size, trg_seq_len)
         :param keys: tensor with shape (batch_size, keys_seq_len, keys_hidden_size) for cross attention,
         usually encoder output.
         :param mask: mask for self- attention (batch_size, trg_seq_len, trg_seq_len).
         :param mask_cross: mask for cross- attention (batch_size, trg_seq_len, keys_seq_len)
-        :return: decoded tensor with shape (batch_size, trg_seg_len, hidden_size)
+        :return: decoded tensor with shape (batch_size, trg_seg_len, trg_vocab_size)
         """
         x = self.embedder(x)
         x = self.positional_encoding(x)
         for layer in self.decoder:
             x = layer(x, keys, mask=mask, mask_cross=mask_cross)
+        x = self.fc(x)
         return x
 
 
@@ -223,7 +225,7 @@ if __name__ == "__main__":
 
     # Check TransformerTextEncoder and TransformerTextDecoder
     src_vs = 100000
-    trg_vs = 100000
+    trg_vs = 120000
     nl = 4
     max_seq_length = 100
 
