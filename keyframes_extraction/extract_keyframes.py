@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
 from db import SQLiteDb
-from keyframes_exctraction import KEYFRAMES_DIR_KEY
+from keyframes_extraction import KEYFRAMES_DIR_KEY
 from train import Trainer
 from utils.video_utils.video_reader import VideoReader
 

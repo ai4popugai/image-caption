@@ -7,8 +7,8 @@ from db import SQLiteDb
 from experiments.EfficientNet_b0.generate_descriptions import generate_descriptions
 
 # setup concept detection model constants
-from keyframes_exctraction import KEYFRAMES_DIR_KEY
-from keyframes_exctraction.extract_keyframes import extract_keyframes
+from keyframes_extraction import KEYFRAMES_DIR_KEY
+from keyframes_extraction.extract_keyframes import extract_keyframes
 from nn_models.object_detection.yolov7 import yolo_inference
 
 EXPERIMENT = 'EfficientNet_b0'
