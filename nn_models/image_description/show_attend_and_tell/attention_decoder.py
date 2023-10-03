@@ -9,7 +9,7 @@ from train import Trainer
 
 
 class AttentionDecoder(nn.Module):
-    def __init__(self, trg_vocab_size: int, embedding_size: int, hidden_size: int, keys_hidden_size: int,
+    def __init__(self, trg_vocab_size: int, hidden_size: int, keys_hidden_size: int,
                  sos_token: torch.Tensor, eos_token: torch.Tensor,
                  num_layers=4, max_len=15, teacher_forcing: bool = False,):
         super().__init__()
@@ -19,15 +19,11 @@ class AttentionDecoder(nn.Module):
                                            hidden_size=hidden_size, out_hidden_size=hidden_size)
         self.teacher_forcing = teacher_forcing
 
-        self.embedding_size = embedding_size
         self.hidden_size = hidden_size
         self.trg_vocab_size = trg_vocab_size
 
         # embedding layer to convert words indices to embeddings
-        self.embedding = nn.Embedding(trg_vocab_size, embedding_size)
-
-        # linear layer to transform input embeddings from embedding_size to hidden_size
-        self.fc_1 = nn.Linear(embedding_size, hidden_size)
+        self.embedding = nn.Embedding(trg_vocab_size, hidden_size)
 
         # rnn cell
         self.num_layers = num_layers
@@ -48,8 +44,8 @@ class AttentionDecoder(nn.Module):
         :param tokenized_word: (batch_size,) - tokenized words.
         :return: (batch_size, hidden_size) - vector that can be treated as s_hidden.
         """
-        embeddings = self.embedding(tokenized_word)  # embeddings: (batch_size, embedding_size)
-        return self.fc_1(embeddings)  # x: (batch_size, hidden_size)
+        embeddings = self.embedding(tokenized_word)  # embeddings: (batch_size, hidden_size)
+        return embeddings
 
     def _forward(self, decoder_input: torch.Tensor, s_hidden: torch.Tensor, keys: torch.Tensor,) \
             -> (torch.Tensor, torch.Tensor, torch.Tensor):
@@ -168,13 +164,12 @@ class AttentionDecoder(nn.Module):
 if __name__ == '__main__':
     device = Trainer.get_device()
     vs = 100000
-    es = 2048
     hs = 512
     keys_hs = 1024
     sos = torch.tensor(0)
     eos = torch.tensor(1)
     m_len = 500
-    decoder = AttentionDecoder(trg_vocab_size=vs, embedding_size=es,
+    decoder = AttentionDecoder(trg_vocab_size=vs,
                                hidden_size=hs, keys_hidden_size=keys_hs,
                                sos_token=sos, eos_token=eos, max_len=m_len
                                )
