@@ -11,6 +11,14 @@ from nn_models.utils import PositionWiseFeedForward
 
 class TransformerEncoderUnit(nn.Module):
     def __init__(self, hidden_size: int, d_ff: int, num_heads: int, dropout: float):
+        """
+        That Unit could be use for Transformer Encoder construction for images or text encoding.
+
+        :param hidden_size: hidden size of the model.
+        :param d_ff: hidden dim for feed- forward block.
+        :param num_heads: num multi-head attention blocks.
+        :param dropout: dropout amount (float).
+        """
         if hidden_size % num_heads != 0:
             raise RuntimeError('hidden_size must be divisible by num_heads')
         super().__init__()
@@ -40,6 +48,14 @@ class TransformerEncoderUnit(nn.Module):
 
 class TransformerDecoderUnit(nn.Module):
     def __init__(self, hidden_size: int, d_ff: int, num_heads: int, dropout: float):
+        """
+        That Unit could be use for Transformer Decoder construction for images or text decoding.
+
+        :param hidden_size: hidden size of the model.
+        :param d_ff: hidden dim for feed- forward block.
+        :param num_heads: num multi-head attention blocks.
+        :param dropout: dropout amount (float).
+        """
         if hidden_size % num_heads != 0:
             raise RuntimeError('hidden_size must be divisible by num_heads')
         super().__init__()
