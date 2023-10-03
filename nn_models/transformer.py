@@ -170,7 +170,7 @@ class TransformerTextDecoder(nn.Module):
                 mask: Optional[torch.Tensor] = None,
                 mask_cross: Optional[torch.Tensor] = None):
         """
-        Decoder gets as input Tensor with shape (batch_size, seq_len).
+        Decoder gets as input Tensor with shape (batch_size, trg_seq_len).
 
         :param x: input tensor with shape (batch_size, trg_seq_len)
         :param keys: tensor with shape (batch_size, keys_seq_len, keys_hidden_size) for cross attention,
