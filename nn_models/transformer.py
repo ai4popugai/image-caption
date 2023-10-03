@@ -121,17 +121,18 @@ class TransformerTextEncoder(nn.Module):
                                                              dropout=dropout) for _ in range(num_layers)])
         self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None):
         """
         Encoder gets as input Tensor with shape (batch_size, seq_len).
 
         :param x: tensor with shape (batch_size, seq_len).
+        :param mask: self- attention mask
         :return: tensor with shape (batch_size, seq_len, hidden_size)
         """
         x = self.embedder(x)
         x = self.positional_encoding(x)
         for layer in self.encoder:
-            x = layer(x)
+            x = layer(x, mask)
         return x
 
 
