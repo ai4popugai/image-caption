@@ -224,7 +224,7 @@ if __name__ == "__main__":
     print('\n')
 
     # Check TransformerTextEncoder and TransformerTextDecoder
-    src_vs = 100000
+    src_vs = 110000
     trg_vs = 120000
     nl = 4
     max_seq_length = 100
