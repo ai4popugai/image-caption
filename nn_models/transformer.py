@@ -91,15 +91,30 @@ class TransformerDecoderUnit(nn.Module):
         return x
 
 
-class TransformerEncoder(nn.Module):
-    def __init__(self, num_layers: int, hidden_size: int, d_ff: int, num_heads: int, dropout: float,
+class TransformerTextEncoder(nn.Module):
+    def __init__(self, src_vocab_size: int,
+                 num_layers: int, hidden_size: int, d_ff: int, num_heads: int, dropout: float,
                  max_seq_len: int = 200):
         super().__init__()
+        self.embedder = nn.Embedding(src_vocab_size, hidden_size)
         self.encoder = nn.ModuleList([TransformerEncoderUnit(hidden_size=hidden_size,
                                                              d_ff=d_ff,
                                                              num_heads=num_heads,
                                                              dropout=dropout) for _ in range(num_layers)])
         self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
+
+    def forward(self, x: torch.Tensor):
+        """
+        Encoder gets as input Tensor with shape (batch_size, seq_len).
+
+        :param x: tensor with shape (batch_size, seq_len).
+        :return: tensor with shape (batch_size, seq_len, hidden_size)
+        """
+        x = self.embedder(x)
+        x = self.positional_encoding(x)
+        for layer in self.encoder:
+            x = layer(x)
+        return x
 
 
 if __name__ == "__main__":
@@ -107,9 +122,9 @@ if __name__ == "__main__":
     hs = 512
     dff = 2048
     nh = 4
-    max_seq_length = 100
 
-    # Create a random input tensor (batch_size, seq_length, hidden_size)
+    # Check TransformerEncoderUnit and TransformerDecoderUnit
+    print('Running TransformerEncoderUnit and TransformerDecoderUnit')
     batch_size = 32
     seq_length = 50
     encoder = TransformerEncoderUnit(hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
@@ -118,17 +133,32 @@ if __name__ == "__main__":
     dec_inp_tensor = torch.randn(batch_size, seq_length, hs)
 
     # encoder
+    print("Encoder Input Tensor Shape:", enc_inp_tensor.shape)
     start_time = time.perf_counter()
     enc_out_tensor = encoder(enc_inp_tensor)
+    print("Encoder Output Tensor Shape:", enc_out_tensor.shape)
     print(f'Passing through encoder time: {time.perf_counter() - start_time}')
+    print('\n')
 
     # decoder
+    print("Decoder Input Tensor Shape:", dec_inp_tensor.shape)
     start_time = time.perf_counter()
     dec_out_tensor = decoder(x=dec_inp_tensor, enc_out=enc_out_tensor)
-    print(f'Passing through decoder time: {time.perf_counter() - start_time}')
-
-    print("Encoder Input Tensor Shape:", enc_inp_tensor.shape)
-    print("Decoder Input Tensor Shape:", dec_inp_tensor.shape)
-
-    print("Encoder Output Tensor Shape:", enc_out_tensor.shape)
     print("Decoder Output Tensor Shape:", dec_out_tensor.shape)
+    print(f'Passing through decoder time: {time.perf_counter() - start_time}')
+    print('\n')
+
+    # Check TransformerTextEncoder and TransformerTextDecoder
+    src_vs = 100000
+    nl = 4
+    max_seq_length = 100
+    encoder = TransformerTextEncoder(src_vocab_size=src_vs, num_layers=nl, max_seq_len=max_seq_length,
+                                     hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
+    enc_inp_tensor = torch.randint(low=0, high=max_seq_length, size=(batch_size, seq_length), dtype=torch.int32)
+
+    # encoder
+    print("Encoder Input Tensor Shape:", enc_inp_tensor.shape)
+    start_time = time.perf_counter()
+    enc_out_tensor = encoder(enc_inp_tensor)
+    print("Encoder Output Tensor Shape:", enc_out_tensor.shape)
+    print(f'Passing through encoder time: {time.perf_counter() - start_time}')
