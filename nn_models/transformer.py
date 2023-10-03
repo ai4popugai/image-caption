@@ -157,8 +157,11 @@ class TransformerTextDecoder(nn.Module):
                                                              dropout=dropout) for _ in range(num_layers)])
         self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
 
-    def get_self_attention_key_mask(self, x: torch.Tensor):
-        pass
+    @staticmethod
+    def get_self_attention_mask(x: torch.Tensor):
+        bs, trg_seq_len, _ = x.shape
+        mask = torch.tril(torch.ones((trg_seq_len, trg_seq_len), dtype=torch.bool))
+        return mask.unsqueeze(0).expand(bs, -1, -1)
 
 
 if __name__ == "__main__":
