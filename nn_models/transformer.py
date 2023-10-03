@@ -177,10 +177,10 @@ if __name__ == "__main__":
     decoder = TransformerDecoderUnit(hidden_size=hs, keys_hidden_size=keys_hs,
                                      d_ff=dff, num_heads=nh, dropout=0.2)
     dec_inp_tensor = torch.randn(batch_size, seq_length, hs)
-    keys = torch.randn(batch_size, seq_length, keys_hs)
+    k = torch.randn(batch_size, seq_length, keys_hs)
     print("Decoder Input Tensor Shape:", dec_inp_tensor.shape)
     start_time = time.perf_counter()
-    dec_out_tensor = decoder(x=dec_inp_tensor, keys=keys)
+    dec_out_tensor = decoder(x=dec_inp_tensor, keys=k)
     print("Decoder Output Tensor Shape:", dec_out_tensor.shape)
     print(f'Passing through decoder time: {time.perf_counter() - start_time}')
     print('\n')
