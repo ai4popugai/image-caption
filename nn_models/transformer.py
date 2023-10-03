@@ -150,6 +150,9 @@ class TransformerTextDecoder(nn.Module):
                                                              dropout=dropout) for _ in range(num_layers)])
         self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
 
+    def get_cross_attention_key_mask(self, keys: torch.Tensor):
+        pass
+
 
 if __name__ == "__main__":
     # Example usage
