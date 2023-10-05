@@ -7,11 +7,9 @@ from typing import List
 import cv2
 import torch
 import torchvision
-from scenedetect import detect, ContentDetector, FrameTimecode
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import LabelEncoder
+from scenedetect import detect, ContentDetector
 from torch import nn
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
 from db import SQLiteDb
@@ -77,8 +75,10 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
     for scene in scene_list:
         scene_start_idx = scene[0].frame_num
         scene_end_idx = scene[1].frame_num - 1
-        for _ in range(n_per_scene):
-            keyframe_id = random.randint(scene_start_idx, scene_end_idx)
+        scene_len = scene_end_idx - scene_start_idx
+        step = scene_len // n_per_scene
+        for i in range(n_per_scene):
+            keyframe_id = scene_start_idx + i * step
             keyframes_id_list.append(keyframe_id)
 
     random_n_frames_indexes = sorted(random.sample(keyframes_id_list, n_frames))
