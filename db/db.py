@@ -9,6 +9,7 @@ KEYFRAME_ID_KEY = 'keyframe_id'
 TIMESTAMP_KEY = 'timestamp'
 OBJECTS_KEY = 'objects'
 CONCEPT_KEY = 'concept'
+CAPTION_KEY = 'caption'
 
 
 class SQLiteDb:
@@ -25,7 +26,7 @@ class SQLiteDb:
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
             cursor.execute(f"CREATE TABLE {self.db_name}({VIDEO_ID_KEY},{KEYFRAME_ID_KEY},{TIMESTAMP_KEY},"
-                           f"{OBJECTS_KEY},{CONCEPT_KEY})")
+                           f"{OBJECTS_KEY},{CONCEPT_KEY},{CAPTION_KEY})")
             connect.commit()
 
     def add_new_row(self, video_id, keyframe_id, timestamp):
