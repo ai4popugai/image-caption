@@ -94,6 +94,13 @@ class SQLiteDb:
             else:
                 return None
 
+    def get_row_by_id(self, rowid: int):
+        with sqlite3.connect(self.db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"SELECT * FROM {self.db_name} WHERE ROWID = ?", (rowid,))
+            row = cursor.fetchone()
+            return row
+
     def remove(self, rowid):
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
