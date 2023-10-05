@@ -4,7 +4,7 @@ import random
 import re
 
 from db import SQLiteDb
-from experiments.EfficientNet_b0.generate_descriptions import generate_descriptions
+from experiments.EfficientNet_b0.generate_captions import generate_captions
 
 # setup concept detection model constants
 from keyframes_extraction import KEYFRAMES_DIR_KEY
@@ -34,7 +34,7 @@ def preprocess_videos(videos_dir: str, n_frames: int, database: SQLiteDb = None,
         extract_keyframes(video_path, keyframes_dir, n_frames, database=database)
 
         # generate description
-        generate_descriptions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir, database=database)
+        generate_captions(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir, database=database)
 
         # detect objects
         yolo_inference(keyframes_dir, database=database)

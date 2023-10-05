@@ -41,7 +41,7 @@ class InferenceDataset(Dataset):
         return {FRAMES_KEY: frame, LABELS_KEY: torch.tensor(-1)}
 
 
-def generate_descriptions(experiment: str, run: str, phase: str, snapshot_name: str, frames_dir: str,
+def generate_captions(experiment: str, run: str, phase: str, snapshot_name: str, frames_dir: str,
                           database: SQLiteDb = None,):
     """
     Script to create description for each frame.
@@ -98,4 +98,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    generate_descriptions(args.experiment, args.run, args.phase, args.snapshot_name, args.frames_dir, )
+    generate_captions(args.experiment, args.run, args.phase, args.snapshot_name, args.frames_dir, )

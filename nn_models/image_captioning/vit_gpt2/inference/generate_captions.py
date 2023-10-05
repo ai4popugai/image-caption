@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from db import SQLiteDb
-from nn_models.image_description.vit_gpt2.inference.inference import predict_step
+from nn_models.image_captioning.vit_gpt2.inference.inference import predict_step
 
 
 class DescriptionsDataset(Dataset):
@@ -22,8 +22,8 @@ class DescriptionsDataset(Dataset):
         return self.frames_list[idx]
 
 
-def generate_descriptions(frames_dir: str,
-                          database: SQLiteDb = None,):
+def generate_captions(frames_dir: str,
+                      database: SQLiteDb = None, ):
     """
     Functon to generate descriptions for images in directory.
 
@@ -46,4 +46,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    generate_descriptions(args.frames_dir,)
+    generate_captions(args.frames_dir, )
