@@ -2,6 +2,7 @@ import argparse
 import os
 import random
 import re
+from typing import Optional
 
 from db import SQLiteDb
 from experiments.EfficientNet_b0.generate_concepts import generate_concepts
@@ -18,11 +19,14 @@ PHASE = 'phase_2'
 SNAPSHOT_NAME = 'snapshot_3600.pth'
 
 
-def preprocess_videos(videos_dir: str, n_frames: int, database: SQLiteDb = None, ):
+def preprocess_videos(videos_dir: str, n_frames: int, database: SQLiteDb = None, resume_video_id: Optional[str] = None):
     random.seed(0)
 
     videos_list = [video for video in sorted(os.listdir(videos_dir)) if
                    re.search('\.(mp4|avi|mov|mkv|webm)$', video, re.IGNORECASE)]
+
+    if resume_video_id is not None:
+        videos_list = videos_list[videos_list.index(resume_video_id):]
 
     # process videos one by one
     for video_name in videos_list:
@@ -48,8 +52,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract keyframes from videos')
     parser.add_argument('--videos_dir', type=str, help='Path to directory containing videos')
     parser.add_argument('--n_frames', type=int, default=20, help='Number of keyframes to extract per video')
+    parser.add_argument('--resume', type=bool, default=False, help='If it needed to resume from certain video.')
+    parser.add_argument('--resume_video_id', type=str, help='Certain video from which to resume.')
+
     args = parser.parse_args()
 
     database = SQLiteDb(os.path.join(os.environ['SQLITE_DB_DIR'], os.path.basename(args.videos_dir)))
-    database.create_db()
-    preprocess_videos(args.videos_dir, args.n_frames, database)
+    if args.resume is False:
+        database.create_db()
+    preprocess_videos(args.videos_dir, args.n_frames, database, args.resume_video_id)
