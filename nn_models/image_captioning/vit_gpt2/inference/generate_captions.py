@@ -38,6 +38,12 @@ def generate_captions(frames_dir: str,
         with torch.no_grad():
             captions = predict_step(batch)
 
+            if database is not None:
+                for frame_path, caption in zip(batch, captions):
+                    dir_path, keyframe_id = os.path.split(frame_path)
+                    video_id = os.path.basename(dir_path)
+                    database.add_caption_to_row(video_id, keyframe_id, caption)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate image descriptions.")

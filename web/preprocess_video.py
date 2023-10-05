@@ -9,6 +9,7 @@ from experiments.EfficientNet_b0.generate_concepts import generate_concepts
 # setup concept detection model constants
 from keyframes_extraction import KEYFRAMES_DIR_KEY
 from keyframes_extraction.extract_keyframes import extract_keyframes
+from nn_models.image_captioning.vit_gpt2.inference.generate_captions import generate_captions
 from nn_models.object_detection.yolov7 import yolo_inference
 
 EXPERIMENT = 'EfficientNet_b0'
@@ -35,6 +36,9 @@ def preprocess_videos(videos_dir: str, n_frames: int, database: SQLiteDb = None,
 
         # generate image concepts
         generate_concepts(EXPERIMENT, RUN, PHASE, SNAPSHOT_NAME, keyframes_dir, database=database)
+
+        # generate image captions
+        generate_captions(keyframes_dir, database=database)
 
         # detect objects
         yolo_inference(keyframes_dir, database=database)
