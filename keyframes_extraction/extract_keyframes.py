@@ -9,6 +9,7 @@ import torch
 import torchvision
 from scenedetect import detect, ContentDetector, FrameTimecode
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import LabelEncoder
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
@@ -80,37 +81,16 @@ def extract_keyframes(video_path: str, keyframes_dir: str, n_frames: int, databa
             keyframe_id = random.randint(scene_start_idx, scene_end_idx)
             keyframes_id_list.append(keyframe_id)
 
-    keyframes_id_list = sorted(keyframes_id_list)
-    dataset = KeyFramesDataset(keyframes_id_list, reader)
-    dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
-
-    # get features for clusterization
-    features = None
-    for batch in dataloader:
-        batch = PREPROCESS(batch)
-        batch = batch.to(DEVICE)
-        out = MODEL(batch).reshape(batch.shape[0], -1).cpu().detach()
-        features = out if features is None else torch.cat([features, out], dim=0)
-
-    # ensure diversity
-    kmeans = KMeans(n_clusters=n_frames if len(keyframes_id_list) > n_frames else len(keyframes_id_list),
-                    random_state=0)
-    cluster_assignments = kmeans.fit_predict(features)
+    random_n_frames_indexes = sorted(random.sample(keyframes_id_list, n_frames))
 
     # store selected keyframes
-    saved_clusters = []
-    for i, cluster_id in enumerate(cluster_assignments):
-        if cluster_id not in saved_clusters:
-            saved_clusters.append(cluster_id)
-            keyframe_index = keyframes_id_list[i]
-            keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
-            keyframe = reader[keyframe_index]
-            cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
-            if database is not None:
-                database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id,
-                                     timestamp=time_formatting(keyframe_index/reader.fps))
-            if len(saved_clusters) == n_frames:
-                break
+    for keyframe_index in random_n_frames_indexes:
+        keyframe_id = f'frame_{"%05d" % keyframe_index}.png'
+        keyframe = reader[keyframe_index]
+        cv2.imwrite(os.path.join(keyframes_dir, keyframe_id), keyframe)
+        if database is not None:
+            database.add_new_row(video_id=os.path.basename(video_path), keyframe_id=keyframe_id,
+                                 timestamp=time_formatting(keyframe_index/reader.fps))
 
 
 def extract_keyframes_for_dataset(dataset_path: str, n_frames: int,):
