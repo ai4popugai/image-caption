@@ -36,6 +36,14 @@ class SQLiteDb:
                            f"VALUES ('{video_id}', '{keyframe_id}', '{timestamp}')")
             connect.commit()
 
+    def add_caption_to_row(self, video_id, keyframe_id, caption):
+        with sqlite3.connect(self.db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"UPDATE {self.db_name} SET {CAPTION_KEY} = ? "
+                           f"WHERE {VIDEO_ID_KEY} = '{video_id}' AND {KEYFRAME_ID_KEY} = '{keyframe_id}'",
+                           (caption,))
+            connect.commit()
+
     def add_concept_to_row(self, video_id, keyframe_id, concept):
         with sqlite3.connect(self.db_path) as connect:
             cursor = connect.cursor()
