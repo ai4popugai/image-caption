@@ -93,3 +93,9 @@ class SQLiteDb:
                 return random.choice(rows)
             else:
                 return None
+
+    def remove(self, rowid):
+        with sqlite3.connect(self.db_path) as connect:
+            cursor = connect.cursor()
+            cursor.execute(f"DELETE FROM {self.db_name} WHERE ROWID = ?", (rowid,))
+            connect.commit()
