@@ -8,8 +8,6 @@ from db import SQLiteDb
 from dres_api.client import Client
 from utils.web_utils import submit_match
 
-NUM_KEY_FRAMES = 25
-
 app = Flask(__name__)
 client = Client()
 
@@ -17,9 +15,6 @@ client = Client()
 WEB_DEFAULTS_FOLDER = os.path.join(os.getcwd(), 'web_defaults')
 DB_PATH = os.path.join(WEB_DEFAULTS_FOLDER, 'v3c1')
 DB = SQLiteDb(DB_PATH)
-
-import logging
-import colorlog
 
 # create logger
 logger = logging.getLogger('submission logger')
@@ -76,7 +71,7 @@ def submit():
             return redirect(url_for('render_main_page'))
 
         submit_match(client, row)
-        logger.info('Solution is sent')
+        logger.info('Solution was sent')
 
         return redirect(url_for('render_main_page'))
 
