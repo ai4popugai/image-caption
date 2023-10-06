@@ -81,3 +81,4 @@ yolov7-package==0.0.12
 zipp==3.16.2
 pydantic
 omegaconf
+colorlog
