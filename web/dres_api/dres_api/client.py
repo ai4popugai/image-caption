@@ -32,7 +32,7 @@ class Client:
 
     def submit(self, item: str, frame: int, timecode: str,):
         """
-        Method to submit search result to DRES server.
+        Method to submit search result to the DRES server.
 
         :param item: Identifier for the actual media object or media file.
         :param frame: Frame number for media with temporal progression (e.g. video).
