@@ -1,7 +1,7 @@
 import os
 
 import dres_api
-from dres_api import UserApi, SubmissionApi
+from dres_api import UserApi, SubmissionApi, ClientRunInfoApi
 from dres_api.configuration import Configuration
 from dres_api.models import LoginRequest
 from dres_api.exceptions import ApiException
@@ -17,11 +17,11 @@ class Client:
         # Enter a context with an instance of the API client
         with dres_api.ApiClient(self.configuration_instance) as api_client:
             # Create an instance of the API class
-            api_instance = UserApi(api_client)
+            api_user = UserApi(api_client)
 
             try:
                 login_request = LoginRequest(**config)
-                login = api_instance.post_api_v1_login(login_request)
+                login = api_user.post_api_v1_login(login_request)
             except ApiException as ex:
                 print(f"Could not log in due to exception: {ex.message}")
                 return
@@ -30,6 +30,12 @@ class Client:
             print(f"Successfully logged in.\n"
                   f"user: '{login.username}'\n"
                   f"role: '{login.role}'\n")
+
+            # see all runs
+            api_info = ClientRunInfoApi(api_client)
+            run_list = api_info.get_api_v1_client_run_info_list(self.session)
+            for run in run_list:
+                print(f'run available: {run[1][0]}\n')
 
     def submit(self, item: str, frame: int, timestamp: str,):
         """
@@ -42,16 +48,16 @@ class Client:
         """
         with dres_api.ApiClient(self.configuration_instance) as api_client:
             # Create an instance of the API class
-            api_instance = SubmissionApi(api_client)
+            api_submission = SubmissionApi(api_client)
             collection = None
             text = None
             shot = frame
-            session = self.session
 
             try:
                 # Endpoint to accept submissions
-                api_response = api_instance.get_api_v1_submit(collection=collection, item=item, text=text, frame=frame,
-                                                              shot=shot, timecode=timestamp, session=session)
+                api_response = api_submission.get_api_v1_submit(collection=collection, item=item, text=text,
+                                                                frame=frame, shot=shot,
+                                                                timecode=timestamp, session=self.session)
                 print("The response of SubmissionApi->get_api_v1_submit:\n")
                 print(api_response)
             except Exception as e:
