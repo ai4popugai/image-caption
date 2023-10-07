@@ -1,5 +1,4 @@
 import os
-import time
 
 import dres_api
 from dres_api import UserApi, SubmissionApi
@@ -28,7 +27,6 @@ class Client:
                 return
 
             # Login successful
-            print(login)
             print(f"Successfully logged in.\n"
                   f"user: '{login.username}'\n"
                   f"role: '{login.role}'\n")
