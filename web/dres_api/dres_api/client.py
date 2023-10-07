@@ -31,13 +31,13 @@ class Client:
                   f"user: '{login.username}'\n"
                   f"role: '{login.role}'\n")
 
-    def submit(self, item: str, frame: int, timecode: str,):
+    def submit(self, item: str, frame: int, timestamp: str,):
         """
         Method to submit search result to the DRES server.
 
         :param item: Identifier for the actual media object or media file.
         :param frame: Frame number for media with temporal progression (e.g. video).
-        :param timecode: Timecode for media with temporal progression (e.g. video).
+        :param timestamp: Timecode for media with temporal progression (e.g. video).
         :return:
         """
         with dres_api.ApiClient(self.configuration_instance) as api_client:
@@ -51,7 +51,7 @@ class Client:
             try:
                 # Endpoint to accept submissions
                 api_response = api_instance.get_api_v1_submit(collection=collection, item=item, text=text, frame=frame,
-                                                              shot=shot, timecode=timecode, session=session)
+                                                              shot=shot, timecode=timestamp, session=session)
                 print("The response of SubmissionApi->get_api_v1_submit:\n")
                 print(api_response)
             except Exception as e:
@@ -60,4 +60,4 @@ class Client:
 
 if __name__ == '__main__':
     client = Client()
-    client.submit(item='00054.mp4', frame=0, timecode='00:00:00.000')
+    client.submit(item='00054.mp4', frame=0, timestamp='00:00:00.000')
