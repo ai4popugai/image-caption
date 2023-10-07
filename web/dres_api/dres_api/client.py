@@ -1,7 +1,7 @@
 import os
 
 import dres_api
-from dres_api import UserApi, SubmissionApi, ClientRunInfoApi
+from dres_api import UserApi, SubmissionApi, ClientRunInfoApi, ClientRunInfoList
 from dres_api.configuration import Configuration
 from dres_api.models import LoginRequest
 from dres_api.exceptions import ApiException
@@ -33,7 +33,7 @@ class Client:
 
             # see all runs
             api_info = ClientRunInfoApi(api_client)
-            run_list = api_info.get_api_v1_client_run_info_list(self.session)
+            run_list: ClientRunInfoList = api_info.get_api_v1_client_run_info_list(self.session)
             for run in run_list:
                 print(f'run available: {run[1][0]}\n')
 
