@@ -37,7 +37,7 @@ class Client:
             run_list: ClientRunInfoList = api_info.get_api_v1_client_run_info_list(self.session)
             run: ClientRunInfo = run_list.runs[0]
             self.run_id = run.id
-            print(f'run available: {self.run_id}')
+            print(f'run available: {self.run_id}\n')
 
     def submit(self, item: str, frame: int, timestamp: str,):
         """
