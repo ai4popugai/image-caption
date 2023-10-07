@@ -60,4 +60,4 @@ class Client:
 
 if __name__ == '__main__':
     client = Client()
-    client.submit(item='00100.mp4', frame=12, timecode='00:00:00.000')
+    client.submit(item='00054.mp4', frame=0, timecode='00:00:00.000')
