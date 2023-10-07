@@ -45,7 +45,7 @@ class Client:
         with dres_api.ApiClient(self.configuration_instance) as api_client:
             # Create an instance of the API class
             api_instance = SubmissionApi(api_client)
-            collection = 'None'
+            collection = None
             text = None
             shot = frame
             session = self.session
@@ -62,4 +62,4 @@ class Client:
 
 if __name__ == '__main__':
     client = Client()
-    client.submit(item='example.mp4', frame=12, timecode='00:00:00.000')
+    client.submit(item='00100.mp4', frame=12, timecode='00:00:00.000')
