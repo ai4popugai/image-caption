@@ -51,14 +51,11 @@ class Client:
         with dres_api.ApiClient(self.configuration_instance) as api_client:
             # Create an instance of the API class
             api_submission = SubmissionApi(api_client)
-            collection = None
-            text = None
-            shot = frame
 
             try:
                 # Endpoint to accept submissions
-                api_response = api_submission.get_api_v1_submit(collection=collection, item=item, text=text,
-                                                                frame=frame, shot=shot,
+                api_response = api_submission.get_api_v1_submit(collection=None, item=item, text=None,
+                                                                frame=frame, shot=frame,
                                                                 timecode=timestamp, session=self.session)
                 print("The response of SubmissionApi->get_api_v1_submit:\n")
                 print(api_response)
