@@ -135,10 +135,11 @@ class AttentionDecoder(nn.Module):
         # outputs: (batch_size, max_len, trg_vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.trg_vocab_size, device=features.device)
 
-        for t in range(out_seq_len):
-            y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)
-            outputs[:, t, :] = y_t
-            decoder_input = self._token_to_hidden(captions[t] if self.teacher_forcing else y_t.argmax(dim=-1))
+        with torch.no_grad():
+            for t in range(out_seq_len):
+                y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)
+                outputs[:, t, :] = y_t
+                decoder_input = self._token_to_hidden(captions[t] if self.teacher_forcing else y_t.argmax(dim=-1))
         return outputs
 
     def forward(self, features: torch.Tensor,
