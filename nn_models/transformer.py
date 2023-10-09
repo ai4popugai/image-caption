@@ -157,13 +157,14 @@ class TransformerTextDecoder(nn.Module):
                  d_ff: int, num_heads: int, dropout: float,
                  max_seq_len: int = 200):
         super().__init__()
+        self.max_seq_len = max_seq_len
         self.embedder = nn.Embedding(trg_vocab_size, hidden_size)
         self.decoder = nn.ModuleList([TransformerDecoderUnit(hidden_size=hidden_size,
                                                              keys_hidden_size=keys_hidden_size,
                                                              d_ff=d_ff,
                                                              num_heads=num_heads,
                                                              dropout=dropout) for _ in range(num_layers)])
-        self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=max_seq_len)
+        self.positional_encoding = PositionalEncoding(hidden_size=hidden_size, max_seq_len=self.max_seq_len)
         self.fc = nn.Linear(hidden_size, trg_vocab_size)
 
     def forward(self, x: torch.Tensor, keys: torch.Tensor,
@@ -185,6 +186,46 @@ class TransformerTextDecoder(nn.Module):
             x = layer(x, keys, mask=mask, mask_cross=mask_cross)
         x = self.fc(x)
         return x
+
+
+class TransformerTextDecoderInference(nn.Module):
+    def __init__(self, transformer_decoder: TransformerTextDecoder,
+                 sos_token: torch.Tensor,
+                 eos_token: torch.Tensor):
+        super().__init__()
+        self.transformer_decoder = transformer_decoder
+        self.sos_token = sos_token
+        self.eos_token = eos_token
+
+    def forward(self, keys: torch.Tensor,):
+        """
+        Class for transformer decoder inference, x argument is absent because we don't have target sequence and start
+        generation from sos token.
+
+        :param keys: tensor with shape (1, keys_seq_len, keys_hidden_size) for cross attention,
+        usually encoder output.
+        :return: decoded tensor with shape (1, some_seg_len, trg_vocab_size).
+        NOTE! outputs will be without SOS token.
+        """
+        input_tokens = self.sos_token.to(keys.device).unsqueeze(0).unsqueeze(0)  # (1, 1)
+        outputs = torch.empty(0)
+
+        with torch.no_grad():
+            for _ in range(self.transformer_decoder.max_seq_len):
+                preds = self.transformer_decoder(x=input_tokens, keys=keys)
+                # (1, some_seq_len, trg_vocab_size)
+                pred = preds.select(1, -1).unsqueeze(1)  # (1, 1, trg_vocab_size)
+
+                outputs = pred if outputs.numel() == 0 else torch.cat((outputs, pred), dim=1)
+                # (1, some_seq_len, trg_vocab_size)
+                pred_token = pred.argmax(dim=-1)  # (1, 1)
+
+                if (pred_token.squeeze(0).squeeze(0) == self.eos_token).all().item():
+                    return outputs
+                input_tokens = torch.cat((input_tokens, pred_token), dim=1)
+                # (1, some_seq_lem)
+            
+            return outputs
 
 
 if __name__ == "__main__":
@@ -254,3 +295,15 @@ if __name__ == "__main__":
     print(f'Passing through decoder time: {time.perf_counter() - start_time}')
     print('\n')
 
+    # decoder inference
+    sos = torch.tensor(0)
+    eos = torch.tensor(1)
+    batch_size = 1
+    decoder_inference = TransformerTextDecoderInference(decoder, sos_token=sos, eos_token=eos)
+    k = torch.randn(batch_size, keys_seq_length, keys_hs)
+    print("Decoder Inference Keys Shape:", k.shape)
+    start_time = time.perf_counter()
+    dec_out_tensor = decoder_inference(keys=k)
+    print("Decoder Inference Output Tensor Shape:", dec_out_tensor.shape)
+    print(f'Passing through inference decoder time: {time.perf_counter() - start_time}')
+    print('\n')
