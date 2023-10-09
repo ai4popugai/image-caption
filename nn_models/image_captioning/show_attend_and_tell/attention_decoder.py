@@ -95,21 +95,22 @@ class AttentionDecoder(nn.Module):
         # outputs: (batch_size, max_len, trg_vocab_size)
         outputs = torch.zeros(batch_size, self.max_len, self.trg_vocab_size, device=features.device)
 
-        for t in range(self.max_len):
-            y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)  # y_t: (batch_size, trg_vocab_size)
-            # s_hidden: (num_layers, batch_size, hidden_size)
+        with torch.no_grad():
+            for t in range(self.max_len):
+                y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)  # y_t: (batch_size, trg_vocab_size)
+                # s_hidden: (num_layers, batch_size, hidden_size)
 
-            outputs[:, t, :] = y_t
+                outputs[:, t, :] = y_t
 
-            # get the most probable word index
-            decoded_token = y_t.argmax(dim=-1)  # decoded_token: (batch_size,)
+                # get the most probable word index
+                decoded_token = y_t.argmax(dim=-1)  # decoded_token: (batch_size,)
 
-            # check if decoded_token is EOS token
-            if (decoded_token == self.eos_token).all().item():
-                return outputs[:, :t + 1, :]
+                # check if decoded_token is EOS token
+                if (decoded_token == self.eos_token).all().item():
+                    return outputs[:, :t + 1, :]
 
-            # set new decoder_input
-            decoder_input = self._token_to_hidden(decoded_token)
+                # set new decoder_input
+                decoder_input = self._token_to_hidden(decoded_token)
 
         return outputs
 
@@ -135,11 +136,10 @@ class AttentionDecoder(nn.Module):
         # outputs: (batch_size, max_len, trg_vocab_size)
         outputs = torch.zeros(batch_size, out_seq_len, self.trg_vocab_size, device=features.device)
 
-        with torch.no_grad():
-            for t in range(out_seq_len):
-                y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)
-                outputs[:, t, :] = y_t
-                decoder_input = self._token_to_hidden(captions[t] if self.teacher_forcing else y_t.argmax(dim=-1))
+        for t in range(out_seq_len):
+            y_t, s_hidden, _ = self._forward(decoder_input, s_hidden, features)
+            outputs[:, t, :] = y_t
+            decoder_input = self._token_to_hidden(captions[t] if self.teacher_forcing else y_t.argmax(dim=-1))
         return outputs
 
     def forward(self, features: torch.Tensor,
