@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Page</title>
+</head>
+<body>
+    <h1>Submission Page</h1>
+
+    <!-- Text input field -->
+    <form method="POST" action="/submit" class="input-form">
+        <label for="video_id">Enter Video ID:</label>
+        <input type="text" id="video_id" name="video_id">
+        <label for="frame_number">Enter frame number:</label>
+        <input type="text" id="frame_number" name="frame_number">
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Exit button with lower positioning -->
+    <form method="GET" action="/exit" class="exit-form" style="margin-top: 10px;">
+        <button type="submit">Exit</button>
+    </form>
+</body>
+</html>
