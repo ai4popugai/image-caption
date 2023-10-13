@@ -189,11 +189,11 @@ class TransformerTextDecoder(nn.Module):
 
 
 class TransformerTextDecoderInference(nn.Module):
-    def __init__(self, transformer_decoder: TransformerTextDecoder,
+    def __init__(self, decoder: TransformerTextDecoder,
                  sos_token: torch.Tensor,
                  eos_token: torch.Tensor):
         super().__init__()
-        self.transformer_decoder = transformer_decoder
+        self.decoder = decoder
         self.sos_token = sos_token
         self.eos_token = eos_token
 
@@ -211,8 +211,8 @@ class TransformerTextDecoderInference(nn.Module):
         outputs = torch.empty(0)
 
         with torch.no_grad():
-            for _ in range(self.transformer_decoder.max_seq_len):
-                preds = self.transformer_decoder(x=input_tokens, keys=keys)
+            for _ in range(self.decoder.max_seq_len):
+                preds = self.decoder(x=input_tokens, keys=keys)
                 # (1, some_seq_len, trg_vocab_size)
                 pred = preds.select(1, -1).unsqueeze(1)  # (1, 1, trg_vocab_size)
 
@@ -224,7 +224,7 @@ class TransformerTextDecoderInference(nn.Module):
                     return outputs
                 input_tokens = torch.cat((input_tokens, pred_token), dim=1)
                 # (1, some_seq_lem)
-            
+
             return outputs
 
 
@@ -255,10 +255,28 @@ class Transformer(nn.Module):
         :param dec_mask: sel-attention mask for decoder. (if None, the mask from paper
         "Attetion is all you need" will be applied, see get_self_attention_mask class method of TransformerDecoderUnit)
         :param mask_cross: cross-attention mask for decoder.
-        :return:
+        :return: tensor with shape (batch_size, trg_seq_len, trg_vocab_size)
         """
         keys = self.encoder(x, mask=enc_mask)
         return self.decoder(y, keys, mask=dec_mask, mask_cross=mask_cross)
+
+
+class TransformerInference(nn.Module):
+    def __init__(self, transformer: Transformer,
+                 sos_token: torch.Tensor, eos_token: torch.Tensor, ):
+        super().__init__()
+        self.decoder = TransformerTextDecoderInference(transformer.decoder, sos_token=sos_token, eos_token=eos_token)
+        self.encoder = transformer.encoder
+
+    def forward(self, x: torch.Tensor, enc_mask: torch.Tensor, ):
+        """
+        Forward method for decoder inference, that method don't need to get target sentence and all decoder's masks.
+        :param x: source sentence.
+        :param enc_mask: sel-attention mask for encoder.
+        :return: tensor with shape (batch_size, some_seq_len, trg_vocab_size)
+        """
+        keys = self.encoder(x, mask=enc_mask)
+        return self.decoder(keys)
 
 
 if __name__ == "__main__":
@@ -275,24 +293,24 @@ if __name__ == "__main__":
     keys_seq_length = 20
 
     # encoder
-    encoder = TransformerEncoderUnit(hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
+    enc = TransformerEncoderUnit(hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
     enc_inp_tensor = torch.randn(batch_size, seq_length, hs)
     print("Encoder Input Tensor Shape:", enc_inp_tensor.shape)
     start_time = time.perf_counter()
-    enc_out_tensor = encoder(enc_inp_tensor)
+    enc_out_tensor = enc(enc_inp_tensor)
     print("Encoder Output Tensor Shape:", enc_out_tensor.shape)
     print(f'Passing through encoder time: {time.perf_counter() - start_time}')
     print('\n')
 
     # decoder
-    decoder = TransformerDecoderUnit(hidden_size=hs, keys_hidden_size=keys_hs,
-                                     d_ff=dff, num_heads=nh, dropout=0.2)
+    dec = TransformerDecoderUnit(hidden_size=hs, keys_hidden_size=keys_hs,
+                                 d_ff=dff, num_heads=nh, dropout=0.2)
     dec_inp_tensor = torch.randn(batch_size, seq_length, hs)
     k = torch.randn(batch_size, keys_seq_length, keys_hs)
     print("Decoder Input Tensor Shape:", dec_inp_tensor.shape)
     print("Decoder Keys Shape:", k.shape)
     start_time = time.perf_counter()
-    dec_out_tensor = decoder(x=dec_inp_tensor, keys=k)
+    dec_out_tensor = dec(x=dec_inp_tensor, keys=k)
     print("Decoder Output Tensor Shape:", dec_out_tensor.shape)
     print(f'Passing through decoder time: {time.perf_counter() - start_time}')
     print('\n')
@@ -304,26 +322,26 @@ if __name__ == "__main__":
     max_seq_length = 100
 
     # encoder
-    encoder = TransformerTextEncoder(src_vocab_size=src_vs, num_layers=nl, max_seq_len=max_seq_length,
-                                     hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
+    enc = TransformerTextEncoder(src_vocab_size=src_vs, num_layers=nl, max_seq_len=max_seq_length,
+                                 hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
     enc_inp_tensor = torch.randint(low=0, high=max_seq_length, size=(batch_size, seq_length), dtype=torch.int32)
     print("Encoder Input Tensor Shape:", enc_inp_tensor.shape)
     start_time = time.perf_counter()
-    enc_out_tensor = encoder(enc_inp_tensor)
+    enc_out_tensor = enc(enc_inp_tensor)
     print("Encoder Output Tensor Shape:", enc_out_tensor.shape)
     print(f'Passing through encoder time: {time.perf_counter() - start_time}')
     print('\n')
 
     # decoder
-    decoder = TransformerTextDecoder(trg_vocab_size=trg_vs, num_layers=nl, max_seq_len=max_seq_length,
-                                     hidden_size=hs, keys_hidden_size=keys_hs,
-                                     d_ff=dff, num_heads=nh, dropout=0.2)
+    dec = TransformerTextDecoder(trg_vocab_size=trg_vs, num_layers=nl, max_seq_len=max_seq_length,
+                                 hidden_size=hs, keys_hidden_size=keys_hs,
+                                 d_ff=dff, num_heads=nh, dropout=0.2)
     dec_inp_tensor = torch.randint(low=0, high=max_seq_length, size=(batch_size, seq_length), dtype=torch.int32)
     k = torch.randn(batch_size, keys_seq_length, keys_hs)
     print("Decoder Input Tensor Shape:", dec_inp_tensor.shape)
     print("Decoder Keys Shape:", k.shape)
     start_time = time.perf_counter()
-    dec_out_tensor = decoder(x=dec_inp_tensor, keys=k)
+    dec_out_tensor = dec(x=dec_inp_tensor, keys=k)
     print("Decoder Output Tensor Shape:", dec_out_tensor.shape)
     print(f'Passing through decoder time: {time.perf_counter() - start_time}')
     print('\n')
@@ -332,18 +350,18 @@ if __name__ == "__main__":
     sos = torch.tensor(0)
     eos = torch.tensor(1)
     batch_size = 1
-    decoder_inference = TransformerTextDecoderInference(decoder, sos_token=sos, eos_token=eos)
+    dec_inference = TransformerTextDecoderInference(dec, sos_token=sos, eos_token=eos)
     k = torch.randn(batch_size, keys_seq_length, keys_hs)
     print("Decoder Inference Keys Shape:", k.shape)
     start_time = time.perf_counter()
-    dec_out_tensor = decoder_inference(keys=k)
+    dec_out_tensor = dec_inference(keys=k)
     print("Decoder Inference Output Tensor Shape:", dec_out_tensor.shape)
     print(f'Passing through inference decoder time: {time.perf_counter() - start_time}')
     print('\n')
 
     # transformer
-    transformer = Transformer(src_vocab_size=src_vs, trg_vocab_size=trg_vs, num_layers=nl, max_seq_len=max_seq_length,
-                              hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
+    trans = Transformer(src_vocab_size=src_vs, trg_vocab_size=trg_vs, num_layers=nl, max_seq_len=max_seq_length,
+                        hidden_size=hs, d_ff=dff, num_heads=nh, dropout=0.2)
     batch_size = 16
     src_seq_length = 20
     trg_seq_length = 17
@@ -352,7 +370,7 @@ if __name__ == "__main__":
     print("Transformer Source Tensor Shape:", src.shape)
     print("Transformer Target Tensor Shape:", dst.shape)
     start_time = time.perf_counter()
-    transformer_out = transformer(src, dst)
+    transformer_out = trans(src, dst)
     print("Transformer Output Tensor Shape:", transformer_out.shape)
     print(f'Passing through transformer time: {time.perf_counter() - start_time}')
     print('\n')
