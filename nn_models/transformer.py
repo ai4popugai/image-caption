@@ -268,7 +268,7 @@ class TransformerInference(nn.Module):
         self.decoder = TransformerTextDecoderInference(transformer.decoder, sos_token=sos_token, eos_token=eos_token)
         self.encoder = transformer.encoder
 
-    def forward(self, x: torch.Tensor, enc_mask: torch.Tensor, ):
+    def forward(self, x: torch.Tensor, enc_mask: torch.Tensor = None,):
         """
         Forward method for decoder inference, that method don't need to get target sentence and all decoder's masks.
         :param x: source sentence.
@@ -370,7 +370,19 @@ if __name__ == "__main__":
     print("Transformer Source Tensor Shape:", src.shape)
     print("Transformer Target Tensor Shape:", dst.shape)
     start_time = time.perf_counter()
-    transformer_out = trans(src, dst)
-    print("Transformer Output Tensor Shape:", transformer_out.shape)
+    trans_out = trans(src, dst)
+    print("Transformer Output Tensor Shape:", trans_out.shape)
+    print(f'Passing through transformer time: {time.perf_counter() - start_time}')
+    print('\n')
+
+    # transformer inference
+    trans_inference = TransformerInference(trans, sos_token=sos, eos_token=eos)
+    batch_size = 1
+    src_seq_length = 20
+    src = torch.randint(low=0, high=max_seq_length, size=(batch_size, src_seq_length), dtype=torch.int32)
+    print("Transformer Inference Source Tensor Shape:", src.shape)
+    start_time = time.perf_counter()
+    trans_inference_out = trans_inference(src)
+    print("Transformer Inference Output Tensor Shape:", trans_inference_out.shape)
     print(f'Passing through transformer time: {time.perf_counter() - start_time}')
     print('\n')
