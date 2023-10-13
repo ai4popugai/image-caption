@@ -242,11 +242,23 @@ class Transformer(nn.Module):
                                               dropout=dropout, max_seq_len=max_seq_len)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor,
-                mask: Optional[torch.Tensor] = None,
+                enc_mask: Optional[torch.Tensor] = None,
+                dec_mask: Optional[torch.Tensor] = None,
                 mask_cross: Optional[torch.Tensor] = None
                 ):
-        keys = self.encoder(x)
-        return self.decoder(y, keys, mask=mask, mask_cross=mask_cross)
+        """
+        Forward method of transformer model
+
+        :param x: source sentence.
+        :param y: target sentence.
+        :param enc_mask: sel-attention mask for encoder.
+        :param dec_mask: sel-attention mask for decoder. (if None, the mask from paper
+        "Attetion is all you need" will be applied, see get_self_attention_mask class method of TransformerDecoderUnit)
+        :param mask_cross: cross-attention mask for decoder.
+        :return:
+        """
+        keys = self.encoder(x, mask=enc_mask)
+        return self.decoder(y, keys, mask=dec_mask, mask_cross=mask_cross)
 
 
 if __name__ == "__main__":
