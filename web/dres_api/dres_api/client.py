@@ -13,7 +13,7 @@ class Client:
     def __init__(self):
         config = OmegaConf.load(f'{ os.path.dirname(os.path.abspath(__file__))}/credentials.yaml')
         self.configuration_instance = Configuration(**config)
-        self.session = 'node013jsjozq6rksbv6ua6iq8wy3c0'
+        self.session = 'node0p14zq9j9w771dqyhjpc1kmgd200'
 
         # Enter a context with an instance of the API client
         with dres_api.ApiClient(self.configuration_instance) as api_client:
