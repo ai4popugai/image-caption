@@ -61,36 +61,6 @@ class Client:
             except Exception as e:
                 print("Exception when calling SubmissionApi->get_api_v1_submit: %s\n" % e)
 
-    def batch_submit(self, item: str, frame: int, timestamp: str, ):
-        """
-        Method to submit search result to the DRES server.
-
-        :param item: Identifier for the actual media object or media file.
-        :param frame: Frame number for media with temporal progression (e.g. video).
-        :param timestamp: Timecode for media with temporal progression (e.g. video).
-        :return:
-        """
-        with dres_api.ApiClient(self.configuration_instance) as api_client:
-            # Create an instance of the API class
-            api_submission = BatchSubmissionApi(api_client)
-            text = None
-
-            result = ResultElement(item=item, text=text,
-                                   start_time_code=timestamp, end_time_code=timestamp,
-                                   index=frame)
-
-            task_result = TaskResult(task='video_search', resultName='my_result',
-                                     results=[result])
-            run_result = RunResult(tasks=[task_result], timeStamp=frame)
-
-            try:
-                # Endpoint to accept batch submissions in JSON format
-                api_response = api_submission.post_api_v1_submit_with_runid(self.run_id, run_result=run_result)
-                print("The response of BatchSubmissionApi->post_api_v1_submit_with_runid:\n")
-                print(api_response)
-            except Exception as e:
-                print("Exception when calling BatchSubmissionApi->post_api_v1_submit_with_runid: %s\n" % e)
-
 
 if __name__ == '__main__':
     client = Client()
