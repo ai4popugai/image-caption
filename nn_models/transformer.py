@@ -335,12 +335,12 @@ if __name__ == "__main__":
     batch_size = 16
     src_seq_length = 20
     trg_seq_length = 17
-    x = torch.randint(low=0, high=max_seq_length, size=(batch_size, src_seq_length), dtype=torch.int32)
-    y = torch.randint(low=0, high=max_seq_length, size=(batch_size, trg_seq_length), dtype=torch.int32)
-    print("Transformer Source Tensor Shape:", x.shape)
-    print("Transformer Target Tensor Shape:", y.shape)
+    src = torch.randint(low=0, high=max_seq_length, size=(batch_size, src_seq_length), dtype=torch.int32)
+    dst = torch.randint(low=0, high=max_seq_length, size=(batch_size, trg_seq_length), dtype=torch.int32)
+    print("Transformer Source Tensor Shape:", src.shape)
+    print("Transformer Target Tensor Shape:", dst.shape)
     start_time = time.perf_counter()
-    transformer_out = transformer(x, y)
+    transformer_out = transformer(src, dst)
     print("Transformer Output Tensor Shape:", transformer_out.shape)
     print(f'Passing through transformer time: {time.perf_counter() - start_time}')
     print('\n')
