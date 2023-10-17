@@ -1,3 +1,5 @@
+import os
+
 import torch
 import clip
 from PIL import Image
@@ -8,7 +10,8 @@ from train import Trainer
 device = torch.device("cpu")
 model, preprocess = clip.load("ViT-B/32", device=device)
 
-image = preprocess(Image.open("/Users/iivan/datasets/gpr12000/images/1_4b43d889639efa51.jpg")).unsqueeze(0).to(device)
+image = preprocess(Image.open(os.path.join(os.environ['GPR_DATASET'],
+                                           "/images/1_4b43d889639efa51.jpg"))).unsqueeze(0).to(device)
 text = clip.tokenize(["a dog", "a fontain in the city", "a cat"]).to(device)
 
 with torch.no_grad():
