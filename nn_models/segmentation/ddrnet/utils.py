@@ -338,9 +338,3 @@ class DualResNet(nn.Module):
             return [x_, x_extra]
         else:
             return x_
-
-
-def DDRNet23Slim(num_classes: int):
-    model = DualResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes, planes=32, spp_planes=128, head_planes=64,
-                       augment=False)
-    return model
