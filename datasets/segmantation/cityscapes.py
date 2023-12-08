@@ -9,6 +9,8 @@ from torch.utils.data import Dataset
 from torchvision.datasets import Cityscapes
 from torchvision.transforms import Compose, PILToTensor, Resize, InterpolationMode
 
+from datasets import GROUND_TRUTHS_KEY, SEMANTIC_SEGMENTATIONS_KEY
+
 CITYSCAPES_ROOT = 'CITYSCAPES_DATASET_ROOT'
 CITYSCAPES_VIDEO_ROOT = 'CITYSCAPES_VIDEO_DATASET_ROOT'
 HEIGHT = 1024
@@ -108,7 +110,7 @@ class MaskToTensor(object):
         return torch.from_numpy(np.array(img, dtype=np.uint8)).unsqueeze(dim=0).repeat(CHANNELS, 1, 1)
 
 
-class CityScapesVideoDataset(Dataset):
+class CityscapesVideoDataset(Dataset):
     def __init__(self, part: int, resolution: Tuple[int, int] = (1024, 2048)):
         """
         Cityscapes video dataset wrapper.
@@ -142,7 +144,7 @@ class CityScapesVideoDataset(Dataset):
         return {'frame': frame}
 
 
-class CityScapesWrapper(Cityscapes):
+class CityscapesDataset(Cityscapes):
     def __init__(self, mode: str, split: str, resolution: Tuple[int, int] = (1024, 2048)):
         if CITYSCAPES_ROOT not in os.environ:
             raise RuntimeError(f'Failed to init cityscapes dataset instance: {CITYSCAPES_ROOT} not in environment.')
@@ -164,4 +166,4 @@ class CityScapesWrapper(Cityscapes):
         frame, segmentation = super().__getitem__(idx)
         frame = frame.byte()
         segmentation = self.seg_transforms(segmentation)
-        return {'frame': frame, 'seg': segmentation}
+        return {GROUND_TRUTHS_KEY: frame, SEMANTIC_SEGMENTATIONS_KEY: segmentation}
