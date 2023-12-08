@@ -1,4 +1,4 @@
-from utils import DualResNet, BasicBlock
+from .utils import DualResNet, BasicBlock
 
 
 def DDRNet23Slim(num_classes: int):
