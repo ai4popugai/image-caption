@@ -131,16 +131,17 @@ class CityscapesVideoDataset(Dataset):
         cities_path_list = [os.path.join(self.root, city) for city in sorted(os.listdir(self.root))
                             if os.path.isdir(os.path.join(self.root, city))]
         self.frames_list = []
-        self.parts_len_list = []
+        self.indexes = []  # list to map inner index to index of frame in frames_list
         for city_path in cities_path_list:
-            frame_names = sorted(os.listdir(city_path))
-            self.frames_list += frame_names
-            self.parts_len_list.append(len(frame_names))
+            frames_names = sorted(os.listdir(city_path))
+            self.frames_list += [os.path.join(city_path, frame_name) for frame_name in frames_names]
+            self.indexes += list(range(len(self.frames_list) - len(frames_names), len(self.frames_list) - self.step))
 
     def __len__(self) -> int:
-        return len(self.frames_list) - self.step * len(self.parts_len_list)
+        return len(self.indexes)
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
+        idx = self.indexes[idx]
         frame_t = Image.open(self.frames_list[idx]).convert("RGB")
         frame_t = self.frame_transforms(frame_t).byte()
 
