@@ -22,18 +22,6 @@ class BaseAug(ABC, nn.Module):
         pass
 
 
-class ColorAug(BaseAug):
-    """AUG IS BROKEN!!! DON'T USE IT (and drugs)!!!!"""
-    def __init__(self, b_low: float = 0.7, s_low: float = 0.7, c_low: float = 0.7, target_key: Optional[str] = None):
-        super().__init__(target_key)
-        self.transform = transforms.ColorJitter(brightness=(b_low, 1.),
-                                                saturation=(s_low, 1.), contrast=(c_low, 1.))
-
-    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        batch[self.target_key] = self.transform(batch[self.target_key])
-        return batch
-
-
 class RandomFlip(BaseAug):
     def __init__(self, p=0.5, target_key: Optional[str] = None):
         super().__init__(target_key)
