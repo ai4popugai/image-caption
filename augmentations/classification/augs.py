@@ -31,8 +31,8 @@ class ColorAug(BaseAug):
                                                 saturation=(s_low, 1.), contrast=(c_low, 1.))
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = self.transform(batch[GROUND_TRUTHS_KEY])
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+        batch[GROUND_TRUTHS_KEY] = self.transform(batch[GROUND_TRUTHS_KEY])
+        return batch
 
 
 class RandomFlip(BaseAug):
@@ -41,10 +41,9 @@ class RandomFlip(BaseAug):
         self.p = p
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch[GROUND_TRUTHS_KEY]
         if torch.rand(1).item() < self.p:
-            transformed_frames = hflip(transformed_frames)
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+            batch[GROUND_TRUTHS_KEY] = hflip(batch[GROUND_TRUTHS_KEY])
+        return batch
 
 
 class RandomCrop(BaseAug):
@@ -53,8 +52,8 @@ class RandomCrop(BaseAug):
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = transforms.RandomCrop(self.size)(batch[GROUND_TRUTHS_KEY])
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+        batch[GROUND_TRUTHS_KEY] = transforms.RandomCrop(self.size)(batch[GROUND_TRUTHS_KEY])
+        return batch
 
 
 class RandomResizedCropWithProb(BaseAug):
@@ -78,14 +77,12 @@ class RandomResizedCropWithProb(BaseAug):
             transforms.Resize(batch[GROUND_TRUTHS_KEY].shape[-2:], antialias=False)  # Resize back to original resolution
         ])
 
-        transformed_frames = batch[GROUND_TRUTHS_KEY]
-
         # Perform random resized crop on each frame
-        for i in range(transformed_frames.shape[0]):
+        for i in range(batch[GROUND_TRUTHS_KEY].shape[0]):
             if random.random() < self.probability:
-                transformed_frames[i] = transform(transformed_frames[i])
+                batch[GROUND_TRUTHS_KEY][i] = transform(batch[GROUND_TRUTHS_KEY][i])
 
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+        return batch
 
 
 class CenterCrop(BaseAug):
@@ -94,8 +91,8 @@ class CenterCrop(BaseAug):
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = transforms.CenterCrop(self.size)(batch[GROUND_TRUTHS_KEY])
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+        batch[GROUND_TRUTHS_KEY] = transforms.CenterCrop(self.size)(batch[GROUND_TRUTHS_KEY])
+        return batch
 
 
 class Rotate(BaseAug):
@@ -104,15 +101,13 @@ class Rotate(BaseAug):
         self.angle_range = angle_range
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch[GROUND_TRUTHS_KEY]
-
         # Perform rotation on each frame
-        for i in range(transformed_frames.shape[0]):
+        for i in range(batch[GROUND_TRUTHS_KEY].shape[0]):
             # Randomly select an angle within the defined range
             angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
-            transformed_frames[i] = self.rotate_frame(transformed_frames[i], angle)
+            batch[GROUND_TRUTHS_KEY][i] = self.rotate_frame(batch[GROUND_TRUTHS_KEY][i], angle)
 
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+        return batch
 
     @staticmethod
     def rotate_frame(frame, angle):
@@ -133,16 +128,14 @@ class RotateWithProb(BaseAug):
         self.probability = probability
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch[GROUND_TRUTHS_KEY]
-
         # Perform rotation on each frame
-        for i in range(transformed_frames.shape[0]):
+        for i in range(batch[GROUND_TRUTHS_KEY].shape[0]):
             if random.random() < self.probability:
                 # Randomly select an angle within the defined range
                 angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
-                transformed_frames[i] = Rotate.rotate_frame(transformed_frames[i], angle)
+                batch[GROUND_TRUTHS_KEY][i] = Rotate.rotate_frame(batch[GROUND_TRUTHS_KEY][i], angle)
 
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+        return batch
 
 
 class RandomColorJitterWithProb(BaseAug):
@@ -169,11 +162,9 @@ class RandomColorJitterWithProb(BaseAug):
         )
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        transformed_frames = batch[GROUND_TRUTHS_KEY]
-
         # Perform random color jittering on each frame
-        for i in range(transformed_frames.shape[0]):
+        for i in range(batch[GROUND_TRUTHS_KEY].shape[0]):
             if random.random() < self.probability:
-                transformed_frames[i] = self.color_jitter_transform(transformed_frames[i])
+                batch[GROUND_TRUTHS_KEY][i] = self.color_jitter_transform(batch[GROUND_TRUTHS_KEY][i])
 
-        return {GROUND_TRUTHS_KEY: transformed_frames, LABELS_KEY: batch[LABELS_KEY]}
+        return batch
