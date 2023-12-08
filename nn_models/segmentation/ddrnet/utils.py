@@ -262,6 +262,8 @@ class DualResNet(nn.Module):
 
         self.final_layer = segmenthead(planes * 4, head_planes, num_classes)
 
+        self.upsampler = nn.Upsample(scale_factor=8, mode='bilinear', align_corners=True)
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -332,6 +334,8 @@ class DualResNet(nn.Module):
             mode='bilinear')
 
         x_ = self.final_layer(x + x_)
+
+        x_ = self.upsampler(x_)
 
         if self.augment:
             x_extra = self.seghead_extra(temp)
