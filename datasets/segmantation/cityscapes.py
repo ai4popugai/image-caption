@@ -131,7 +131,7 @@ class CityscapesVideoDataset(Dataset):
         cities_path_list = [os.path.join(self.root, city) for city in sorted(os.listdir(self.root))
                             if os.path.isdir(os.path.join(self.root, city))]
         self.frames_list = []
-        self.indexes = []  # list to map inner index to index of frame in frames_list
+        self.indexes = []  # list to map inner index to index in frames_list
         for city_path in cities_path_list:
             frames_names = sorted(os.listdir(city_path))
             self.frames_list += [os.path.join(city_path, frame_name) for frame_name in frames_names]
