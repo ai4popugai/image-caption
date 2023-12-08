@@ -1,5 +1,6 @@
 FEATURE_MAPS_KEYS = 'feature_maps'
-GROUND_TRUTHS_KEY = 'frames'
+GROUND_TRUTHS_KEY = 'ground_truths'
+SEMANTIC_SEGMENTATIONS_KEY = 'semantic_segmentations'
 TOKENS_KEY = 'tokens'
 LABELS_KEY = 'labels'
 LOGITS_KEY = 'logits'
