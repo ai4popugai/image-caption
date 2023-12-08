@@ -4,7 +4,7 @@ import argparse
 
 import torch
 
-from datasets import FEATURE_MAPS_KEYS, FRAMES_KEY, LABELS_KEY
+from datasets import FEATURE_MAPS_KEYS, GROUND_TRUTHS_KEY, LABELS_KEY
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNetFeatureMapExtractor, EfficientNet
 from experiments.utils import setup_run_instance
@@ -59,7 +59,7 @@ def create_dataset(experiment: str, run: str, phase: str, snapshot_name: str, da
 
             # get batch
             batch = dataset[idx]
-            batch[FRAMES_KEY] = batch[FRAMES_KEY].unsqueeze(0)
+            batch[GROUND_TRUTHS_KEY] = batch[GROUND_TRUTHS_KEY].unsqueeze(0)
             batch[LABELS_KEY] = batch[LABELS_KEY].unsqueeze(0)
 
             # prepare batch

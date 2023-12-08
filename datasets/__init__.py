@@ -1,5 +1,5 @@
 FEATURE_MAPS_KEYS = 'feature_maps'
-FRAMES_KEY = 'frames'
+GROUND_TRUTHS_KEY = 'frames'
 TOKENS_KEY = 'tokens'
 LABELS_KEY = 'labels'
 LOGITS_KEY = 'logits'
