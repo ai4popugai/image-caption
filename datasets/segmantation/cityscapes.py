@@ -111,34 +111,34 @@ class MaskToTensor(object):
 
 
 class CityscapesVideoDataset(Dataset):
-    def __init__(self, part: int, resolution: Tuple[int, int] = (1024, 2048), step: int = 1):
+    def __init__(self, resolution: Tuple[int, int] = (1024, 2048), step: int = 1):
         """
         Cityscapes video dataset wrapper.
 
-        :param part: must be 0, 1 or 2.
         :param step: distance between 2 frames in __getitem__ method. Default: 1 frame.
         3-d part consists of the first 50 images from 0-d part.
         """
-        if part != 0 and part != 1 and part != 2 and part != 3:
-            raise RuntimeError('Dataset part must be 0, 1 or 2')
         if CITYSCAPES_VIDEO_ROOT not in os.environ:
             raise RuntimeError(
                 f'Failed to init cityscapes dataset instance: {CITYSCAPES_VIDEO_ROOT} not in environment.')
         self.root = os.path.join(os.environ[CITYSCAPES_VIDEO_ROOT], 'leftImg8bit', 'demoVideo')
-        self.city_name = 'stuttgart'
-        self.frames_list = []
         self.step = step
         self.frame_transforms = Compose([
             PILToTensor(),
             Resize(resolution, InterpolationMode.NEAREST)
         ])
 
-        city_dir = os.path.join(self.root, f'{self.city_name}_{"%02d" % part}')
-        for frame_name in sorted(os.listdir(city_dir)):
-            self.frames_list.append(os.path.join(city_dir, frame_name))
+        cities_path_list = [os.path.join(self.root, city) for city in sorted(os.listdir(self.root))
+                            if os.path.isdir(os.path.join(self.root, city))]
+        self.frames_list = []
+        self.parts_len_list = []
+        for city_path in cities_path_list:
+            frame_names = sorted(os.listdir(city_path))
+            self.frames_list += frame_names
+            self.parts_len_list.append(len(frame_names))
 
     def __len__(self) -> int:
-        return len(self.frames_list) - self.step
+        return len(self.frames_list) - self.step * len(self.parts_len_list)
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
         frame_t = Image.open(self.frames_list[idx]).convert("RGB")
