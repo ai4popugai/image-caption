@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 from torchvision.datasets import Cityscapes
 from torchvision.transforms import Compose, PILToTensor, Resize, InterpolationMode
 
-from datasets import GROUND_TRUTHS_KEY, SEMANTIC_SEGMENTATIONS_KEY
+from datasets import GROUND_TRUTHS_KEY, SEMANTIC_SEGMENTATIONS_KEY, GROUND_TRUTHS_T_KEY, GROUND_TRUTHS_T_K_KEY
 
 CITYSCAPES_ROOT = 'CITYSCAPES_DATASET_ROOT'
 CITYSCAPES_VIDEO_ROOT = 'CITYSCAPES_VIDEO_DATASET_ROOT'
@@ -111,11 +111,12 @@ class MaskToTensor(object):
 
 
 class CityscapesVideoDataset(Dataset):
-    def __init__(self, part: int, resolution: Tuple[int, int] = (1024, 2048)):
+    def __init__(self, part: int, resolution: Tuple[int, int] = (1024, 2048), step: int = 1):
         """
         Cityscapes video dataset wrapper.
 
         :param part: must be 0, 1 or 2.
+        :param step: distance between 2 frames in __getitem__ method. Default: 1 frame.
         3-d part consists of the first 50 images from 0-d part.
         """
         if part != 0 and part != 1 and part != 2 and part != 3:
@@ -126,6 +127,7 @@ class CityscapesVideoDataset(Dataset):
         self.root = os.path.join(os.environ[CITYSCAPES_VIDEO_ROOT], 'leftImg8bit', 'demoVideo')
         self.city_name = 'stuttgart'
         self.frames_list = []
+        self.step = step
         self.frame_transforms = Compose([
             PILToTensor(),
             Resize(resolution, InterpolationMode.NEAREST)
@@ -136,12 +138,17 @@ class CityscapesVideoDataset(Dataset):
             self.frames_list.append(os.path.join(city_dir, frame_name))
 
     def __len__(self) -> int:
-        return len(self.frames_list)
+        return len(self.frames_list) - self.step
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
-        frame = Image.open(self.frames_list[idx]).convert("RGB")
-        frame = self.frame_transforms(frame).byte()
-        return {'frame': frame}
+        frame_t = Image.open(self.frames_list[idx]).convert("RGB")
+        frame_t = self.frame_transforms(frame_t).byte()
+
+        frame_t_k = Image.open(self.frames_list[idx + self.step]).convert("RGB")
+        frame_t_k = self.frame_transforms(frame_t_k).byte()
+        return {GROUND_TRUTHS_T_KEY: frame_t,
+                GROUND_TRUTHS_T_K_KEY: frame_t_k,
+                }
 
 
 class CityscapesDataset(Cityscapes):

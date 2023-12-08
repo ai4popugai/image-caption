@@ -5,6 +5,8 @@ TOKENS_KEY = 'tokens'
 LABELS_KEY = 'labels'
 LOGITS_KEY = 'logits'
 EMBS_KEY = 'embs'
-FRAME_T = 'frame_t'
-FRAME_T_K = 'frame_t_k'
+
+GROUND_TRUTHS_T_KEY = 'ground_truths_t'
+GROUND_TRUTHS_T_K_KEY = 'ground_truths_t_k'
+
 OPTICAL_FLOW = 'optical_flow'
