@@ -7,7 +7,7 @@ from torchvision import transforms
 
 from augmentations.classification.augs import RandomFlip, RandomCrop, CenterCrop
 from datasets import LOGITS_KEY, LABELS_KEY, FRAME_KEY
-from datasets.classification.gpr import GPRDataset, NUM_CLASSES
+from datasets.classification.gpr import GPRDataset, GPR_NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
@@ -23,7 +23,7 @@ class RunBase(Run):
     def __init__(self, filename: str):
         super().__init__(filename)
 
-        self._num_classes = NUM_CLASSES
+        self._num_classes = GPR_NUM_CLASSES
         self.resolution = (256, 256)
 
         self._normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])

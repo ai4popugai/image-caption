@@ -10,7 +10,7 @@ from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
 from datasets import FRAME_KEY, LABELS_KEY
 
-NUM_CLASSES = 1200
+GPR_NUM_CLASSES = 1200
 
 
 class GPRDataset(Dataset):
