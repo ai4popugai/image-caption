@@ -9,4 +9,7 @@ EMBS_KEY = 'embs'
 GROUND_TRUTHS_T_KEY = 'ground_truths_t'
 GROUND_TRUTHS_T_K_KEY = 'ground_truths_t_k'
 
+ACTIVATION_MAP = 'activation_map'
+ACTIVATION_MAP_AUX = 'activation_map_aux'
+
 OPTICAL_FLOW = 'optical_flow'

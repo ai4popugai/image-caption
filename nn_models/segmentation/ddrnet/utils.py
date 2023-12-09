@@ -6,6 +6,8 @@ import torch.nn.functional as F
 from torch.nn import init
 from collections import OrderedDict
 
+from datasets import ACTIVATION_MAP_AUX, ACTIVATION_MAP
+
 BatchNorm2d = nn.SyncBatchNorm
 bn_mom = 0.1
 
@@ -339,6 +341,6 @@ class DualResNet(nn.Module):
 
         if self.augment:
             x_extra = self.seghead_extra(temp)
-            return [x_, x_extra]
+            return {ACTIVATION_MAP: x_, ACTIVATION_MAP_AUX: x_extra}
         else:
-            return x_
+            return {ACTIVATION_MAP: x_}
