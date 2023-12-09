@@ -75,23 +75,22 @@ COLOR_MAP_TENSOR = torch.tensor(list(COLOR_MAP.values()), dtype=torch.uint8)
 def map_to_classes(seg: torch.Tensor) -> torch.Tensor:
     """
     Method converts activation map [batch_size, N_CLASSES, h, w] to tensor with class label in dim 1
-    [batch_size, 1, h, w].
+    [batch_size, h, w].
     :param seg: input tensor
     :return: tensor with class labels
     """
-    # softmax = torch.nn.Softmax(dim=1)
-    segmentations = torch.argmax(seg, dim=1).unsqueeze(dim=1)
+    segmentations = torch.argmax(seg, dim=1)
     return segmentations
 
 
 def classes_to_colors(seg: torch.Tensor) -> torch.Tensor:
     """
-    Convert tensor [batch_size, 1, h, w] with classes in 1 dim
+    Convert tensor [batch_size, h, w] with classes in 1 dim
     to tensor [batch_size, CHANNELS, h, w] with colors in 1 dim.
     :param seg: input tensor.
     :return: color tensor.
     """
-    mapped = COLOR_MAP_TENSOR[seg.select(1, 0).long()].permute(0, 3, 1, 2)
+    mapped = COLOR_MAP_TENSOR[seg.long()].permute(0, 3, 1, 2)
     return mapped
 
 
@@ -174,4 +173,4 @@ class CityscapesDataset(Cityscapes):
         frame, segmentation = super().__getitem__(idx)
         frame = frame.byte()
         segmentation = self.seg_transforms(segmentation)
-        return {FRAME_KEY: frame, GROUND_TRUTHS_KEY: segmentation}
+        return {FRAME_KEY: frame, GROUND_TRUTHS_KEY: segmentation.squeeze(0)}
