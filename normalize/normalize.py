@@ -8,9 +8,10 @@ from normalize.base_normalizer import BaseNormalizer
 
 
 class BatchNormalizer(BaseNormalizer):
-    def __init__(self, normalizer: transforms.Normalize):
+    def __init__(self, normalizer: transforms.Normalize, target_key: str):
+        self.target_key = target_key
         super().__init__(normalizer=normalizer)
 
     def __call__(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        normalised_frames = self.normalizer(batch[FRAME_KEY])
-        return {FRAME_KEY: normalised_frames, LABELS_KEY: batch[LABELS_KEY]}
+        batch[self.target_key] = self.normalizer(batch[self.target_key])
+        return batch

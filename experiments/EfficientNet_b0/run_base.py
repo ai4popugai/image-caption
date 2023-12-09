@@ -1,21 +1,21 @@
 import os
-from typing import Tuple, List, Dict
+from typing import Tuple
 
 import torch.optim.optimizer
-from torch import nn
 from torch.utils.data import Dataset, random_split
 from torchvision import transforms
 
-from augmentations.classification.augs import ColorAug, RandomFlip, RandomCrop, CenterCrop
+from augmentations.classification.augs import RandomFlip, RandomCrop, CenterCrop
+from datasets import LOGITS_KEY, LABELS_KEY, FRAME_KEY
 from datasets.classification.gpr import GPRDataset, NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
-from loss.classification.cross_entropy import CrossEntropyLoss
+from loss.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
 from metrics.classification.mean_precision import MeanPrecision
 from metrics.classification.mean_recall import MeanRecall
 from nn_models.classification.base_model import BaseClassificationModel
-from normalize.classification.normalize import BatchNormalizer
-from train import MODEL_STATE_DICT_KEY, Trainer
+from normalize.normalize import BatchNormalizer
+from train import MODEL_STATE_DICT_KEY
 from train.run import Run
 
 
@@ -27,7 +27,7 @@ class RunBase(Run):
         self.resolution = (256, 256)
 
         self._normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        self.normalizer = BatchNormalizer(normalizer=self._normalizer)
+        self.normalizer = BatchNormalizer(normalizer=self._normalizer, target_key=FRAME_KEY)
 
         self.batch_size = 64
         self.num_workers = 8
@@ -35,7 +35,7 @@ class RunBase(Run):
         self.validation_split = 0.2
 
         self.optimizer_class = torch.optim.Adam
-        self.loss = CrossEntropyLoss()
+        self.loss = CrossEntropyLoss(result_trg_key=LOGITS_KEY, batch_trg_key=LABELS_KEY)
 
         self.train_metrics = [Accuracy(self._num_classes),
                               MeanRecall(self._num_classes), MeanPrecision(self._num_classes)]
