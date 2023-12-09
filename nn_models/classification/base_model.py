@@ -2,7 +2,7 @@ from typing import Dict
 
 import torch
 
-from datasets import GROUND_TRUTHS_KEY, LOGITS_KEY
+from datasets import FRAME_KEY, LOGITS_KEY
 from nn_models.base_model import BaseModel
 
 
@@ -12,6 +12,6 @@ class BaseClassificationModel(BaseModel):
         self.model = None
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        x = batch[GROUND_TRUTHS_KEY]
+        x = batch[FRAME_KEY]
         x = self.model(x)
         return {LOGITS_KEY: x}

@@ -9,12 +9,12 @@ from torchvision import transforms
 from torchvision.transforms.functional import hflip
 import torchvision.transforms.functional as F
 
-from datasets import GROUND_TRUTHS_KEY
+from datasets import FRAME_KEY
 
 
 class BaseAug(ABC, nn.Module):
     def __init__(self, target_key: Optional[str] = None):
-        self.target_key = target_key if target_key is not None else GROUND_TRUTHS_KEY
+        self.target_key = target_key if target_key is not None else FRAME_KEY
         super().__init__()
 
     @abstractmethod

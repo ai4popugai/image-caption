@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 from torchvision.datasets import Cityscapes
 from torchvision.transforms import Compose, PILToTensor, Resize, InterpolationMode
 
-from datasets import GROUND_TRUTHS_KEY, SEMANTIC_SEGMENTATIONS_KEY, GROUND_TRUTHS_T_KEY, GROUND_TRUTHS_T_K_KEY
+from datasets import FRAME_KEY, GROUND_TRUTHS_KEY, FRAME_T_KEY, FRAME_T_K_KEY
 
 CITYSCAPES_ROOT = 'CITYSCAPES_DATASET_ROOT'
 CITYSCAPES_VIDEO_ROOT = 'CITYSCAPES_VIDEO_DATASET_ROOT'
@@ -147,8 +147,8 @@ class CityscapesVideoDataset(Dataset):
 
         frame_t_k = Image.open(self.frames_list[idx + self.step]).convert("RGB")
         frame_t_k = self.frame_transforms(frame_t_k).byte()
-        return {GROUND_TRUTHS_T_KEY: frame_t,
-                GROUND_TRUTHS_T_K_KEY: frame_t_k,
+        return {FRAME_T_KEY: frame_t,
+                FRAME_T_K_KEY: frame_t_k,
                 }
 
 
@@ -174,4 +174,4 @@ class CityscapesDataset(Cityscapes):
         frame, segmentation = super().__getitem__(idx)
         frame = frame.byte()
         segmentation = self.seg_transforms(segmentation)
-        return {GROUND_TRUTHS_KEY: frame, SEMANTIC_SEGMENTATIONS_KEY: segmentation}
+        return {FRAME_KEY: frame, GROUND_TRUTHS_KEY: segmentation}

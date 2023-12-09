@@ -4,7 +4,7 @@ from typing import Dict
 import torch
 from torch import nn
 
-from datasets import GROUND_TRUTHS_KEY, EMBS_KEY
+from datasets import FRAME_KEY, EMBS_KEY
 from nn_models.base_model import BaseModel
 from nn_models.classification.base_model import BaseClassificationModel
 
@@ -15,7 +15,7 @@ class FeatureExtractor(BaseClassificationModel):
         self.model = nn.Sequential(*list(model.get_model().children())[:-1])
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        x = batch[GROUND_TRUTHS_KEY]
+        x = batch[FRAME_KEY]
         x = self.model(x)
         return {EMBS_KEY: x}
 
