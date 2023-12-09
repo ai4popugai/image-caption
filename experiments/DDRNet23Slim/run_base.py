@@ -1,7 +1,10 @@
+from typing import Tuple
+
 from torch import nn
+from torch.utils.data import Dataset
 
 from datasets import FRAME_KEY
-from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES
+from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES, CityscapesDataset
 from nn_models.segmentation.ddrnet.models import DDRNet23Slim
 from normalize.normalize import BatchNormalizer
 from train.run import Run
@@ -23,4 +26,7 @@ class RunBase(Run):
     def setup_model(self) -> nn.Module:
         return DDRNet23Slim(num_classes=self.num_classes)
 
-
+    def setup_datasets(self) -> Tuple[Dataset, Dataset]:
+        train_dataset, val_dataset = CityscapesDataset(mode='fine', split='train'), \
+                                     CityscapesDataset(mode='fine', split='val')
+        return train_dataset, val_dataset
