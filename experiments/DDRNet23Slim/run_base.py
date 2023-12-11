@@ -4,9 +4,11 @@ import torch
 from torch import nn
 from torch.utils.data import Dataset
 
+from augmentations.classification.augs import RandomFlip, RandomCrop, CenterCrop, Rotate, RandomColorJitterWithProb
 from datasets import FRAME_KEY, GROUND_TRUTHS_KEY, ACTIVATION_MAP_KEY
 from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES, CityscapesDataset
 from loss.cross_entropy import CrossEntropyLoss
+from metrics.segmentation.iou import IoU
 from nn_models.segmentation.ddrnet.models import DDRNet23Slim
 from normalize.normalize import BatchNormalizer
 from train.run import Run
@@ -28,6 +30,21 @@ class RunBase(Run):
         self.loss = CrossEntropyLoss(result_trg_key=ACTIVATION_MAP_KEY, batch_trg_key=GROUND_TRUTHS_KEY)
 
         self.optimizer_class = torch.optim.Adam
+
+        self.train_metrics = [IoU(self.num_classes)]
+        self.val_metrics = [IoU(self.num_classes)]
+
+        self.crop_size = (512, 1024)
+
+        self.train_augs = [RandomFlip(),
+                           RandomCrop(self.crop_size),
+                           Rotate(angle_range=(-30, 30)),
+                           RandomColorJitterWithProb(probability=0.8,
+                                                     brightness_range=(0.7, 1),
+                                                     contrast_range=(0.7, 1),
+                                                     saturation_range=(0.7, 1),
+                                                     hue_range=(0.3, 0.5))]
+        self.val_augs = [CenterCrop(self.crop_size)]
 
     def setup_model(self) -> nn.Module:
         return DDRNet23Slim(num_classes=self.num_classes)
