@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.utils.data import Dataset
 
-from datasets import FRAME_KEY, GROUND_TRUTHS_KEY, ACTIVATION_MAP
+from datasets import FRAME_KEY, GROUND_TRUTHS_KEY, ACTIVATION_MAP_KEY
 from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES, CityscapesDataset
 from loss.cross_entropy import CrossEntropyLoss
 from nn_models.segmentation.ddrnet.models import DDRNet23Slim
@@ -25,7 +25,7 @@ class RunBase(Run):
         self.batch_size = 64
         self.num_workers = 8
 
-        self.loss = CrossEntropyLoss(result_trg_key=ACTIVATION_MAP, batch_trg_key=GROUND_TRUTHS_KEY)
+        self.loss = CrossEntropyLoss(result_trg_key=ACTIVATION_MAP_KEY, batch_trg_key=GROUND_TRUTHS_KEY)
 
         self.optimizer_class = torch.optim.Adam
 
