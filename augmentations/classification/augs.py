@@ -135,6 +135,16 @@ class RandomColorJitterWithProb(BaseAug):
         hue_range: Tuple[float, float] = (0, 0),
         target_key: Optional[str] = None
     ):
+        """
+        Color augmentation.
+
+        :param probability: prob of applying aug.
+        :param brightness_range: Tuple with min and max change, (0, 1)
+        :param contrast_range: Tuple with min and max change, (0, 1)
+        :param saturation_range: Tuple with min and max change, (0, 1)
+        :param hue_range: Tuple with min and max change, (0, 0.5)
+        :param target_key:
+        """
         super().__init__(target_key)
         self.probability = probability
         self.brightness_range = brightness_range
