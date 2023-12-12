@@ -14,8 +14,7 @@ from datasets import FRAME_KEY
 
 
 def check_batch(batch: Dict[str, torch.Tensor], target_keys: List[str]):
-    if len(target_keys) > 1 and all(torch.equal(batch[target_keys[0]].shape[-2:],
-                                                batch[target_keys[i]].shape[-2:]) for i in
+    if len(target_keys) > 1 and all(batch[target_keys[0]].shape[-2:] == batch[target_keys[i]].shape[-2:] for i in
                                     range(1, len(target_keys))) is False:
         raise RuntimeError("Can't augment to due dimension inequality, augment separately instead.")
 
@@ -137,7 +136,6 @@ class Rotate(BaseAug):
         :param batch: batch with target keys to apply augmentation.
         :return: batch
         """
-        check_batch(batch, self.target_keys)
         angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
         for key in self.target_keys:
             batch[key] = self.rotate_frames(batch[key], angle)
@@ -176,7 +174,6 @@ class RotateWithProb(BaseAug):
         :param batch: batch with target keys to apply augmentation.
         :return: batch
         """
-        check_batch(batch, self.target_keys)
         if random.random() < self.probability:
             angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
             for key in self.target_keys:
@@ -226,7 +223,6 @@ class RandomColorJitterWithProb(BaseAug):
         :param batch: batch with target keys to apply augmentation.
         :return: batch
         """
-        check_batch(batch, self.target_keys)
         for i in range(batch[self.target_keys[0]].shape[0]):
             for key in self.target_keys:
                 if random.random() < self.probability:
