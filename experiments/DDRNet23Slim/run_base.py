@@ -36,15 +36,16 @@ class RunBase(Run):
 
         self.crop_size = (512, 1024)
 
-        self.train_augs = [RandomFlip(),
-                           RandomCrop(self.crop_size),
-                           Rotate(angle_range=(-30, 30)),
+        target_keys = [FRAME_KEY, GROUND_TRUTHS_KEY]
+        self.train_augs = [RandomFlip(target_keys=target_keys),
+                           RandomCrop(self.crop_size, target_keys=target_keys),
+                           Rotate(angle_range=(-30, 30), target_keys=target_keys),
                            RandomColorJitterWithProb(probability=0.8,
                                                      brightness_range=(0.7, 1),
                                                      contrast_range=(0.7, 1),
                                                      saturation_range=(0.7, 1),
                                                      hue_range=(0.3, 0.5))]
-        self.val_augs = [CenterCrop(self.crop_size)]
+        self.val_augs = [CenterCrop(self.crop_size, target_keys=target_keys)]
 
     def setup_model(self) -> nn.Module:
         return DDRNet23Slim(num_classes=self.num_classes)
