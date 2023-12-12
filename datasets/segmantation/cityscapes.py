@@ -90,7 +90,7 @@ def classes_to_colors(seg: torch.Tensor) -> torch.Tensor:
     :param seg: input tensor.
     :return: color tensor.
     """
-    mapped = COLOR_MAP_TENSOR[seg.long()].permute(0, 3, 1, 2)
+    mapped = COLOR_MAP_TENSOR.to(seg.device)[seg.long()].permute(0, 3, 1, 2)
     return mapped
 
 
