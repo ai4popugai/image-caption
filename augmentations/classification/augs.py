@@ -8,13 +8,14 @@ from torch import nn
 from torchvision import transforms
 from torchvision.transforms.functional import hflip
 import torchvision.transforms.functional as F
+from torchvision.transforms.v2.functional import crop
 
 from datasets import FRAME_KEY
 
 
 class BaseAug(ABC, nn.Module):
-    def __init__(self, target_key: Optional[str] = None):
-        self.target_key = target_key if target_key is not None else FRAME_KEY
+    def __init__(self, target_keys: Optional[List[str]] = None):
+        self.target_keys = target_keys if target_keys is not None else [FRAME_KEY]
         super().__init__()
 
     @abstractmethod
@@ -23,117 +24,176 @@ class BaseAug(ABC, nn.Module):
 
 
 class RandomFlip(BaseAug):
-    def __init__(self, p=0.5, target_key: Optional[str] = None):
-        super().__init__(target_key)
+    def __init__(self, p=0.5, target_keys: Optional[str] = None):
+        super().__init__(target_keys)
         self.p = p
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+        Apply horizontal flip with probability to every target data in batch.
+
+        :param batch: batch with target keys to apply augmentation.
+        :return: batch
+        """
         if torch.rand(1).item() < self.p:
-            batch[self.target_key] = hflip(batch[self.target_key])
+            for key in self.target_keys:
+                batch[key] = hflip(batch[key])
+
         return batch
 
 
 class RandomCrop(BaseAug):
-    def __init__(self, size: Tuple[int, int], target_key: Optional[str] = None):
-        super().__init__(target_key)
+    def __init__(self, size: Tuple[int, int], target_keys: Optional[str] = None):
+        super().__init__(target_keys)
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        batch[self.target_key] = transforms.RandomCrop(self.size)(batch[self.target_key])
+        """
+        Apply the same crop to every target data in batch.
+
+        :param batch: batch with target keys to apply augmentation.
+        :return: batch
+        """
+        if len(self.target_keys) > 1 and all(torch.equal(batch[self.target_keys[0]],
+                                                         batch[self.target_keys[i]]) for i in
+                                             range(1, len(self.target_keys))) is False:
+            raise RuntimeError("Can't augment to due dimension inequality, augment separately instead.")
+        i, j, h, w = transforms.RandomCrop.get_params(batch[self.target_keys[0]],
+                                                      output_size=self.size)
+        for key in self.target_keys:
+            batch[key] = crop(batch[key], i, j, h, w)
+
         return batch
 
 
 class RandomResizedCropWithProb(BaseAug):
     def __init__(self, size: Union[List[float], Tuple[int, int]],
-                 probability: float = 0.5, target_key: Optional[str] = None):
-        super().__init__(target_key)
+                 probability: float = 0.5, target_keys: Optional[str] = None):
+        super().__init__(target_keys)
         self.size = size
         self.probability = probability
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+        Apply the same crop with probability to every target data in batch.
+
+        :param batch: batch with target keys to apply augmentation.
+        :return: batch
+        """
+        if len(self.target_keys) > 1 and all(torch.equal(batch[self.target_keys[0]],
+                                                         batch[self.target_keys[i]]) for i in
+                                             range(1, len(self.target_keys))) is False:
+            raise RuntimeError("Can't augment to due dimension inequality, augment separately instead.")
         if isinstance(self.size[0], float):
             change_factor = math.sqrt(random.uniform(self.size[0], self.size[1]))
-            new_height = int(batch[self.target_key].shape[-2] * change_factor)
-            new_width = int(batch[self.target_key].shape[-1] * change_factor)
+            new_height = int(batch[self.target_keys[0]].shape[-2] * change_factor)
+            new_width = int(batch[self.target_keys[0]].shape[-1] * change_factor)
             size = (new_height, new_width)
         else:
             size = self.size
 
-        transform = transforms.Compose([
-            transforms.RandomCrop(size),
-            transforms.Resize(batch[self.target_key].shape[-2:], antialias=False)  # Resize back to original resolution
-        ])
+        i, j, h, w = transforms.RandomCrop.get_params(batch[self.target_keys[0]],
+                                                      output_size=size)
+        resize = transforms.Resize(batch[self.target_keys[0]].shape[-2:],
+                                   antialias=False)  # Resize back to original resolution
 
         # Perform random resized crop on each frame
-        for i in range(batch[self.target_key].shape[0]):
-            if random.random() < self.probability:
-                batch[self.target_key][i] = transform(batch[self.target_key][i])
+        if random.random() < self.probability:
+            for key in self.target_keys:
+                batch[key] = resize(crop(batch[key], i, j, h, w))
 
         return batch
 
 
 class CenterCrop(BaseAug):
-    def __init__(self, size: Tuple[int, int], target_key: Optional[str] = None):
-        super().__init__(target_key)
+    def __init__(self, size: Tuple[int, int], target_keys: Optional[str] = None):
+        super().__init__(target_keys)
         self.size = size
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        batch[self.target_key] = transforms.CenterCrop(self.size)(batch[self.target_key])
+        """
+        Apply center crop to every target data in batch.
+
+        :param batch: batch with target keys to apply augmentation.
+        :return: batch
+        """
+        if len(self.target_keys) > 1 and all(torch.equal(batch[self.target_keys[0]],
+                                                         batch[self.target_keys[i]]) for i in
+                                             range(1, len(self.target_keys))) is False:
+            raise RuntimeError("Can't augment to due dimension inequality, augment separately instead.")
+        for key in self.target_keys:
+            batch[key] = transforms.CenterCrop(self.size)(batch[key])
+
         return batch
 
 
 class Rotate(BaseAug):
-    def __init__(self, angle_range=(-180, 180), target_key: Optional[str] = None):
-        super().__init__(target_key)
+    def __init__(self, angle_range=(-180, 180), target_keys: Optional[str] = None):
+        super().__init__(target_keys)
         self.angle_range = angle_range
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        # Perform rotation on each frame
-        for i in range(batch[self.target_key].shape[0]):
-            # Randomly select an angle within the defined range
-            angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
-            batch[self.target_key][i] = self.rotate_frame(batch[self.target_key][i], angle)
+        """
+        Apply rotation to every target data in batch.
+
+        :param batch: batch with target keys to apply augmentation.
+        :return: batch
+        """
+        angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
+        for key in self.target_keys:
+            batch[key] = self.rotate_frames(batch[key], angle)
 
         return batch
 
     @staticmethod
-    def rotate_frame(frame, angle):
+    def rotate_frames(frame_batch, angle):
+        """
+        Method to rotate batch of frames.
+
+        :param frame_batch: batch of frames
+        :param angle: angle to rotate
+        :return:
+        """
         # Calculate image center
-        center = torch.tensor(frame.shape[1:]).float() / 2.0
+        center = torch.tensor(frame_batch.shape[2:]).float() / 2.0
 
         # Perform rotation
-        rotated_frame = F.rotate(frame, angle, interpolation=F.InterpolationMode.BILINEAR,
-                                 center=center.tolist())
+        rotated_frames = F.rotate(frame_batch, angle, interpolation=F.InterpolationMode.BILINEAR,
+                                  center=center.tolist())
 
-        return rotated_frame
+        return rotated_frames
 
 
 class RotateWithProb(BaseAug):
-    def __init__(self, angle_range=(-180, 180), probability: float = 0.5, target_key: Optional[str] = None):
-        super().__init__(target_key)
+    def __init__(self, angle_range=(-180, 180), probability: float = 0.5, target_keys: Optional[str] = None):
+        super().__init__(target_keys)
         self.angle_range = angle_range
         self.probability = probability
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        # Perform rotation on each frame
-        for i in range(batch[self.target_key].shape[0]):
-            if random.random() < self.probability:
-                # Randomly select an angle within the defined range
-                angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
-                batch[self.target_key][i] = Rotate.rotate_frame(batch[self.target_key][i], angle)
+        """
+        Apply rotation with probability to every target data in batch.
+
+        :param batch: batch with target keys to apply augmentation.
+        :return: batch
+        """
+        if random.random() < self.probability:
+            angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
+            for key in self.target_keys:
+                batch[key] = Rotate.rotate_frame(batch[key], angle)
 
         return batch
 
 
 class RandomColorJitterWithProb(BaseAug):
     def __init__(
-        self,
-        probability: float = 0.5,
-        brightness_range: Tuple[float, float] = (1, 1),
-        contrast_range: Tuple[float, float] = (1, 1),
-        saturation_range: Tuple[float, float] = (1, 1),
-        hue_range: Tuple[float, float] = (0, 0),
-        target_key: Optional[str] = None
+            self,
+            probability: float = 0.5,
+            brightness_range: Tuple[float, float] = (1, 1),
+            contrast_range: Tuple[float, float] = (1, 1),
+            saturation_range: Tuple[float, float] = (1, 1),
+            hue_range: Tuple[float, float] = (0, 0),
+            target_keys: Optional[str] = None
     ):
         """
         Color augmentation.
@@ -143,9 +203,9 @@ class RandomColorJitterWithProb(BaseAug):
         :param contrast_range: Tuple with min and max change, (0, 1)
         :param saturation_range: Tuple with min and max change, (0, 1)
         :param hue_range: Tuple with min and max change, (0, 0.5)
-        :param target_key:
+        :param target_keys:
         """
-        super().__init__(target_key)
+        super().__init__(target_keys)
         self.probability = probability
         self.brightness_range = brightness_range
         self.contrast_range = contrast_range
@@ -160,9 +220,20 @@ class RandomColorJitterWithProb(BaseAug):
         )
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+        Apply apply different color augmentation to every target sample in batch.
+
+        :param batch: batch with target keys to apply augmentation.
+        :return: batch
+        """
+        if len(self.target_keys) > 1 and all(torch.equal(batch[self.target_keys[0]],
+                                                         batch[self.target_keys[i]]) for i in
+                                             range(1, len(self.target_keys))) is False:
+            raise RuntimeError("Can't augment to due dimension inequality, augment separately instead.")
         # Perform random color jittering on each frame
-        for i in range(batch[self.target_key].shape[0]):
-            if random.random() < self.probability:
-                batch[self.target_key][i] = self.color_jitter_transform(batch[self.target_key][i])
+        for i in range(batch[self.target_keys[0]].shape[0]):
+            for key in self.target_keys:
+                if random.random() < self.probability:
+                    batch[key][i] = self.color_jitter_transform(batch[key][i])
 
         return batch
