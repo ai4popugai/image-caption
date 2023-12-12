@@ -24,7 +24,7 @@ class BaseAug(ABC, nn.Module):
 
 
 class RandomFlip(BaseAug):
-    def __init__(self, p=0.5, target_keys: Optional[str] = None):
+    def __init__(self, p=0.5, target_keys: Optional[List[str]] = None):
         super().__init__(target_keys)
         self.p = p
 
@@ -43,7 +43,7 @@ class RandomFlip(BaseAug):
 
 
 class RandomCrop(BaseAug):
-    def __init__(self, size: Tuple[int, int], target_keys: Optional[str] = None):
+    def __init__(self, size: Tuple[int, int], target_keys: Optional[List[str]] = None):
         super().__init__(target_keys)
         self.size = size
 
@@ -68,7 +68,7 @@ class RandomCrop(BaseAug):
 
 class RandomResizedCropWithProb(BaseAug):
     def __init__(self, size: Union[List[float], Tuple[int, int]],
-                 probability: float = 0.5, target_keys: Optional[str] = None):
+                 probability: float = 0.5, target_keys: Optional[List[str]] = None):
         super().__init__(target_keys)
         self.size = size
         self.probability = probability
@@ -106,7 +106,7 @@ class RandomResizedCropWithProb(BaseAug):
 
 
 class CenterCrop(BaseAug):
-    def __init__(self, size: Tuple[int, int], target_keys: Optional[str] = None):
+    def __init__(self, size: Tuple[int, int], target_keys: Optional[List[str]] = None):
         super().__init__(target_keys)
         self.size = size
 
@@ -128,7 +128,7 @@ class CenterCrop(BaseAug):
 
 
 class Rotate(BaseAug):
-    def __init__(self, angle_range=(-180, 180), target_keys: Optional[str] = None):
+    def __init__(self, angle_range=(-180, 180), target_keys: Optional[List[str]] = None):
         super().__init__(target_keys)
         self.angle_range = angle_range
 
@@ -165,7 +165,7 @@ class Rotate(BaseAug):
 
 
 class RotateWithProb(BaseAug):
-    def __init__(self, angle_range=(-180, 180), probability: float = 0.5, target_keys: Optional[str] = None):
+    def __init__(self, angle_range=(-180, 180), probability: float = 0.5, target_keys: Optional[List[str]] = None):
         super().__init__(target_keys)
         self.angle_range = angle_range
         self.probability = probability
@@ -193,7 +193,7 @@ class RandomColorJitterWithProb(BaseAug):
             contrast_range: Tuple[float, float] = (1, 1),
             saturation_range: Tuple[float, float] = (1, 1),
             hue_range: Tuple[float, float] = (0, 0),
-            target_keys: Optional[str] = None
+            target_keys: Optional[List[str]] = None
     ):
         """
         Color augmentation.
