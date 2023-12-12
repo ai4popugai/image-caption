@@ -152,7 +152,7 @@ class Rotate(BaseAug):
         :return:
         """
         # Calculate image center
-        center = torch.tensor(frame_batch.shape[2:]).float() / 2.0
+        center = torch.tensor(frame_batch.shape[-2:]).float() / 2.0
 
         # Perform rotation
         rotated_frames = F.rotate(frame_batch, angle, interpolation=F.InterpolationMode.BILINEAR,
