@@ -1,9 +1,8 @@
-from typing import Dict, Type
+from typing import Dict
 
 import torch
 from torchvision import transforms
 
-from datasets import FRAME_KEY, LABELS_KEY
 from normalize.base_normalizer import BaseNormalizer
 
 
