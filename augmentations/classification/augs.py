@@ -15,8 +15,8 @@ from datasets import FRAME_KEY
 
 def check_batch(batch: Dict[str, torch.Tensor], target_keys: List[str]):
     if len(target_keys) > 1 and all(torch.equal(batch[target_keys[0]].shape[-2:],
-                                                     batch[target_keys[i]].shape[-2:]) for i in
-                                         range(1, len(target_keys))) is False:
+                                                batch[target_keys[i]].shape[-2:]) for i in
+                                    range(1, len(target_keys))) is False:
         raise RuntimeError("Can't augment to due dimension inequality, augment separately instead.")
 
 
