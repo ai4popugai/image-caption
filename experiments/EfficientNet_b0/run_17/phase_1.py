@@ -3,10 +3,9 @@ from typing import Tuple
 
 from torch.utils.data import Dataset
 
-from augmentations.classification.augs import RandomFlip, RandomCrop, Rotate, RandomResizedCropWithProb, RotateWithProb
+from augmentations.augs import RandomFlip, RandomResizedCropWithProb, RotateWithProb
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.run_base import RunBase
-from optim_utils.iter_policy.linear_policy import LinearIterationPolicy
 
 
 class Phase(RunBase):

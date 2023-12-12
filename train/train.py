@@ -8,8 +8,7 @@ from torch.optim import Optimizer
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from augmentations.classification.augs import BaseAug
-from datasets.segmantation.cityscapes import classes_to_colors
+from augmentations.augs import BaseAug
 from metrics.base_metric import BaseMetric
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from optim_utils.iter_policy.policy import LrPolicy

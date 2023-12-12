@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.utils.data import Dataset
 
-from augmentations.classification.augs import RandomFlip, RandomCrop, CenterCrop, Rotate, RandomColorJitterWithProb
+from augmentations.augs import RandomFlip, RandomCrop, CenterCrop, Rotate, RandomColorJitterWithProb
 from datasets import FRAME_KEY, GROUND_TRUTHS_KEY, ACTIVATION_MAP_KEY
 from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES, CityscapesDataset
 from loss.cross_entropy import CrossEntropyLoss

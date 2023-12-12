@@ -5,7 +5,7 @@ import torch.optim.optimizer
 from torch.utils.data import Dataset, random_split
 from torchvision import transforms
 
-from augmentations.classification.augs import RandomFlip, RandomCrop, CenterCrop
+from augmentations.augs import RandomFlip, RandomCrop, CenterCrop
 from datasets import LOGITS_KEY, LABELS_KEY, FRAME_KEY
 from datasets.classification.gpr import GPRDataset, GPR_NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet

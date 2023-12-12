@@ -3,7 +3,7 @@ from typing import Tuple
 
 from torch.utils.data import Dataset
 
-from augmentations.classification.augs import RandomFlip, RandomCrop, Rotate
+from augmentations.augs import RandomFlip, Rotate
 from datasets.classification.gpr import GPRDataset
 from experiments.EfficientNet_b0.run_base import RunBase
 

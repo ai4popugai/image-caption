@@ -8,7 +8,7 @@ from torch.optim import Optimizer
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from augmentations.classification.augs import BaseAug
+from augmentations.augs import BaseAug
 from metrics.base_metric import BaseMetric
 from normalize.base_normalizer import BaseNormalizer
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
