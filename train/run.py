@@ -26,6 +26,7 @@ class Run(ABC):
 
         self.batch_size: int = 64
         self.num_workers: int = 8
+        self.device = None
 
         self.validation_split: float = 0.2
 
@@ -107,7 +108,8 @@ class Run(ABC):
                           show_iters=self.show_iters,
                           snapshot_iters=self.snapshot_iters,
                           normalizer=self.normalizer,
-                          force_snapshot_loading=force_snapshot_loading,)
+                          force_snapshot_loading=force_snapshot_loading,
+                          device=self.device,)
         trainer.train(model=model,
                       reset_optimizer=self.reset_optimizer,
                       start_snapshot=start_snapshot,

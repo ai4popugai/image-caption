@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from augmentations.classification.augs import BaseAug
+from datasets.segmantation.cityscapes import classes_to_colors
 from metrics.base_metric import BaseMetric
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from optim_utils.iter_policy.policy import LrPolicy
@@ -38,6 +39,7 @@ class Trainer:
                  train_augs: Optional[List[BaseAug]] = None,
                  val_augs: Optional[List[BaseAug]] = None,
                  force_snapshot_loading: bool = False,
+                 device: Optional[Union[torch.device, str]] = None,
                  ):
         """
         :param train_dataset: dataset for train loop.
@@ -58,6 +60,7 @@ class Trainer:
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
         :param normalizer: normalization layer to be applied to input images.
         :param force_snapshot_loading: if True, will load snapshot even if it is not the last one.
+        :param device: device to train on.
         """
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
@@ -84,7 +87,8 @@ class Trainer:
         writer = SummaryWriter(self.logs_dir)
         self.writer = writer
 
-        self.device = self.get_device()
+        self.device = self.get_device() if device is None \
+            else torch.device(device) if isinstance(device, str) else device
         print(f'train on {self.device}')
 
     @staticmethod
