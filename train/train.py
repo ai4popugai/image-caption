@@ -27,6 +27,7 @@ class Trainer:
                  num_workers: int,
                  snapshot_dir: str,
                  logs_dir: str,
+                 dump_dir: str,
                  optimizer_class: Type[Optimizer],
                  optimizer_kwargs: Dict,
                  loss: nn.Module,
@@ -47,6 +48,7 @@ class Trainer:
         :param num_workers: number of CPU workers used by DataLoader.
         :param snapshot_dir: directory for snapshots.
         :param logs_dir: directory where to place train logs.
+        :param dump_dir: directory to dump media files.
         :param optimizer_class: optimizer class to be initialized.
         :param optimizer_kwargs: kwargs for optimizer initialization.
         :param loss: loss function for optimizations.
@@ -67,6 +69,7 @@ class Trainer:
         self.num_workers = num_workers
         self.snapshot_dir = snapshot_dir
         self.logs_dir = logs_dir
+        self.dump_dir = dump_dir
         self.optimizer = None
         self.optimizer_class = optimizer_class
         self.optimizer_kwargs = optimizer_kwargs

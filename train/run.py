@@ -38,8 +38,11 @@ class Run(ABC):
 
         self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, self.experiment_name, self.run_name)
         self.logs_dir: str = os.path.join(os.environ['LOG_DIR'], self.project, self.experiment_name, self.run_name)
+        self.dump_dir: str = os.path.join(os.environ['BATCH_DUMP_DIR'], self.project, self.experiment_name,
+                                          self.run_name)
         os.makedirs(self.snapshot_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
+        os.makedirs(self.dump_dir, exist_ok=True)
 
         # optimizer
         self.optimizer_class: Optional[Type[Optimizer]] = None
@@ -100,6 +103,7 @@ class Run(ABC):
                           loss=self.loss,
                           snapshot_dir=self.snapshot_dir,
                           logs_dir=self.logs_dir,
+                          dump_dir=self.dump_dir,
                           train_metrics=self.train_metrics,
                           val_metrics=self.val_metrics,
                           train_augs=self.train_augs,
