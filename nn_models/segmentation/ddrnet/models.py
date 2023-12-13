@@ -32,7 +32,7 @@ class DDRNet23(BaseDDRNet):
                                 head_planes=128, augment=False)
 
 
-class DDRNe39(BaseDDRNet):
+class DDRNet39(BaseDDRNet):
     def __init__(self, num_classes: int):
         super().__init__()
         self.num_classes = num_classes
