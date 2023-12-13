@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import Compose, ToTensor, Resize, InterpolationMode
 
-from datasets import FRAME_KEY, LABELS_KEY, LOGITS_KEY
+from datasets import FRAME_KEY, LABEL_KEY, LOGIT_KEY
 from datasets.classification.gpr import GPRDataset
 from db import SQLiteDb
 from experiments.utils import setup_run_instance
@@ -38,7 +38,7 @@ class InferenceDataset(Dataset):
     def __getitem__(self, idx: int):
         frame = cv2.imread(self.frames_list[idx], cv2.IMREAD_COLOR)
         frame = self.frame_transforms(frame)
-        return {FRAME_KEY: frame, LABELS_KEY: torch.tensor(-1)}
+        return {FRAME_KEY: frame, LABEL_KEY: torch.tensor(-1)}
 
 
 def generate_concepts(experiment: str, run: str, phase: str, snapshot_name: str, frames_dir: str,
@@ -76,7 +76,7 @@ def generate_concepts(experiment: str, run: str, phase: str, snapshot_name: str,
             batch = Trainer.normalize(batch, run_instance.normalizer)
             batch = Trainer.batch_to_device(batch, device)
             result = model(batch)
-            class_labels_batch = torch.argmax(result[LOGITS_KEY], dim=1).cpu()
+            class_labels_batch = torch.argmax(result[LOGIT_KEY], dim=1).cpu()
             class_labels = class_labels_batch if class_labels is None \
                 else torch.cat([class_labels, class_labels_batch], dim=0)
     class_descriptions = descriptions[class_labels.numpy()]

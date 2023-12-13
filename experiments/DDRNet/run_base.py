@@ -5,7 +5,7 @@ from torch import nn
 from torch.utils.data import Dataset
 
 from augmentations.augs import RandomFlip, RandomCrop, CenterCrop, Rotate, RandomColorJitterWithProb
-from datasets import FRAME_KEY, GROUND_TRUTHS_KEY, ACTIVATION_MAP_KEY
+from datasets import FRAME_KEY, GROUND_TRUTH_KEY, ACTIVATION_MAP_KEY
 from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES, CityscapesDataset
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.segmentation.iou import IoU
@@ -27,7 +27,7 @@ class RunBase(Run):
         self.batch_size = 4
         self.num_workers = 8
 
-        self.loss = CrossEntropyLoss(result_trg_key=ACTIVATION_MAP_KEY, batch_trg_key=GROUND_TRUTHS_KEY)
+        self.loss = CrossEntropyLoss(result_trg_key=ACTIVATION_MAP_KEY, batch_trg_key=GROUND_TRUTH_KEY)
 
         self.optimizer_class = torch.optim.Adam
 
@@ -36,7 +36,7 @@ class RunBase(Run):
 
         self.crop_size = (512, 1024)
 
-        target_keys = [FRAME_KEY, GROUND_TRUTHS_KEY]
+        target_keys = [FRAME_KEY, GROUND_TRUTH_KEY]
         self.train_augs = [RandomFlip(target_keys=target_keys),
                            RandomCrop(self.crop_size, target_keys=target_keys),
                            Rotate(angle_range=(-30, 30), target_keys=target_keys),

@@ -3,7 +3,7 @@ from typing import Dict
 import torch
 from torch import nn
 
-from datasets import LOGITS_KEY
+from datasets import LOGIT_KEY
 from nn_models.attention import BahdanauAttention
 from train import Trainer
 
@@ -159,7 +159,7 @@ class AttentionDecoder(nn.Module):
             # in that case sequence length is not known
             outputs = self._forward_inference(features)  # (batch_size, any_seq_len <= self.max_len, trg_vocab_size)
 
-        return {LOGITS_KEY: outputs}
+        return {LOGIT_KEY: outputs}
     
 
 if __name__ == '__main__':
@@ -182,4 +182,4 @@ if __name__ == '__main__':
     dec_inp_captions = torch.randn(bs, seq_length_captions).to(device)
     dec_out = decoder(dec_inp_features, dec_inp_captions)
     print("Decoder Input Features Shape:", dec_inp_features.shape)
-    print("Decoder Output Tensor Shape:", dec_out[LOGITS_KEY].shape)
+    print("Decoder Output Tensor Shape:", dec_out[LOGIT_KEY].shape)

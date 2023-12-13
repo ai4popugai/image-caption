@@ -4,7 +4,7 @@ import torch
 import torchvision.models
 from torch import nn
 
-from datasets import FEATURE_MAPS_KEYS, FRAME_KEY
+from datasets import FEATURE_MAP_KEYS, FRAME_KEY
 from nn_models.classification.base_model import BaseClassificationModel
 
 
@@ -23,4 +23,4 @@ class EfficientNetFeatureMapExtractor(BaseClassificationModel):
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         x = batch[FRAME_KEY]
         x = self.model(x)
-        return {FEATURE_MAPS_KEYS: x}
+        return {FEATURE_MAP_KEYS: x}

@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose, Resize, InterpolationMode, ToTensor
 
-from datasets import FRAME_KEY, LABELS_KEY
+from datasets import FRAME_KEY, LABEL_KEY
 
 GPR_NUM_CLASSES = 1200
 
@@ -44,4 +44,4 @@ class GPRDataset(Dataset):
         frame = cv2.imread(self.frames_list[idx], cv2.IMREAD_COLOR)
         frame = self.frame_transforms(frame)
         return {FRAME_KEY: frame,
-                LABELS_KEY: torch.tensor(int(os.path.basename(self.frames_list[idx]).split('_')[0]), dtype=torch.int64)}
+                LABEL_KEY: torch.tensor(int(os.path.basename(self.frames_list[idx]).split('_')[0]), dtype=torch.int64)}

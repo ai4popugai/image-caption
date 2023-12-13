@@ -6,7 +6,7 @@ from typing import List
 import torch
 from torchtext.data import get_tokenizer
 
-from datasets import FEATURE_MAPS_KEYS, TOKENS_KEY
+from datasets import FEATURE_MAP_KEYS, TOKEN_KEY
 
 SOS = 'startofsentence'
 EOS = 'endofsentence'
@@ -18,7 +18,7 @@ class GPRConceptsDataset:
         if os.getenv("GPR_DATASET_CONCEPT_DETECTION") is None:
             raise RuntimeError('Dataset path must be set up.')
         root = os.environ['GPR_DATASET_CONCEPT_DETECTION']
-        feature_maps_dir = os.path.join(root, FEATURE_MAPS_KEYS)
+        feature_maps_dir = os.path.join(root, FEATURE_MAP_KEYS)
         self.descriptions_path = os.path.join(root, 'categories.json')
         self.feature_maps_list = [os.path.join(feature_maps_dir, file_name) for file_name in sorted(os.listdir(feature_maps_dir))]
 
@@ -75,4 +75,4 @@ class GPRConceptsDataset:
         tokenized_tensor = torch.cat([tokenized_tensor,
                                       self.pad_tokenized.repeat(self._max_length - len(tokenized_tensor))], dim=0)
         d, h, w = feature_map.shape
-        return {FEATURE_MAPS_KEYS: feature_map.reshape(h * w, d), TOKENS_KEY: tokenized_tensor}
+        return {FEATURE_MAP_KEYS: feature_map.reshape(h * w, d), TOKEN_KEY: tokenized_tensor}

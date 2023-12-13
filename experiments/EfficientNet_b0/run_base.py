@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, random_split
 from torchvision import transforms
 
 from augmentations.augs import RandomFlip, RandomCrop, CenterCrop
-from datasets import LOGITS_KEY, LABELS_KEY, FRAME_KEY
+from datasets import LOGIT_KEY, LABEL_KEY, FRAME_KEY
 from datasets.classification.gpr import GPRDataset, GPR_NUM_CLASSES
 from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
 from loss.cross_entropy import CrossEntropyLoss
@@ -35,7 +35,7 @@ class RunBase(Run):
         self.validation_split = 0.2
 
         self.optimizer_class = torch.optim.Adam
-        self.loss = CrossEntropyLoss(result_trg_key=LOGITS_KEY, batch_trg_key=LABELS_KEY)
+        self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=LABEL_KEY)
 
         self.train_metrics = [Accuracy(self._num_classes),
                               MeanRecall(self._num_classes), MeanPrecision(self._num_classes)]
