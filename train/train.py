@@ -2,6 +2,7 @@ import datetime
 import os
 from typing import List, Dict, Union, Iterator, Optional, Type, Callable
 
+import cv2
 import torch
 from torch import nn
 from torch.optim import Optimizer
@@ -27,11 +28,12 @@ class Trainer:
                  num_workers: int,
                  snapshot_dir: str,
                  logs_dir: str,
-                 dump_dir: str,
+                 batch_dump_dir: str,
                  optimizer_class: Type[Optimizer],
                  optimizer_kwargs: Dict,
                  loss: nn.Module,
                  train_iters: int, snapshot_iters: int,
+                 batch_dump_iters: int,
                  show_iters: int,
                  normalizer: Optional[Callable] = None,
                  train_metrics: Optional[List[BaseMetric]] = None,
@@ -40,6 +42,8 @@ class Trainer:
                  val_augs: Optional[List[BaseAug]] = None,
                  force_snapshot_loading: bool = False,
                  device: Optional[Union[torch.device, str]] = None,
+                 batch_dump_flag: bool = False,
+                 sample_to_image: Optional[Dict[str, Callable]] = None
                  ):
         """
         :param train_dataset: dataset for train loop.
@@ -48,7 +52,7 @@ class Trainer:
         :param num_workers: number of CPU workers used by DataLoader.
         :param snapshot_dir: directory for snapshots.
         :param logs_dir: directory where to place train logs.
-        :param dump_dir: directory to dump media files.
+        :param batch_dump_dir: directory to batch_dump media files.
         :param optimizer_class: optimizer class to be initialized.
         :param optimizer_kwargs: kwargs for optimizer initialization.
         :param loss: loss function for optimizations.
@@ -58,10 +62,14 @@ class Trainer:
         :param val_augs: list of augmentations to be applied during validation.
         :param train_iters: number of training iterations before log train loss and training metrics.
         :param snapshot_iters: number of training iterations before snapshot is saved.
+        :param batch_dump_iters: number of training iterations before batch_dump batch.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
         :param normalizer: normalization layer to be applied to input images.
         :param force_snapshot_loading: if True, will load snapshot even if it is not the last one.
         :param device: device to train on.
+        :param: batch_dump_flag: True to batch batch_dump. Default False
+        :param sample_to_image: map to convert batch sample(value) by key to image.
+        Must be not None if batch_dump_flag is True
         """
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
@@ -69,7 +77,7 @@ class Trainer:
         self.num_workers = num_workers
         self.snapshot_dir = snapshot_dir
         self.logs_dir = logs_dir
-        self.dump_dir = dump_dir
+        self.batch_dump_dir = batch_dump_dir
         self.optimizer = None
         self.optimizer_class = optimizer_class
         self.optimizer_kwargs = optimizer_kwargs
@@ -79,6 +87,7 @@ class Trainer:
         self.train_augs = train_augs
         self.val_augs = val_augs
         self.snapshot_iters = snapshot_iters
+        self.batch_dump_iters = batch_dump_iters
         self.train_iters = train_iters
         self.show_iters = show_iters
         self.normalizer = normalizer
@@ -89,9 +98,16 @@ class Trainer:
         writer = SummaryWriter(self.logs_dir)
         self.writer = writer
 
+        # setup device
         self.device = self.get_device() if device is None \
             else torch.device(device) if isinstance(device, str) else device
         print(f'train on {self.device}')
+
+        # batch_dump
+        if batch_dump_flag is True and sample_to_image is None:
+            raise RuntimeError('sample_to_image should be set up if batch_dump_flag is True.')
+        self.batch_dump_flag = batch_dump_flag
+        self.sample_to_image = sample_to_image
 
     @staticmethod
     def get_device() -> torch.device:
@@ -214,6 +230,13 @@ class Trainer:
                 log_msg += f',{" val" if mode == "val" else ""} {metric_name}: {metric_value:.2f}{metric.unit}'
         return log_msg
 
+    def _batch_dump_batch(self, batch: Dict[str, torch.Tensor], iteration: int):
+        if self.batch_dump_flag:
+            for key in batch:
+                imgs = self.sample_to_image[key](batch[key])
+                for i, img in enumerate(imgs):
+                    cv2.imwrite(os.path.join(self.batch_dump_dir, f'iter_{iteration}__{i}_{key}'), img)
+
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
         model.train()
         self.optimizer.zero_grad()
@@ -267,6 +290,8 @@ class Trainer:
             iterator, batch = self._get_batch(iterator, train_loader)
             batch = self.batch_to_device(batch, self.device)
             batch = self.aug_loop(batch, self.train_augs)
+            if iteration % self.batch_dump_iters == 0:
+                self._batch_dump_batch(batch, iteration)
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch)
             iteration += 1

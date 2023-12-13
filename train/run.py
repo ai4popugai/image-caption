@@ -1,6 +1,6 @@
 import os
 from abc import ABC
-from typing import Tuple, Optional, List, Type, Dict
+from typing import Tuple, Optional, List, Type, Dict, Callable
 
 import torch
 from torch import nn
@@ -32,17 +32,19 @@ class Run(ABC):
 
         # num of iterations
         self.train_iters: int = 300
+        self.batch_dump_iters = 100
         self.show_iters: int = 10
         self.snapshot_iters: int = 300
         self.max_iteration: int = 1000000
 
-        self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, self.experiment_name, self.run_name)
+        self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, self.experiment_name,
+                                              self.run_name)
         self.logs_dir: str = os.path.join(os.environ['LOG_DIR'], self.project, self.experiment_name, self.run_name)
-        self.dump_dir: str = os.path.join(os.environ['BATCH_DUMP_DIR'], self.project, self.experiment_name,
-                                          self.run_name)
+        self.batch_dump_dir: str = os.path.join(os.environ['BATCH_DUMP_DIR'], self.project, self.experiment_name,
+                                                self.run_name)
         os.makedirs(self.snapshot_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
-        os.makedirs(self.dump_dir, exist_ok=True)
+        os.makedirs(self.batch_dump_dir, exist_ok=True)
 
         # optimizer
         self.optimizer_class: Optional[Type[Optimizer]] = None
@@ -72,17 +74,24 @@ class Run(ABC):
         self._normalizer = transforms.Normalize(mean=[0., 0., 0.], std=[1., 1., 1.])
         self.normalizer: Optional[BaseNormalizer] = None
 
+        self.batch_dump_flag = False
+
     def setup_model(self):
         raise NotImplementedError
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         raise NotImplementedError
 
+    def get_batch_sample_to_image_map(self) -> Dict[str, Callable]:
+        """
+        Method returns map of pairs key - operation to convert item by that key in the batch to image to batch dump.
+        :return: Dict[str, Callable]
+        """
+
     def train(self,
               start_snapshot: str = None,
               force_snapshot_loading: bool = False,
               ):
-
         start_snapshot = None if start_snapshot is None \
             else os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, start_snapshot)
 
@@ -103,17 +112,19 @@ class Run(ABC):
                           loss=self.loss,
                           snapshot_dir=self.snapshot_dir,
                           logs_dir=self.logs_dir,
-                          dump_dir=self.dump_dir,
+                          batch_dump_dir=self.batch_dump_dir,
                           train_metrics=self.train_metrics,
                           val_metrics=self.val_metrics,
                           train_augs=self.train_augs,
                           val_augs=self.val_augs,
                           train_iters=self.train_iters,
+                          batch_dump_iters=self.batch_dump_iters,
                           show_iters=self.show_iters,
                           snapshot_iters=self.snapshot_iters,
                           normalizer=self.normalizer,
                           force_snapshot_loading=force_snapshot_loading,
-                          device=self.device,)
+                          device=self.device,
+                          batch_dump_flag=self.batch_dump_flag,)
         trainer.train(model=model,
                       reset_optimizer=self.reset_optimizer,
                       start_snapshot=start_snapshot,
