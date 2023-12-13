@@ -3,7 +3,7 @@ from typing import Dict
 import torch
 from torchmetrics import JaccardIndex
 
-from datasets import ACTIVATION_MAP_KEY, GROUND_TRUTH_KEY
+from datasets import LOGIT_KEY, GROUND_TRUTH_KEY
 from metrics.base_metric import BaseMetric
 
 
@@ -16,7 +16,7 @@ class IoU(BaseMetric):
         self.total_iou = 0.
         
     def update(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> None:
-        self.total_iou += self.iou_metric(torch.argmax(result[ACTIVATION_MAP_KEY], dim=1),
+        self.total_iou += self.iou_metric(torch.argmax(result[LOGIT_KEY], dim=1),
                                           batch[GROUND_TRUTH_KEY])
         self.num_samples += 1
 

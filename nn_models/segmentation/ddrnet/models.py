@@ -3,7 +3,7 @@ from typing import Dict, Optional
 import torch
 from torch import nn
 
-from datasets import ACTIVATION_MAP_KEY, FRAME_KEY
+from datasets import LOGIT_KEY, FRAME_KEY
 from .utils import DualResNet, BasicBlock
 
 
@@ -13,7 +13,7 @@ class BaseDDRNet(nn.Module):
         self.model: Optional[DualResNet] = None
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        return {ACTIVATION_MAP_KEY: self.model(batch[FRAME_KEY])}
+        return {LOGIT_KEY: self.model(batch[FRAME_KEY])}
 
 
 class DDRNet23Slim(BaseDDRNet):

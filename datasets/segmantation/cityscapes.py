@@ -72,9 +72,9 @@ CLASSES_WEIGHTS = torch.tensor([5.6972e-03, 2.5404e-01, 2.3097e-01, 1.8188e-01, 
 COLOR_MAP_TENSOR = torch.tensor(list(COLOR_MAP.values()), dtype=torch.uint8)
 
 
-def map_to_classes(seg: torch.Tensor) -> torch.Tensor:
+def logits_to_activation_map(seg: torch.Tensor) -> torch.Tensor:
     """
-    Method converts activation map [batch_size, N_CLASSES, h, w] to tensor with class label in dim 1
+    Method converts logits [batch_size, N_CLASSES, h, w] to activation map with class label in dim 1
     [batch_size, h, w].
     :param seg: input tensor
     :return: tensor with class labels
@@ -83,9 +83,9 @@ def map_to_classes(seg: torch.Tensor) -> torch.Tensor:
     return segmentations
 
 
-def classes_to_colors(seg: torch.Tensor) -> torch.Tensor:
+def activation_map_to_colors(seg: torch.Tensor) -> torch.Tensor:
     """
-    Convert tensor [batch_size, h, w] with classes in 1 dim
+    Converts activation map [batch_size, h, w] with classes in 1 dim
     to tensor [batch_size, CHANNELS, h, w] with colors in 1 dim.
     :param seg: input tensor.
     :return: color tensor.
@@ -94,14 +94,14 @@ def classes_to_colors(seg: torch.Tensor) -> torch.Tensor:
     return mapped
 
 
-def map_to_colors(seg: torch.Tensor) -> torch.Tensor:
+def logits_to_colors(seg: torch.Tensor) -> torch.Tensor:
     """
-    Method converts activation map [batch_size, N_CLASSES, h, w]
+    Method converts logits [batch_size, N_CLASSES, h, w]
     to tensor [batch_size, CHANNELS, h, w] with colors in 1 dim.
     :param seg:
     :return:
     """
-    return classes_to_colors(map_to_classes(seg))
+    return activation_map_to_colors(logits_to_activation_map(seg))
 
 
 class MaskToTensor(object):
