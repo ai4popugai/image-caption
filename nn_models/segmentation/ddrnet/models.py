@@ -1,23 +1,40 @@
+from typing import Dict, Optional
+
+import torch
 from torch import nn
 
+from datasets import ACTIVATION_MAP_KEY, FRAME_KEY
 from .utils import DualResNet, BasicBlock
 
 
-def DDRNet23Slim(num_classes: int) -> nn.Module:
-    model = DualResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes, planes=32, spp_planes=128, head_planes=64,
-                       augment=False)
-    return model
+class BaseDDRNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.model: Optional[DualResNet] = None
+
+    def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        return {ACTIVATION_MAP_KEY: self.model(batch[FRAME_KEY])}
 
 
-def DDRNet23(num_classes: int) -> nn.Module:
-    model = DualResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes, planes=64, spp_planes=128, head_planes=128,
-                       augment=False)
+class DDRNet23Slim(BaseDDRNet):
+    def __init__(self, num_classes: int):
+        super().__init__()
+        self.num_classes = num_classes
+        self.model = DualResNet(BasicBlock, [2, 2, 2, 2], num_classes=self.num_classes, planes=32, spp_planes=128,
+                                head_planes=64, augment=False)
 
-    return model
+
+class DDRNet23(BaseDDRNet):
+    def __init__(self, num_classes: int):
+        super().__init__()
+        self.num_classes = num_classes
+        self.model = DualResNet(BasicBlock, [2, 2, 2, 2], num_classes=self.num_classes, planes=64, spp_planes=128,
+                                head_planes=128, augment=False)
 
 
-def DDRNet39(num_classes: int) -> nn.Module:
-    model = DualResNet(BasicBlock, [3, 4, 6, 3], num_classes=num_classes, planes=64, spp_planes=128, head_planes=256,
-                       augment=False)
-    return model
-
+class DDRNe39(BaseDDRNet):
+    def __init__(self, num_classes: int):
+        super().__init__()
+        self.num_classes = num_classes
+        self.model = DualResNet(BasicBlock, [3, 4, 6, 3], num_classes=self.num_classes, planes=64, spp_planes=128,
+                                head_planes=256, augment=False)
