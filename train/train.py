@@ -270,7 +270,7 @@ class Trainer:
 
             if iteration % self.snapshot_iters == 0:
                 # save snapshot
-                self._save_snapshot(model, f'{self.snapshot_dir}/snapshot_{iteration}.pth', iteration)
+                self._save_snapshot(model, f'{self.snapshot_dir}/{model.__class__.__name__}_{iteration}.pth', iteration)
             if iteration % self.show_iters == 0:
                 # report loss
                 log_msg = f'iter: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
