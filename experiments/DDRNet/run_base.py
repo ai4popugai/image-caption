@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Dict
 
 import torch
 from torch import nn
@@ -13,6 +13,9 @@ from nn_models.segmentation.ddrnet.models import DDRNet23Slim
 from normalize.normalize import BatchNormalizer
 from train.run import Run
 from torchvision import transforms
+
+from transforms.to_image import BaseToImageTransforms, CityscapesFramesToImage, CityscapesGroundTruthToImage, \
+    CityscapesLogitsToImage
 
 
 class RunBase(Run):
@@ -47,6 +50,8 @@ class RunBase(Run):
                                                      hue_range=(0.3, 0.5))]
         self.val_augs = [CenterCrop(self.crop_size, target_keys=target_keys)]
 
+        self.batch_dump_flag = True
+
     def setup_model(self) -> nn.Module:
         return DDRNet23Slim(num_classes=self.num_classes)
 
@@ -54,3 +59,8 @@ class RunBase(Run):
         train_dataset, val_dataset = CityscapesDataset(mode='fine', split='train'), \
                                      CityscapesDataset(mode='fine', split='val')
         return train_dataset, val_dataset
+
+    def get_batch_sample_to_image_map(self) -> Dict[str, BaseToImageTransforms]:
+        return {FRAME_KEY: CityscapesFramesToImage(),
+                GROUND_TRUTH_KEY: CityscapesGroundTruthToImage(),
+                LOGIT_KEY: CityscapesLogitsToImage()}
