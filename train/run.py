@@ -13,6 +13,7 @@ from metrics.base_metric import BaseMetric
 from normalize.base_normalizer import BaseNormalizer
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from train import Trainer
+from transforms.to_image import BaseToImageTransforms
 
 
 class Run(ABC):
@@ -82,11 +83,13 @@ class Run(ABC):
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         raise NotImplementedError
 
-    def get_batch_sample_to_image_map(self) -> Dict[str, Callable]:
+    def get_batch_sample_to_image_map(self) -> Optional[Dict[str, BaseToImageTransforms]]:
         """
         Method returns map of pairs key - operation to convert item by that key in the batch to image to batch dump.
-        :return: Dict[str, Callable]
+
+        :return: Dict[str, BaseToImageTransforms], default None
         """
+        return None
 
     def train(self,
               start_snapshot: str = None,
@@ -124,7 +127,8 @@ class Run(ABC):
                           normalizer=self.normalizer,
                           force_snapshot_loading=force_snapshot_loading,
                           device=self.device,
-                          batch_dump_flag=self.batch_dump_flag,)
+                          batch_dump_flag=self.batch_dump_flag,
+                          sample_to_image=self.get_batch_sample_to_image_map())
         trainer.train(model=model,
                       reset_optimizer=self.reset_optimizer,
                       start_snapshot=start_snapshot,

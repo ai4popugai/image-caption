@@ -13,7 +13,7 @@ from augmentations.augs import BaseAug
 from metrics.base_metric import BaseMetric
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from optim_utils.iter_policy.policy import LrPolicy
-
+from transforms.to_image import BaseToImageTransforms
 
 MODEL_STATE_DICT_KEY = 'model_state_dict'
 OPTIMIZER_STATE_DICT_KEY = 'optimizer_state_dict'
@@ -43,7 +43,7 @@ class Trainer:
                  force_snapshot_loading: bool = False,
                  device: Optional[Union[torch.device, str]] = None,
                  batch_dump_flag: bool = False,
-                 sample_to_image: Optional[Dict[str, Callable]] = None
+                 sample_to_image: Optional[Dict[str, BaseToImageTransforms]] = None
                  ):
         """
         :param train_dataset: dataset for train loop.
