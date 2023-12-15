@@ -18,11 +18,8 @@ from transforms.to_image import BaseToImageTransforms
 MODEL_STATE_DICT_KEY = 'model_state_dict'
 OPTIMIZER_STATE_DICT_KEY = 'optimizer_state_dict'
 GLOBAL_STEP_KEY = 'global_step'
-
-
-def check_mode(mode: str):
-    if mode != 'train' and mode != 'val':
-        raise ValueError(f'Unknown mode: {mode}')
+TRAIN_MODE = 'train'
+VAL_MODE = 'val'
 
 
 class Trainer:
@@ -223,8 +220,6 @@ class Trainer:
 
     def _report_metrics(self, mode: str,  metrics: Optional[List[BaseMetric]], global_step: int,
                         log_msg: str) -> str:
-        check_mode(mode)
-
         if metrics is not None:
             for metric in metrics:
                 metric_name = metric.name
@@ -236,7 +231,6 @@ class Trainer:
 
     def _batch_dump(self, batch: Dict[str, torch.Tensor], iteration: int, mode: str,):
         if iteration % self.batch_dump_iters == 0 and self.batch_dump_flag:
-            check_mode(mode)
             for key in batch:
                 imgs = self.sample_to_image[key](batch[key])
                 for i, img in enumerate(imgs):
@@ -246,7 +240,7 @@ class Trainer:
         model.train()
         self.optimizer.zero_grad()
         result = model(batch)
-        self._batch_dump(result, iteration, 'train')
+        self._batch_dump(result, iteration, TRAIN_MODE)
         loss = self.loss(result, batch)
         loss.backward()
         self.optimizer.step()
@@ -255,7 +249,7 @@ class Trainer:
 
     def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], iteration: int) -> torch.Tensor:
         result = model(batch)
-        self._batch_dump(result, iteration, mode='val')
+        self._batch_dump(result, iteration, mode=VAL_MODE)
         loss = self.loss(result, batch)
         self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
@@ -297,7 +291,7 @@ class Trainer:
             iterator, batch = self._get_batch(iterator, train_loader)
             batch = self.batch_to_device(batch, self.device)
             batch = self.aug_loop(batch, self.train_augs)
-            self._batch_dump(batch, iteration, mode='train')
+            self._batch_dump(batch, iteration, mode=TRAIN_MODE)
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch, iteration)
             iteration += 1
@@ -308,11 +302,11 @@ class Trainer:
             if iteration % self.show_iters == 0:
                 # report loss
                 log_msg = f'iter: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
-                self.writer.add_scalars("Loss", {'train': loss}, iteration)
+                self.writer.add_scalars("Loss", {TRAIN_MODE: loss}, iteration)
                 self.writer.add_scalar("lr", lr, iteration)
 
                 # report metrics
-                log_msg = self._report_metrics('train', self.train_metrics, iteration, log_msg)
+                log_msg = self._report_metrics(TRAIN_MODE, self.train_metrics, iteration, log_msg)
                 log_msg += f'{7*" "}{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
                 print(log_msg)
             if iteration % self.train_iters == 0:
@@ -320,10 +314,10 @@ class Trainer:
 
                 # report loss
                 log_msg = f'iter: {iteration}, val loss: {loss:.3f}'
-                self.writer.add_scalars("Loss", {'val': loss}, iteration)
+                self.writer.add_scalars("Loss", {VAL_MODE: loss}, iteration)
 
                 # report metrics
-                log_msg = self._report_metrics('val', self.val_metrics, iteration, log_msg)
+                log_msg = self._report_metrics(VAL_MODE, self.val_metrics, iteration, log_msg)
                 log_msg += f'{7*" "}{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
                 print(log_msg)
             if lr_policy is not None:
@@ -341,7 +335,7 @@ class Trainer:
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.batch_to_device(batch, self.device)
                 batch = self.aug_loop(batch, self.val_augs)
-                self._batch_dump(batch, iteration, mode='val')
+                self._batch_dump(batch, iteration, mode=VAL_MODE)
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch, iteration)
                 losses.append(loss)
