@@ -53,4 +53,4 @@ class CityscapesFramesToImage(BaseToImageTransforms):
         :param frames: frames with shape [batch_size, CHANNELS, h, w].
         :return:
         """
-        return frames.permute(self.permute_dims).cpu().numpy()[:, :, :, ::-1]
+        return (frames * 255).to(torch.uint8).permute(self.permute_dims).cpu().numpy()[:, :, :, ::-1]
