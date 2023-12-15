@@ -240,7 +240,7 @@ class Trainer:
             for key in batch:
                 imgs = self.sample_to_image[key](batch[key])
                 for i, img in enumerate(imgs):
-                    cv2.imwrite(os.path.join(self.batch_dump_dir, f'{mode}_iter_{iteration}__{i}_{key}'), img)
+                    cv2.imwrite(os.path.join(self.batch_dump_dir, f'{mode}_iter_{iteration}__{i}_{key}.png'), img)
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
         model.train()
