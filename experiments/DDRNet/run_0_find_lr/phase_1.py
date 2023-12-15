@@ -12,7 +12,5 @@ class Phase(RunBase):
         self.lr_policy = LinearIterationPolicy(start_iter=0, start_val=0, end_iter=80000, end_val=1.25e-3)
 
 
-
-
 if __name__ == '__main__':
     Phase().train(start_snapshot=None)
