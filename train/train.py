@@ -242,18 +242,20 @@ class Trainer:
                 for i, img in enumerate(imgs):
                     cv2.imwrite(os.path.join(self.batch_dump_dir, f'{mode}_iter_{iteration}__{i}_{key}.png'), img)
 
-    def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
+    def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], iteration: int) -> float:
         model.train()
         self.optimizer.zero_grad()
         result = model(batch)
+        self._batch_dump(result, iteration, 'train')
         loss = self.loss(result, batch)
         loss.backward()
         self.optimizer.step()
         self._update_metrics(self.train_metrics, result, batch)
         return loss.item()
 
-    def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], iteration: int) -> torch.Tensor:
         result = model(batch)
+        self._batch_dump(result, iteration, mode='val')
         loss = self.loss(result, batch)
         self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
@@ -297,7 +299,7 @@ class Trainer:
             batch = self.aug_loop(batch, self.train_augs)
             self._batch_dump(batch, iteration, mode='train')
             batch = self.normalize(batch, self.normalizer)
-            loss = self._train_iteration(model, batch)
+            loss = self._train_iteration(model, batch, iteration)
             iteration += 1
 
             if iteration % self.snapshot_iters == 0:
@@ -341,7 +343,7 @@ class Trainer:
                 batch = self.aug_loop(batch, self.val_augs)
                 self._batch_dump(batch, iteration, mode='val')
                 batch = self.normalize(batch, self.normalizer)
-                loss = self._val_iteration(model, batch)
+                loss = self._val_iteration(model, batch, iteration)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)
         del iterator
