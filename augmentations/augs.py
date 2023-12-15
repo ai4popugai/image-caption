@@ -4,13 +4,14 @@ from abc import abstractmethod, ABC
 from typing import Dict, Tuple, Union, List, Optional
 
 import torch
+import torchvision
 from torch import nn
 from torchvision import transforms
 from torchvision.transforms.functional import hflip
 import torchvision.transforms.functional as F
-from torchvision.transforms.v2.functional import crop
-
 from datasets import FRAME_KEY
+torchvision.disable_beta_transforms_warning()
+from torchvision.transforms.v2.functional import crop
 
 
 def check_batch(batch: Dict[str, torch.Tensor], target_keys: List[str]):
