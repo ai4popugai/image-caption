@@ -20,6 +20,11 @@ OPTIMIZER_STATE_DICT_KEY = 'optimizer_state_dict'
 GLOBAL_STEP_KEY = 'global_step'
 
 
+def check_mode(mode: str):
+    if mode != 'train' and mode != 'val':
+        raise ValueError(f'Unknown mode: {mode}')
+
+
 class Trainer:
     def __init__(self,
                  train_dataset: Dataset,
@@ -218,8 +223,7 @@ class Trainer:
 
     def _report_metrics(self, mode: str,  metrics: Optional[List[BaseMetric]], global_step: int,
                         log_msg: str) -> str:
-        if mode != 'train' and mode != 'val':
-            raise ValueError(f'Unknown mode: {mode}')
+        check_mode(mode)
 
         if metrics is not None:
             for metric in metrics:
@@ -230,12 +234,13 @@ class Trainer:
                 log_msg += f',{" val" if mode == "val" else ""} {metric_name}: {metric_value:.2f}{metric.unit}'
         return log_msg
 
-    def _batch_dump(self, batch: Dict[str, torch.Tensor], iteration: int):
+    def _batch_dump(self, batch: Dict[str, torch.Tensor], iteration: int, mode: str,):
+        check_mode(mode)
         if self.batch_dump_flag:
             for key in batch:
                 imgs = self.sample_to_image[key](batch[key])
                 for i, img in enumerate(imgs):
-                    cv2.imwrite(os.path.join(self.batch_dump_dir, f'iter_{iteration}__{i}_{key}'), img)
+                    cv2.imwrite(os.path.join(self.batch_dump_dir, f'{mode}_iter_{iteration}__{i}_{key}'), img)
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor]) -> float:
         model.train()
@@ -291,7 +296,7 @@ class Trainer:
             batch = self.batch_to_device(batch, self.device)
             batch = self.aug_loop(batch, self.train_augs)
             if iteration % self.batch_dump_iters == 0:
-                self._batch_dump(batch, iteration)
+                self._batch_dump(batch, iteration, mode='train')
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch)
             iteration += 1
@@ -331,10 +336,12 @@ class Trainer:
         iterator = iter(val_loader)
         val_iters = len(val_loader)
         with torch.no_grad():
-            for _ in range(val_iters):
+            for iteration in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.batch_to_device(batch, self.device)
                 batch = self.aug_loop(batch, self.val_augs)
+                if iteration % self.batch_dump_iters == 0:
+                    self._batch_dump(batch, iteration, mode='val')
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
