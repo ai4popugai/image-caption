@@ -230,7 +230,7 @@ class Trainer:
                 log_msg += f',{" val" if mode == "val" else ""} {metric_name}: {metric_value:.2f}{metric.unit}'
         return log_msg
 
-    def _batch_dump_batch(self, batch: Dict[str, torch.Tensor], iteration: int):
+    def _batch_dump(self, batch: Dict[str, torch.Tensor], iteration: int):
         if self.batch_dump_flag:
             for key in batch:
                 imgs = self.sample_to_image[key](batch[key])
@@ -291,7 +291,7 @@ class Trainer:
             batch = self.batch_to_device(batch, self.device)
             batch = self.aug_loop(batch, self.train_augs)
             if iteration % self.batch_dump_iters == 0:
-                self._batch_dump_batch(batch, iteration)
+                self._batch_dump(batch, iteration)
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch)
             iteration += 1
