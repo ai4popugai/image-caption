@@ -27,8 +27,12 @@ class RunBase(Run):
         self._normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.normalizer = BatchNormalizer(normalizer=self._normalizer, target_key=FRAME_KEY)
 
-        self.batch_size = 8
+        self.batch_size = 2
         self.num_workers = 8
+
+        self.train_iters = 5000
+        self.batch_dump_iters = 1000
+        self.snapshot_iters = 5000
 
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY)
 
