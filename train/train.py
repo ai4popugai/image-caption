@@ -235,8 +235,8 @@ class Trainer:
         return log_msg
 
     def _batch_dump(self, batch: Dict[str, torch.Tensor], iteration: int, mode: str,):
-        check_mode(mode)
-        if self.batch_dump_flag:
+        if iteration % self.batch_dump_iters == 0 and self.batch_dump_flag:
+            check_mode(mode)
             for key in batch:
                 imgs = self.sample_to_image[key](batch[key])
                 for i, img in enumerate(imgs):
@@ -295,8 +295,7 @@ class Trainer:
             iterator, batch = self._get_batch(iterator, train_loader)
             batch = self.batch_to_device(batch, self.device)
             batch = self.aug_loop(batch, self.train_augs)
-            if iteration % self.batch_dump_iters == 0:
-                self._batch_dump(batch, iteration, mode='train')
+            self._batch_dump(batch, iteration, mode='train')
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch)
             iteration += 1
@@ -340,8 +339,7 @@ class Trainer:
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.batch_to_device(batch, self.device)
                 batch = self.aug_loop(batch, self.val_augs)
-                if iteration % self.batch_dump_iters == 0:
-                    self._batch_dump(batch, iteration, mode='val')
+                self._batch_dump(batch, iteration, mode='val')
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch)
                 losses.append(loss)
