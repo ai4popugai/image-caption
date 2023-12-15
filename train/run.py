@@ -32,7 +32,7 @@ class Run(ABC):
         self.validation_split: float = 0.2
 
         # num of iterations
-        self.train_iters: int = 300
+        self.train_iters: int = 500
         self.batch_dump_iters = 100
         self.show_iters: int = 10
         self.snapshot_iters: int = 300
