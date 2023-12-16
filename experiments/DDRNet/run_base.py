@@ -1,3 +1,4 @@
+import os
 from typing import Tuple, Dict
 
 import torch
@@ -18,6 +19,9 @@ from transforms.to_image import BaseToImageTransforms, CityscapesFramesToImage, 
     CityscapesLogitsToImage
 
 
+os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
+
+
 class RunBase(Run):
     def __init__(self, filename: str):
         super().__init__(filename)
@@ -27,13 +31,13 @@ class RunBase(Run):
         self._normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.normalizer = BatchNormalizer(normalizer=self._normalizer, target_key=FRAME_KEY)
 
-        self.batch_size = 4
+        self.batch_size = 16
         self.num_workers = 8
 
-        self.train_iters = 2000
-        self.batch_dump_iters = 400
-        self.snapshot_iters = 2000
-        self.show_iters = 20
+        self.train_iters = 500
+        self.batch_dump_iters = 100
+        self.snapshot_iters = 500
+        self.show_iters = 5
 
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY)
 
