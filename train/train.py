@@ -246,9 +246,9 @@ class Trainer:
         self._update_metrics(self.train_metrics, result, batch)
         return loss.item()
 
-    def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], iteration: int) -> torch.Tensor:
+    def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], global_iter: int) -> torch.Tensor:
         result = model(batch)
-        self._batch_dump(result, iteration, mode=VAL_MODE)
+        self._batch_dump(result, global_iter, mode=VAL_MODE)
         loss = self.loss(result, batch)
         self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
@@ -310,7 +310,7 @@ class Trainer:
                 log_msg += f'{7*" "}{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
                 print(log_msg)
             if iteration % self.train_iters == 0:
-                loss = self._val_loop(model, val_loader)
+                loss = self._val_loop(model, val_loader, iteration)
 
                 # report loss
                 log_msg = f'iter: {iteration}, val loss: {loss:.3f}'
@@ -326,7 +326,7 @@ class Trainer:
             if iteration == max_iteration:
                 break
 
-    def _val_loop(self, model: nn.Module, val_loader: DataLoader) -> float:
+    def _val_loop(self, model: nn.Module, val_loader: DataLoader, global_iter: int) -> float:
         losses = []
         model.eval()
         iterator = iter(val_loader)
@@ -338,7 +338,7 @@ class Trainer:
                 batch = self.aug_loop(batch, self.val_augs)
                 self._batch_dump(batch, iteration, mode=VAL_MODE)
                 batch = self.normalize(batch, self.normalizer)
-                loss = self._val_iteration(model, batch, iteration)
+                loss = self._val_iteration(model, batch, global_iter)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)
         del iterator
