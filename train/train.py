@@ -336,7 +336,7 @@ class Trainer:
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.batch_to_device(batch, self.device)
                 batch = self.aug_loop(batch, self.val_augs)
-                self._batch_dump(batch, iteration, mode=VAL_MODE)
+                self._batch_dump(batch, global_iter, mode=VAL_MODE)
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch, global_iter)
                 losses.append(loss)
