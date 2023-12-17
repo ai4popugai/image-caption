@@ -97,8 +97,6 @@ class Trainer:
 
         if os.path.exists(self.logs_dir) is False:
             os.makedirs(self.logs_dir)
-        writer = SummaryWriter(self.logs_dir)
-        self.writer = writer
 
         # setup device
         self.device = self.get_device() if device is None \
@@ -225,7 +223,8 @@ class Trainer:
                 metric_name = metric.name
                 metric_value = metric.compute()
                 metric.reset()
-                self.writer.add_scalars(metric_name, {mode: metric_value}, global_step)
+                with SummaryWriter(self.logs_dir) as w_hp:
+                    w_hp.add_scalars(metric_name, {mode: metric_value}, global_step)
                 log_msg += f',{" val" if mode == "val" else ""} {metric_name}: {metric_value:.2f}{metric.unit}'
         return log_msg
 
@@ -302,8 +301,9 @@ class Trainer:
             if iteration % self.show_iters == 0:
                 # report loss
                 log_msg = f'iter: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
-                self.writer.add_scalars("Loss", {TRAIN_MODE: loss}, iteration)
-                self.writer.add_scalar("lr", lr, iteration)
+                with SummaryWriter(self.logs_dir) as w_hp:
+                    w_hp.add_scalars("Loss", {TRAIN_MODE: loss}, iteration)
+                    w_hp.add_scalar("lr", lr, iteration)
 
                 # report metrics
                 log_msg = self._report_metrics(TRAIN_MODE, self.train_metrics, iteration, log_msg)
@@ -314,7 +314,8 @@ class Trainer:
 
                 # report loss
                 log_msg = f'iter: {iteration}, val loss: {loss:.3f}'
-                self.writer.add_scalars("Loss", {VAL_MODE: loss}, iteration)
+                with SummaryWriter(self.logs_dir) as w_hp:
+                    w_hp.add_scalars("Loss", {VAL_MODE: loss}, iteration)
 
                 # report metrics
                 log_msg = self._report_metrics(VAL_MODE, self.val_metrics, iteration, log_msg)
