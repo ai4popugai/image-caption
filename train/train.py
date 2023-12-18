@@ -173,6 +173,7 @@ class Trainer:
             shuffle=True,
             num_workers=self.num_workers,
             drop_last=True,
+            pin_memory=True,
         )
         val_loader = DataLoader(
             self.val_dataset,
@@ -180,6 +181,7 @@ class Trainer:
             shuffle=False,
             num_workers=self.num_workers,
             drop_last=False,
+            pin_memory=True,
         )
         self._train_loop(model, train_loader, val_loader, global_step, max_iteration, lr_policy)
 
