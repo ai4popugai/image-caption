@@ -334,7 +334,7 @@ class Trainer:
         model.eval()
         iterator = iter(val_loader)
         val_iters = len(val_loader)
-        with torch.inference_mode() and torch.no_grad():
+        with torch.inference_mode():
             for _ in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.batch_to_device(batch, self.device)
@@ -342,7 +342,7 @@ class Trainer:
                 self._batch_dump(batch, global_iter, mode=VAL_MODE)
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch, global_iter)
-                losses.append(loss.item())
+                losses.append(loss.cpu().item())
         mean_loss = sum(losses) / len(losses)
         del iterator
         return mean_loss
