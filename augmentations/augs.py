@@ -178,7 +178,7 @@ class RotateWithProb(BaseAug):
         if random.random() < self.probability:
             angle = torch.FloatTensor(1).uniform_(self.angle_range[0], self.angle_range[1]).item()
             for key in self.target_keys:
-                batch[key] = Rotate.rotate_frame(batch[key], angle)
+                batch[key] = Rotate.rotate_frames(batch[key], angle)
 
         return batch
 
