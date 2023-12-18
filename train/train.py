@@ -131,14 +131,15 @@ class Trainer:
         # move model to device
         model.to(self.device)
 
-        # move metrics to device
-        if self.train_metrics is not None:
-            for metric in self.train_metrics:
-                metric.to(self.device)
-
-        if self.val_metrics is not None:
-            for metric in self.val_metrics:
-                metric.to(self.device)
+        # do not move metrics to device
+        # all metrics by default must be computed and stored on cpu
+        # if self.train_metrics is not None:
+        #     for metric in self.train_metrics:
+        #         metric.to(self.device)
+        #
+        # if self.val_metrics is not None:
+        #     for metric in self.val_metrics:
+        #         metric.to(self.device)
 
         # instantiating optimizer
         self.optimizer = self.optimizer_class(model.parameters(), **self.optimizer_kwargs)
@@ -173,7 +174,7 @@ class Trainer:
             shuffle=True,
             num_workers=self.num_workers,
             drop_last=True,
-            pin_memory=True,
+            pin_memory=False,
         )
         val_loader = DataLoader(
             self.val_dataset,
@@ -181,7 +182,7 @@ class Trainer:
             shuffle=False,
             num_workers=self.num_workers,
             drop_last=False,
-            pin_memory=True,
+            pin_memory=False,
         )
         self._train_loop(model, train_loader, val_loader, global_step, max_iteration, lr_policy)
 
