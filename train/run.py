@@ -93,7 +93,6 @@ class Run(ABC):
 
     def train(self,
               start_snapshot: str = None,
-              force_snapshot_loading: bool = False,
               ):
         start_snapshot = None if start_snapshot is None \
             else os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, start_snapshot)
@@ -125,7 +124,6 @@ class Run(ABC):
                           show_iters=self.show_iters,
                           snapshot_iters=self.snapshot_iters,
                           normalizer=self.normalizer,
-                          force_snapshot_loading=force_snapshot_loading,
                           device=self.device,
                           batch_dump_flag=self.batch_dump_flag,
                           sample_to_image=self.get_batch_sample_to_image_map())

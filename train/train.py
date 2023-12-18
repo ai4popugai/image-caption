@@ -42,7 +42,6 @@ class Trainer:
                  val_metrics: Optional[List[BaseMetric]] = None,
                  train_augs: Optional[List[BaseAug]] = None,
                  val_augs: Optional[List[BaseAug]] = None,
-                 force_snapshot_loading: bool = False,
                  device: Optional[Union[torch.device, str]] = None,
                  batch_dump_flag: bool = False,
                  sample_to_image: Optional[Dict[str, BaseToImageTransforms]] = None
@@ -67,7 +66,6 @@ class Trainer:
         :param batch_dump_iters: number of training iterations before batch_dump batch.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
         :param normalizer: normalization layer to be applied to input images.
-        :param force_snapshot_loading: if True, will load snapshot even if it is not the last one.
         :param device: device to train on.
         :param: batch_dump_flag: True to batch batch_dump. Default False
         :param sample_to_image: map to convert batch sample(value) by key to image.
@@ -93,7 +91,6 @@ class Trainer:
         self.train_iters = train_iters
         self.show_iters = show_iters
         self.normalizer = normalizer
-        self.force_snapshot_loading = force_snapshot_loading
 
         if os.path.exists(self.logs_dir) is False:
             os.makedirs(self.logs_dir)
@@ -148,25 +145,15 @@ class Trainer:
         if lr_policy is not None:
             lr_policy = LrPolicy(self.optimizer, lr_policy)
 
+        # load snapshot
         the_last_snapshot_path = self._detect_last_snapshot_path()
-
-        if self.force_snapshot_loading is False:
-            if the_last_snapshot_path is not None:
-                global_step = self._load_snapshot(model, the_last_snapshot_path, strict_weight_loading, reset_optimizer)
-            else:
-                if start_snapshot is not None:
-                    global_step = self._load_snapshot(model, start_snapshot, strict_weight_loading, reset_optimizer)
-                else:
-                    global_step = 0
+        if the_last_snapshot_path is not None:
+            global_step = self._load_snapshot(model, the_last_snapshot_path, strict_weight_loading, reset_optimizer)
         else:
             if start_snapshot is not None:
                 global_step = self._load_snapshot(model, start_snapshot, strict_weight_loading, reset_optimizer)
             else:
-                if the_last_snapshot_path is not None:
-                    global_step = self._load_snapshot(model, the_last_snapshot_path, strict_weight_loading,
-                                                      reset_optimizer)
-                else:
-                    global_step = 0
+                global_step = 0
 
         train_loader = DataLoader(
             self.train_dataset,
