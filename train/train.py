@@ -298,9 +298,6 @@ class Trainer:
             loss = self._train_iteration(model, batch, iteration)
             iteration += 1
 
-            if iteration % self.snapshot_iters == 0:
-                # save snapshot
-                self._save_snapshot(model, f'{self.snapshot_dir}/{model.__class__.__name__}_{iteration}.pth', iteration)
             if iteration % self.show_iters == 0:
                 # report loss
                 log_msg = f'iter: {iteration}, loss: {loss:.3f}, lr: {lr:.6f}'
@@ -312,6 +309,9 @@ class Trainer:
                 log_msg = self._report_metrics(TRAIN_MODE, self.train_metrics, iteration, log_msg)
                 log_msg += f'{7*" "}{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
                 print(log_msg)
+            if iteration % self.snapshot_iters == 0:
+                # save snapshot
+                self._save_snapshot(model, f'{self.snapshot_dir}/{model.__class__.__name__}_{iteration}.pth', iteration)
             if iteration % self.train_iters == 0:
                 loss = self._val_loop(model, val_loader, iteration)
 
