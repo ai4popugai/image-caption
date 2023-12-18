@@ -334,8 +334,8 @@ class Trainer:
         model.eval()
         iterator = iter(val_loader)
         val_iters = len(val_loader)
-        with torch.no_grad():
-            for iteration in range(val_iters):
+        with torch.inference_mode():
+            for _ in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.batch_to_device(batch, self.device)
                 batch = self.aug_loop(batch, self.val_augs)
