@@ -272,12 +272,12 @@ class Trainer:
         return batch
 
     @staticmethod
-    def _get_batch(iterator: Iterator, train_loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
+    def _get_batch(iterator: Iterator, loader: DataLoader) -> Union[Iterator, Dict[str, torch.Tensor]]:
         try:
             batch = next(iterator)
         except StopIteration:
             del iterator
-            iterator = iter(train_loader)
+            iterator = iter(loader)
             batch = next(iterator)
 
         return iterator, batch
