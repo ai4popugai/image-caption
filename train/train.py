@@ -211,7 +211,7 @@ class Trainer:
             GLOBAL_STEP_KEY: global_step,
 
         }, snapshot_path)
-        print(f'Saved snapshot to {snapshot_path}')
+        print(f'Saving snapshot to {snapshot_path}')
 
     @staticmethod
     def _update_metrics(metrics: List[BaseMetric],
