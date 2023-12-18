@@ -13,7 +13,7 @@ class Phase(RunBase):
 
         self.train_iters = 1000
         self.batch_dump_iters = 1000
-        self.snapshot_iters = 500
+        self.snapshot_iters = 1000
         self.show_iters = 10
 
         self.optimizer_kwargs = {'lr': 0., 'weight_decay': 3e-5}
