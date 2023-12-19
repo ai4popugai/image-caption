@@ -16,7 +16,7 @@ class IoU(BaseMetric):
         self.total_iou = 0.
         
     def update(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> None:
-        self.total_iou += self.iou_metric(torch.argmax(result[LOGIT_KEY], dim=1).detach().cpu(),
+        self.total_iou += self.iou_metric(torch.argmax(result[LOGIT_KEY].detach(), dim=1).cpu(),
                                           batch[GROUND_TRUTH_KEY].detach().cpu())
         self.num_samples += 1
 
