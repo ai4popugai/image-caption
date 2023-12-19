@@ -152,7 +152,7 @@ class CityscapesVideoDataset(Dataset):
 
 
 class CityscapesDataset(Cityscapes):
-    def __init__(self, mode: str, split: str, resolution: Tuple[int, int] = (1024, 2048)):
+    def __init__(self, split: str, resolution: Tuple[int, int] = (1024, 2048), mode: str = 'fine'):
         if CITYSCAPES_ROOT not in os.environ:
             raise RuntimeError(f'Failed to init cityscapes dataset instance: {CITYSCAPES_ROOT} not in environment.')
         target_transform = MaskToTensor()
