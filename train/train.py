@@ -266,7 +266,6 @@ class Trainer:
         try:
             batch = next(iterator)
         except StopIteration:
-            del iterator
             iterator = iter(loader)
             batch = next(iterator)
 
@@ -331,5 +330,4 @@ class Trainer:
                 loss = self._val_iteration(model, batch, global_iter)
                 losses.append(loss)
         mean_loss = sum(losses) / len(losses)
-        del iterator
         return mean_loss
