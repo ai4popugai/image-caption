@@ -23,7 +23,7 @@ class MeanRecall(BaseMetric):
         :return: mean recall metric
         """
         self.num += 1
-        self.prob_recall += self.recall(result[LOGIT_KEY].cpu(), batch[LABEL_KEY].cpu()).item()
+        self.prob_recall += self.recall(result[LOGIT_KEY].detach().cpu(), batch[LABEL_KEY].detach().cpu()).item()
 
     def compute(self) -> float:
         return (self.prob_recall / self.num) * 100
