@@ -104,11 +104,6 @@ def logits_to_colors(seg: torch.Tensor) -> torch.Tensor:
     return activation_map_to_colors(logits_to_activation_map(seg))
 
 
-class MaskToTensor(object):
-    def __call__(self, img):
-        return torch.from_numpy(np.array(img, dtype=np.uint8)).unsqueeze(dim=0)
-
-
 class CityscapesVideoDataset(Dataset):
     def __init__(self, resolution: Tuple[int, int] = (1024, 2048), step: int = 1):
         """
@@ -155,16 +150,12 @@ class CityscapesDataset(Cityscapes):
     def __init__(self, split: str, resolution: Tuple[int, int] = (1024, 2048), mode: str = 'fine'):
         if CITYSCAPES_ROOT not in os.environ:
             raise RuntimeError(f'Failed to init cityscapes dataset instance: {CITYSCAPES_ROOT} not in environment.')
-        target_transform = MaskToTensor()
-        self.frame_transforms = Compose([
+        self.transform = Compose([
             PILToTensor(),
             Resize(resolution, InterpolationMode.NEAREST)
         ])
-        self.seg_transforms = Compose([
-            Resize(resolution, InterpolationMode.NEAREST)
-        ])
         super().__init__(os.path.join(os.environ[CITYSCAPES_ROOT], mode), split, mode, target_type='semantic',
-                         transform=self.frame_transforms, target_transform=target_transform)
+                         transform=self.transform, target_transform=self.transform)
 
     def __len__(self):
         return super().__len__()
@@ -172,5 +163,4 @@ class CityscapesDataset(Cityscapes):
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
         frame, segmentation = super().__getitem__(idx)
         frame = frame.to(torch.float32) / 255.
-        segmentation = self.seg_transforms(segmentation)
         return {FRAME_KEY: frame, GROUND_TRUTH_KEY: segmentation.squeeze(0)}
