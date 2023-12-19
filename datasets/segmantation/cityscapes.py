@@ -79,7 +79,7 @@ def logits_to_activation_map(seg: torch.Tensor) -> torch.Tensor:
     :param seg: input tensor
     :return: tensor with class labels
     """
-    segmentations = torch.argmax(seg, dim=1)
+    segmentations = torch.argmax(seg.detach(), dim=1)
     return segmentations
 
 
