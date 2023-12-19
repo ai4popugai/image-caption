@@ -9,7 +9,7 @@ class Phase(RunBase):
         super().__init__(os.path.abspath(__file__))
 
         self.batch_size = 8
-        self.num_workers = 6
+        self.num_workers = 4
 
         self.train_iters = 1000
         self.batch_dump_iters = 1000
