@@ -277,8 +277,8 @@ class Trainer:
         lr = self.optimizer.param_groups[0]['lr']
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
-            batch = self.batch_to_device(batch, self.device)
             batch = self.aug_loop(batch, self.train_augs)
+            batch = self.batch_to_device(batch, self.device)
             self._batch_dump(batch, iteration, mode=TRAIN_MODE)
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch, iteration)
@@ -323,8 +323,8 @@ class Trainer:
         with torch.inference_mode():
             for _ in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
-                batch = self.batch_to_device(batch, self.device)
                 batch = self.aug_loop(batch, self.val_augs)
+                batch = self.batch_to_device(batch, self.device)
                 self._batch_dump(batch, global_iter, mode=VAL_MODE)
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch, global_iter)
