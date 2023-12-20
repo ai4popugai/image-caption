@@ -8,14 +8,6 @@ class Phase(RunBase):
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
-        self.batch_size = 8
-        self.num_workers = 4
-
-        self.train_iters = 1000
-        self.batch_dump_iters = 1000
-        self.snapshot_iters = 1000
-        self.show_iters = 10
-
         self.optimizer_kwargs = {'lr': 0., 'weight_decay': 3e-5}
         self.lr_policy = LinearIterationPolicy(start_iter=20000, start_lr=3e-3, end_lr=40000, end_val=6e-3)
 
