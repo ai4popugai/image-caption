@@ -1,13 +1,12 @@
 import os
-from typing import Dict, Tuple
+from typing import Dict
 
-import numpy as np
 import torch
 from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 from torchvision.datasets import Cityscapes
-from torchvision.transforms import Compose, PILToTensor, Resize, InterpolationMode
+from torchvision.transforms import Compose, PILToTensor
 
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY, FRAME_T_KEY, FRAME_T_K_KEY
 
@@ -105,7 +104,7 @@ def logits_to_colors(seg: torch.Tensor) -> torch.Tensor:
 
 
 class CityscapesVideoDataset(Dataset):
-    def __init__(self, resolution: Tuple[int, int] = (1024, 2048), step: int = 1):
+    def __init__(self, step: int = 1):
         """
         Cityscapes video dataset wrapper.
 
@@ -119,7 +118,6 @@ class CityscapesVideoDataset(Dataset):
         self.step = step
         self.frame_transforms = Compose([
             PILToTensor(),
-            Resize(resolution, InterpolationMode.NEAREST)
         ])
 
         cities_path_list = [os.path.join(self.root, city) for city in sorted(os.listdir(self.root))
@@ -147,12 +145,11 @@ class CityscapesVideoDataset(Dataset):
 
 
 class CityscapesDataset(Cityscapes):
-    def __init__(self, split: str, resolution: Tuple[int, int] = (1024, 2048), mode: str = 'fine'):
+    def __init__(self, split: str, mode: str = 'fine'):
         if CITYSCAPES_ROOT not in os.environ:
             raise RuntimeError(f'Failed to init cityscapes dataset instance: {CITYSCAPES_ROOT} not in environment.')
         self.transform = Compose([
             PILToTensor(),
-            Resize(resolution, InterpolationMode.NEAREST)
         ])
         super().__init__(os.path.join(os.environ[CITYSCAPES_ROOT], mode), split, mode, target_type='semantic',
                          transform=self.transform, target_transform=self.transform)
