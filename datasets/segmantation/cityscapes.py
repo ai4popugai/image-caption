@@ -134,3 +134,4 @@ class CityscapesDataset(Cityscapes, BaseSegmentationDataset):
         frame, segmentation = super().__getitem__(idx)
         frame = frame.to(torch.float32) / 255.
         return {FRAME_KEY: frame[::-1, :, :], GROUND_TRUTH_KEY: segmentation.squeeze(0)}
+        # convert frames from RGB to BGR
