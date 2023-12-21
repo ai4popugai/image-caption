@@ -4,11 +4,11 @@ from typing import Dict
 import torch
 from PIL import Image
 from torch import Tensor
-from torch.utils.data import Dataset
 from torchvision.datasets import Cityscapes
 from torchvision.transforms import Compose, PILToTensor
 
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY, FRAME_T_KEY, FRAME_T_K_KEY
+from datasets.segmantation.base_dataset import BaseSegmentationDataset
 
 CITYSCAPES_ROOT = 'CITYSCAPES_DATASET_ROOT'
 CITYSCAPES_VIDEO_ROOT = 'CITYSCAPES_VIDEO_DATASET_ROOT'
@@ -103,7 +103,7 @@ def logits_to_colors(seg: torch.Tensor) -> torch.Tensor:
     return activation_map_to_colors(logits_to_activation_map(seg))
 
 
-class CityscapesVideoDataset(Dataset):
+class CityscapesVideoDataset(BaseSegmentationDataset):
     def __init__(self, step: int = 1):
         """
         Cityscapes video dataset wrapper.
@@ -111,6 +111,7 @@ class CityscapesVideoDataset(Dataset):
         :param step: distance between 2 frames in __getitem__ method. Default: 1 frame.
         3-d part consists of the first 50 images from 0-d part.
         """
+        super().__init__(color_map=COLOR_MAP_TENSOR)
         if CITYSCAPES_VIDEO_ROOT not in os.environ:
             raise RuntimeError(
                 f'Failed to init cityscapes dataset instance: {CITYSCAPES_VIDEO_ROOT} not in environment.')
@@ -144,7 +145,7 @@ class CityscapesVideoDataset(Dataset):
                 }
 
 
-class CityscapesDataset(Cityscapes):
+class CityscapesDataset(Cityscapes, BaseSegmentationDataset):
     def __init__(self, split: str, mode: str = 'fine'):
         if CITYSCAPES_ROOT not in os.environ:
             raise RuntimeError(f'Failed to init cityscapes dataset instance: {CITYSCAPES_ROOT} not in environment.')
@@ -153,6 +154,7 @@ class CityscapesDataset(Cityscapes):
         ])
         super().__init__(os.path.join(os.environ[CITYSCAPES_ROOT], mode), split, mode, target_type='semantic',
                          transform=self.transform, target_transform=self.transform)
+        super().__init__(color_map=COLOR_MAP_TENSOR)
 
     def __len__(self):
         return super().__len__()
