@@ -71,39 +71,9 @@ CLASSES_WEIGHTS = torch.tensor([5.6972e-03, 2.5404e-01, 2.3097e-01, 1.8188e-01, 
 COLOR_MAP_TENSOR = torch.tensor(list(COLOR_MAP.values()), dtype=torch.uint8)
 
 
-def logits_to_activation_map(seg: torch.Tensor) -> torch.Tensor:
-    """
-    Method converts logits [batch_size, N_CLASSES, h, w] to activation map with class label in dim 1
-    [batch_size, h, w].
-    :param seg: input tensor
-    :return: tensor with class labels
-    """
-    segmentations = torch.argmax(seg.detach(), dim=1)
-    return segmentations
-
-
-def activation_map_to_colors(seg: torch.Tensor) -> torch.Tensor:
-    """
-    Converts activation map [batch_size, h, w] with classes in 1 dim
-    to tensor [batch_size, CHANNELS, h, w] with colors in 1 dim.
-    :param seg: input tensor.
-    :return: color tensor.
-    """
-    mapped = COLOR_MAP_TENSOR.to(seg.device)[seg.long()].permute(0, 3, 1, 2)
-    return mapped
-
-
-def logits_to_colors(seg: torch.Tensor) -> torch.Tensor:
-    """
-    Method converts logits [batch_size, N_CLASSES, h, w]
-    to tensor [batch_size, CHANNELS, h, w] with colors in 1 dim.
-    :param seg:
-    :return:
-    """
-    return activation_map_to_colors(logits_to_activation_map(seg))
-
-
 class CityscapesVideoDataset(BaseSegmentationDataset):
+    color_map = COLOR_MAP_TENSOR
+
     def __init__(self, step: int = 1):
         """
         Cityscapes video dataset wrapper.
@@ -111,7 +81,7 @@ class CityscapesVideoDataset(BaseSegmentationDataset):
         :param step: distance between 2 frames in __getitem__ method. Default: 1 frame.
         3-d part consists of the first 50 images from 0-d part.
         """
-        super().__init__(color_map=COLOR_MAP_TENSOR)
+        super().__init__()
         if CITYSCAPES_VIDEO_ROOT not in os.environ:
             raise RuntimeError(
                 f'Failed to init cityscapes dataset instance: {CITYSCAPES_VIDEO_ROOT} not in environment.')
@@ -146,6 +116,8 @@ class CityscapesVideoDataset(BaseSegmentationDataset):
 
 
 class CityscapesDataset(Cityscapes, BaseSegmentationDataset):
+    color_map = COLOR_MAP_TENSOR
+
     def __init__(self, split: str, mode: str = 'fine'):
         if CITYSCAPES_ROOT not in os.environ:
             raise RuntimeError(f'Failed to init cityscapes dataset instance: {CITYSCAPES_ROOT} not in environment.')
@@ -154,7 +126,6 @@ class CityscapesDataset(Cityscapes, BaseSegmentationDataset):
         ])
         super().__init__(os.path.join(os.environ[CITYSCAPES_ROOT], mode), split, mode, target_type='semantic',
                          transform=self.transform, target_transform=self.transform)
-        super().__init__(color_map=COLOR_MAP_TENSOR)
 
     def __len__(self):
         return super().__len__()
