@@ -51,6 +51,9 @@ class DubaiAerial(BaseSegmentationDataset):
     def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         img = cv2.imread(self.image_path_list[idx])
         img = self.transform(img)
-        gt = cv2.imread(self.ground_true_path_list[idx])
-        gt = (self.transform(gt) * 255.).to(torch.uint8)
-        return {FRAME_KEY: img, GROUND_TRUTH_KEY: gt}
+        gt_color = cv2.imread(self.ground_true_path_list[idx])
+        gt_color = (self.transform(gt_color) * 255.).to(torch.uint8)  # (3, h, w)
+        gt_color = gt_color.permute(1, 2, 0).unsqueeze(2)  # (h, w, 1, 3)
+        res = gt_color - self.color_map  # (h, w, NUM_COLORS, 3)
+        gt = torch.argmin(res, dim=2)  # (h, w, 3)
+        return {FRAME_KEY: img, GROUND_TRUTH_KEY: gt.select(2, 0)}
