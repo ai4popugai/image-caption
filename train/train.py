@@ -323,12 +323,11 @@ class Trainer:
         iterator = iter(val_loader)
         val_iters = len(val_loader)
         with torch.inference_mode():
-            for i in range(val_iters):
+            for _ in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.aug_loop(batch, self.val_augs)
                 batch = self.batch_to_device(batch, self.device)
-                if i == val_iters - 1:
-                    self._batch_dump(batch, global_iter, mode=VAL_MODE)
+                self._batch_dump(batch, global_iter, mode=VAL_MODE)
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch, global_iter)
                 losses.append(loss)
