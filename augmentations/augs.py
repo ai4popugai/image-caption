@@ -96,7 +96,7 @@ class RandomResizedCropWithProb(BaseAug):
         i, j, h, w = transforms.RandomCrop.get_params(batch[self.target_keys[0]],
                                                       output_size=size)
         resize = transforms.Resize(batch[self.target_keys[0]].shape[-2:],
-                                   antialias=False)  # Resize back to original resolution
+                                   antialias=False, interpolation=F.InterpolationMode.NEAREST)
 
         # Perform random resized crop on each frame
         if random.random() < self.probability:
