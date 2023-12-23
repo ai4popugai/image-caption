@@ -13,7 +13,7 @@ from metrics.base_metric import BaseMetric
 from normalize.base_normalizer import BaseNormalizer
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from train import Trainer
-from transforms.to_image import BaseToImageTransforms
+from transforms.segmentration import BaseToImageTransforms
 
 
 class Run(ABC):

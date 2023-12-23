@@ -13,7 +13,7 @@ from augmentations.augs import BaseAug
 from metrics.base_metric import BaseMetric
 from optim_utils.iter_policy.base_policy import BaseIterationPolicy
 from optim_utils.iter_policy.policy import LrPolicy
-from transforms.to_image import BaseToImageTransforms
+from transforms.segmentration import BaseToImageTransforms
 
 MODEL_STATE_DICT_KEY = 'model_state_dict'
 OPTIMIZER_STATE_DICT_KEY = 'optimizer_state_dict'
