@@ -283,6 +283,8 @@ class Trainer:
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch, iteration)
             iteration += 1
+            if str(self.device) == 'mps':
+                torch.mps.empty_cache()
 
             if iteration % self.show_iters == 0:
                 # report loss
