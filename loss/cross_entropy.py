@@ -18,4 +18,4 @@ class CrossEntropyLoss(nn.Module):
         self.loss = nn.CrossEntropyLoss()
 
     def forward(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> torch.Tensor:
-        return self.loss(result, batch[self.batch_trg_key].to(torch.int64))
+        return self.loss(result[self.result_trg_key], batch[self.batch_trg_key].to(torch.int64))
