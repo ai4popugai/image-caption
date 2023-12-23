@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.utils.data import Dataset
 
-from augmentations.augs import RandomFlip, RandomCrop, CenterCrop, Rotate, RandomColorJitterWithProb
+from augmentations.augs import RandomFlip, RandomCrop, CenterCrop, RandomColorJitterWithProb
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY, LOGIT_KEY
 from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES, CityscapesDataset
 from loss.cross_entropy import CrossEntropyLoss
@@ -46,9 +46,9 @@ class RunBase(Run):
 
         self.crop_size = (512, 1024)
 
-        target_keys = [FRAME_KEY, GROUND_TRUTH_KEY]
-        self.train_augs = [RandomFlip(target_keys=target_keys),
-                           RandomCrop(self.crop_size, target_keys=target_keys),
+        self.target_keys = [FRAME_KEY, GROUND_TRUTH_KEY]
+        self.train_augs = [RandomFlip(target_keys=self.target_keys),
+                           RandomCrop(self.crop_size, target_keys=self.target_keys),
                            # Rotate(angle_range=(-30, 30), target_keys=target_keys),
                            # due to rotate edges' colors become different
                            RandomColorJitterWithProb(probability=0.8,
@@ -59,7 +59,7 @@ class RunBase(Run):
                                                      saturation_range=(0.7, 1)),
 
                            ]
-        self.val_augs = [CenterCrop(self.crop_size, target_keys=target_keys)]
+        self.val_augs = [CenterCrop(self.crop_size, target_keys=self.target_keys)]
 
         self.batch_dump_flag = True
 
