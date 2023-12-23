@@ -18,5 +18,4 @@ class CrossEntropyLoss(nn.Module):
         self.loss = nn.CrossEntropyLoss()
 
     def forward(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> torch.Tensor:
-        probs = nn.functional.softmax(result[self.result_trg_key], dim=1)
-        return self.loss(probs, batch[self.batch_trg_key].to(torch.int64))
+        return self.loss(result, batch[self.batch_trg_key].to(torch.int64))
