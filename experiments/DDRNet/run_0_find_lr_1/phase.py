@@ -23,6 +23,12 @@ class Phase(RunBase):
                            ]
         self.val_augs = [CenterCrop(self.crop_size, target_keys=self.target_keys)]
 
+        # train becomes appr. x2 computational harder, decrease all iter
+        self.train_iters = 500
+        self.batch_dump_iters = 500
+        self.snapshot_iters = 500
+        self.show_iters = 5
+
         self.optimizer_kwargs = {'lr': 0., 'weight_decay': 3e-5}
         self.lr_policy = LinearIterationPolicy(start_iter=0, start_lr=0, end_lr=60000, end_val=9e-3)
 
