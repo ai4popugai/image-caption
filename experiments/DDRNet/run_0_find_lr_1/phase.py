@@ -8,8 +8,10 @@ class Phase(RunBase):
     def __init__(self):
         super().__init__(os.path.abspath(__file__))
 
+        self.crop_size = (1024, 1024)
+
         self.optimizer_kwargs = {'lr': 0., 'weight_decay': 3e-5}
-        self.lr_policy = LinearIterationPolicy(start_iter=20000, start_lr=3e-3, end_lr=40000, end_val=6e-3)
+        self.lr_policy = LinearIterationPolicy(start_iter=0, start_lr=0, end_lr=60000, end_val=9e-3)
 
 
 if __name__ == '__main__':
