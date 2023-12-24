@@ -32,10 +32,10 @@ class RunBase(Run):
         self.batch_size = 8
         self.num_workers = 4
 
-        self.train_iters = 1000
-        self.batch_dump_iters = 1000
-        self.snapshot_iters = 1000
-        self.show_iters = 10
+        self.train_iters = 500
+        self.batch_dump_iters = 500
+        self.snapshot_iters = 500
+        self.show_iters = 5
 
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY)
 
@@ -44,7 +44,7 @@ class RunBase(Run):
         self.train_metrics = [IoU(self.num_classes)]
         self.val_metrics = [IoU(self.num_classes)]
 
-        self.crop_size = (512, 1024)
+        self.crop_size = (1024, 1024)
 
         self.target_keys = [FRAME_KEY, GROUND_TRUTH_KEY]
         self.train_augs = [RandomFlip(target_keys=self.target_keys),
@@ -57,7 +57,6 @@ class RunBase(Run):
                                                      # hue_range=(0.3, 0.5),
                                                      # due to hue images change their original colors
                                                      saturation_range=(0.7, 1)),
-
                            ]
         self.val_augs = [CenterCrop(self.crop_size, target_keys=self.target_keys)]
 
