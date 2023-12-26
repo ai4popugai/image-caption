@@ -14,7 +14,7 @@ class Phase(RunBase):
 
         self.train_augs = [RandomFlip(target_keys=self.target_keys),
                            RandomCrop(self.crop_size, target_keys=self.target_keys),
-                           RandomResizedCropWithProb(probability=0.8,
+                           RandomResizedCropWithProb(probability=0.75,
                                                      size=[0.25, 0.1],
                                                      target_keys=self.target_keys),
                            RandomColorJitterWithProb(probability=0.8,
