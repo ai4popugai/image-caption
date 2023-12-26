@@ -99,9 +99,10 @@ class RandomResizedCropWithProb(BaseAug):
                                    antialias=False, interpolation=F.InterpolationMode.NEAREST)
 
         # Perform random resized crop on each frame
-        if random.random() < self.probability:
-            for key in self.target_keys:
-                batch[key] = resize(crop(batch[key], i, j, h, w))
+        for i in range(batch[self.target_keys[0]].shape[0]):
+            if random.random() < self.probability:
+                for key in self.target_keys:
+                    batch[key][i] = resize(crop(batch[key][i].unsqueeze(dim=0), i, j, h, w)).squeeze(dim=0)
 
         return batch
 
