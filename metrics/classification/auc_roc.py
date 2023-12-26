@@ -21,8 +21,8 @@ class AUC_ROC(BaseMetric):
         :param result: output of the network
         :param batch: batch of data
         """
-        self.true_labels.extend(batch[LABEL_KEY].detach().cpu().numpy())
-        self.predicted_probs.extend(torch.softmax(result[LOGIT_KEY].detach(), dim=1).cpu().numpy())
+        self.true_labels.extend(batch[LABEL_KEY].clone().detach().cpu().numpy())
+        self.predicted_probs.extend(torch.softmax(result[LOGIT_KEY].clone().detach(), dim=1).cpu().numpy())
 
     def compute(self) -> float:
         """

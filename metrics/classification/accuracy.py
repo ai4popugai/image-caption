@@ -23,7 +23,7 @@ class Accuracy(BaseMetric):
         :return: accuracy metric
         """
         self.num += 1
-        self.prob_acc += self.accuracy(result[LOGIT_KEY].detach().cpu(), batch[LABEL_KEY].detach().cpu()).item()
+        self.prob_acc += self.accuracy(result[LOGIT_KEY].clone().detach().cpu(), batch[LABEL_KEY].clone().detach().cpu()).item()
 
     def compute(self) -> float:
         return (self.prob_acc / self.num) * 100

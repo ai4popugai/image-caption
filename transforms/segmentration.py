@@ -9,7 +9,7 @@ def logits_to_activation_map(logits: torch.Tensor) -> torch.Tensor:
     :param logits: segmentation logits
     :return: tensor with class labels
     """
-    segmentations = torch.argmax(logits.detach(), dim=1)
+    segmentations = torch.argmax(logits.clone().detach(), dim=1)
     return segmentations
 
 
@@ -100,5 +100,5 @@ class FramesToImage(BaseToImageTransforms):
         :param frames: frames with shape [batch_size, CHANNELS, h, w].
         :return:
         """
-        return (frames.detach() * 255).to(torch.uint8).permute(self.permute_dims).cpu().numpy()
+        return (frames.clone().detach() * 255).to(torch.uint8).permute(self.permute_dims).cpu().numpy()
 
