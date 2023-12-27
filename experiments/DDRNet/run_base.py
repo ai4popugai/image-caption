@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 from augmentations.augs import RandomFlip, RandomCrop, CenterCrop, RandomColorJitterWithProb
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY, LOGIT_KEY
-from datasets.segmantation.cityscapes import CITYSCAPES_NUM_CLASSES, CityscapesDataset
+from datasets.segmantation.cityscapes import CityscapesDataset
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.segmentation.iou import IoU
 from nn_models.segmentation.ddrnet.models import DDRNet23Slim
@@ -24,7 +24,7 @@ class RunBase(Run):
     def __init__(self, filename: str):
         super().__init__(filename)
 
-        self.num_classes = CITYSCAPES_NUM_CLASSES
+        self.num_classes = 34
 
         self._normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.normalizer = BatchNormalizer(normalizer=self._normalizer, target_key=FRAME_KEY)

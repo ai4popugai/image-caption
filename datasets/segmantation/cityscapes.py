@@ -15,7 +15,6 @@ CITYSCAPES_VIDEO_ROOT = 'CITYSCAPES_VIDEO_DATASET_ROOT'
 HEIGHT = 1024
 WIDTH = 2048
 CHANNELS = 3
-CITYSCAPES_NUM_CLASSES = 34
 
 MAP_34_TO_20 = torch.tensor([0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4, 5, 0, 0, 0, 6,
                              0, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 0, 0, 17, 18, 19, 0])
