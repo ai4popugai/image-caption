@@ -139,7 +139,7 @@ class CityscapesVideoDataset(BaseSegmentationDataset):
                 }
 
 
-class CityscapesDataset(BaseSegmentationDataset):
+class CityscapesDataset34(BaseSegmentationDataset):
     color_map = COLOR_MAP_34_TENSOR
 
     def __init__(self, split: str, mode: str = 'fine'):
@@ -166,7 +166,7 @@ class CityscapesDataset20(BaseSegmentationDataset):
     color_map = COLOR_MAP_20_TENSOR
 
     def __init__(self, split: str, mode: str = 'fine'):
-        self.dataset = CityscapesDataset(split, mode)
+        self.dataset = CityscapesDataset34(split, mode)
         super().__init__()
 
     def __len__(self) -> int:

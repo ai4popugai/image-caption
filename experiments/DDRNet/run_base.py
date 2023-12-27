@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 from augmentations.augs import RandomFlip, RandomCrop, CenterCrop, RandomColorJitterWithProb
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY, LOGIT_KEY
-from datasets.segmantation.cityscapes import CityscapesDataset
+from datasets.segmantation.cityscapes import CityscapesDataset34
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.segmentation.iou import IoU
 from nn_models.segmentation.ddrnet.models import DDRNet23Slim
@@ -66,11 +66,11 @@ class RunBase(Run):
         return DDRNet23Slim(num_classes=self.num_classes)
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
-        train_dataset, val_dataset = CityscapesDataset(mode='fine', split='train'), \
-                                     CityscapesDataset(mode='fine', split='val')
+        train_dataset, val_dataset = CityscapesDataset34(mode='fine', split='train'), \
+                                     CityscapesDataset34(mode='fine', split='val')
         return train_dataset, val_dataset
 
     def get_batch_sample_to_image_map(self) -> Dict[str, BaseToImageTransforms]:
         return {FRAME_KEY: FramesToImage(),
-                GROUND_TRUTH_KEY: GroundTruthToImage(color_map=CityscapesDataset.color_map),
-                LOGIT_KEY: LogitsToImage(color_map=CityscapesDataset.color_map)}
+                GROUND_TRUTH_KEY: GroundTruthToImage(color_map=CityscapesDataset34.color_map),
+                LOGIT_KEY: LogitsToImage(color_map=CityscapesDataset34.color_map)}
