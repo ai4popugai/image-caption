@@ -17,7 +17,33 @@ WIDTH = 2048
 CHANNELS = 3
 CITYSCAPES_NUM_CLASSES = 34
 
-COLOR_MAP = {
+MAP_34_TO_20 = torch.tensor([0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4, 5, 0, 0, 0, 6,
+                             0, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 0, 0, 17, 18, 19, 0])
+
+COLOR_MAP_20 = {
+    0: (0, 0, 0),
+    1: (128, 64, 128),
+    2: (232, 35, 244),
+    3: (70, 70, 70),
+    4: (156, 102, 102),
+    5: (153, 153, 190),
+    6: (153, 153, 153),
+    7: (30, 170, 250),
+    8: (0, 220, 220),
+    9: (35, 142, 107),
+    10: (152, 251, 152),
+    11: (180, 130, 70),
+    12: (60, 20, 220),
+    13: (0, 0, 255),
+    14: (142, 0, 0),
+    15: (70, 0, 0),
+    16: (100, 60, 0),
+    17: (100, 80, 0),
+    18: (230, 0, 0),
+    19: (32, 11, 119)}
+COLOR_MAP_20_TENSOR = torch.tensor(list(COLOR_MAP_20.values()), dtype=torch.uint8)
+
+COLOR_MAP_34 = {
     0: (0, 0, 0),
     1: (0, 0, 0),
     2: (0, 0, 0),
@@ -53,26 +79,25 @@ COLOR_MAP = {
     32: (230, 0, 0),
     33: (32, 11, 119),
 }
+COLOR_MAP_34_TENSOR = torch.tensor(list(COLOR_MAP_34.values()), dtype=torch.uint8)
 
-PIXELS_PER_CLASSES = torch.tensor([6.7643e+06, 1.5170e+05, 1.6685e+05, 2.1188e+05, 2.9095e+05, 4.3800e+05,
-                                   9.0043e+05, 1.5947e+06, 2.9845e+06, 4.9343e+06, 7.7613e+06, 1.2875e+07,
-                                   1.7736e+07, 2.6805e+07, 3.6319e+07, 4.3691e+07, 6.1121e+07, 6.9351e+07,
-                                   8.0350e+07, 9.5971e+07, 1.0636e+08, 1.1570e+08, 1.2419e+08, 1.3330e+08,
-                                   1.4437e+08, 1.4055e+08, 1.5200e+08, 1.5549e+08, 1.5921e+08, 1.7154e+08,
-                                   1.6522e+08, 1.7315e+08, 1.7322e+08, 1.7377e+08], dtype=torch.float64)
+PIXELS_PER_CLASSES_34 = torch.tensor([6.7643e+06, 1.5170e+05, 1.6685e+05, 2.1188e+05, 2.9095e+05, 4.3800e+05,
+                                      9.0043e+05, 1.5947e+06, 2.9845e+06, 4.9343e+06, 7.7613e+06, 1.2875e+07,
+                                      1.7736e+07, 2.6805e+07, 3.6319e+07, 4.3691e+07, 6.1121e+07, 6.9351e+07,
+                                      8.0350e+07, 9.5971e+07, 1.0636e+08, 1.1570e+08, 1.2419e+08, 1.3330e+08,
+                                      1.4437e+08, 1.4055e+08, 1.5200e+08, 1.5549e+08, 1.5921e+08, 1.7154e+08,
+                                      1.6522e+08, 1.7315e+08, 1.7322e+08, 1.7377e+08], dtype=torch.float64)
 
-CLASSES_WEIGHTS = torch.tensor([5.6972e-03, 2.5404e-01, 2.3097e-01, 1.8188e-01, 1.3245e-01, 8.7985e-02,
-                                4.2799e-02, 2.4166e-02, 1.2913e-02, 7.8101e-03, 4.9653e-03, 2.9932e-03,
-                                2.1728e-03, 1.4377e-03, 1.0611e-03, 8.8205e-04, 6.3051e-04, 5.5569e-04,
-                                4.7962e-04, 4.0155e-04, 3.6233e-04, 3.3308e-04, 3.1031e-04, 2.8910e-04,
-                                2.6694e-04, 2.7419e-04, 2.5354e-04, 2.4785e-04, 2.4205e-04, 2.2466e-04,
-                                2.3325e-04, 2.2257e-04, 2.2248e-04, 2.2177e-04], dtype=torch.float32)
-
-COLOR_MAP_TENSOR = torch.tensor(list(COLOR_MAP.values()), dtype=torch.uint8)
+CLASSES_WEIGHTS_34 = torch.tensor([5.6972e-03, 2.5404e-01, 2.3097e-01, 1.8188e-01, 1.3245e-01, 8.7985e-02,
+                                   4.2799e-02, 2.4166e-02, 1.2913e-02, 7.8101e-03, 4.9653e-03, 2.9932e-03,
+                                   2.1728e-03, 1.4377e-03, 1.0611e-03, 8.8205e-04, 6.3051e-04, 5.5569e-04,
+                                   4.7962e-04, 4.0155e-04, 3.6233e-04, 3.3308e-04, 3.1031e-04, 2.8910e-04,
+                                   2.6694e-04, 2.7419e-04, 2.5354e-04, 2.4785e-04, 2.4205e-04, 2.2466e-04,
+                                   2.3325e-04, 2.2257e-04, 2.2248e-04, 2.2177e-04], dtype=torch.float32)
 
 
 class CityscapesVideoDataset(BaseSegmentationDataset):
-    color_map = COLOR_MAP_TENSOR
+    color_map = COLOR_MAP_34_TENSOR
 
     def __init__(self, step: int = 1):
         """
@@ -115,8 +140,8 @@ class CityscapesVideoDataset(BaseSegmentationDataset):
                 }
 
 
-class CityscapesDataset(Cityscapes, BaseSegmentationDataset):
-    color_map = COLOR_MAP_TENSOR
+class CityscapesDataset(BaseSegmentationDataset):
+    color_map = COLOR_MAP_34_TENSOR
 
     def __init__(self, split: str, mode: str = 'fine'):
         if CITYSCAPES_ROOT not in os.environ:
@@ -124,14 +149,31 @@ class CityscapesDataset(Cityscapes, BaseSegmentationDataset):
         self.transform = Compose([
             PILToTensor(),
         ])
-        super().__init__(os.path.join(os.environ[CITYSCAPES_ROOT], mode), split, mode, target_type='semantic',
-                         transform=self.transform, target_transform=self.transform)
+        self.dataset = Cityscapes(os.path.join(os.environ[CITYSCAPES_ROOT], mode), split, mode, target_type='semantic',
+                                  transform=self.transform, target_transform=self.transform)
+        super().__init__()
 
-    def __len__(self):
-        return super().__len__()
+    def __len__(self) -> int:
+        return self.dataset.__len__()
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
-        frame, segmentation = super().__getitem__(idx)
+        frame, segmentation = self.dataset.__getitem__(idx)
         frame = frame.to(torch.float32) / 255.
         return {FRAME_KEY: torch.flip(frame, [0]), GROUND_TRUTH_KEY: segmentation.squeeze(0).to(torch.int64)}
         # convert frames from RGB to BGR
+
+
+class CityscapesDataset20(BaseSegmentationDataset):
+    color_map = COLOR_MAP_20_TENSOR
+
+    def __init__(self, split: str, mode: str = 'fine'):
+        self.dataset = CityscapesDataset(split, mode)
+        super().__init__()
+
+    def __len__(self) -> int:
+        return self.dataset.__len__()
+
+    def __getitem__(self, idx: int) -> Dict[str, Tensor]:
+        item = self.dataset.__getitem__(idx)
+        item[GROUND_TRUTH_KEY] = MAP_34_TO_20[item[GROUND_TRUTH_KEY]]
+        return item
