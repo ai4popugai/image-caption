@@ -16,7 +16,7 @@ HEIGHT = 1024
 WIDTH = 2048
 CHANNELS = 3
 
-MAP_34_TO_20 = torch.tensor([19, 19, 19, 19, 19, 19, 19, 0, 1, 19, 19, 2, 3, 4, 19, 19, 19, 5,
+MAP_34_TO_19 = torch.tensor([19, 19, 19, 19, 19, 19, 19, 0, 1, 19, 19, 2, 3, 4, 19, 19, 19, 5,
                              19, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 19, 19, 16, 17, 18, 19])
 
 COLOR_MAP_20 = {
@@ -41,7 +41,7 @@ COLOR_MAP_20 = {
     18: (32, 11, 119),
     19: (0, 0, 0)}  # void backgrounds
 
-COLOR_MAP_20_TENSOR = torch.tensor(list(COLOR_MAP_20.values()), dtype=torch.uint8)
+COLOR_MAP_19_TENSOR = torch.tensor(list(COLOR_MAP_20.values()), dtype=torch.uint8)
 
 COLOR_MAP_34 = {
     0: (0, 0, 0),
@@ -163,8 +163,8 @@ class CityscapesDataset34(BaseSegmentationDataset):
         # convert frames from RGB to BGR
 
 
-class CityscapesDataset20(BaseSegmentationDataset):
-    color_map = COLOR_MAP_20_TENSOR
+class CityscapesDataset19(BaseSegmentationDataset):
+    color_map = COLOR_MAP_19_TENSOR
 
     def __init__(self, split: str, mode: str = 'fine'):
         self.dataset = CityscapesDataset34(split, mode)
@@ -175,5 +175,5 @@ class CityscapesDataset20(BaseSegmentationDataset):
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
         item = self.dataset.__getitem__(idx)
-        item[GROUND_TRUTH_KEY] = MAP_34_TO_20[item[GROUND_TRUTH_KEY]]
+        item[GROUND_TRUTH_KEY] = MAP_34_TO_19[item[GROUND_TRUTH_KEY]]
         return item
