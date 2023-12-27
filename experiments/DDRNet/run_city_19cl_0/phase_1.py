@@ -1,4 +1,4 @@
-"""The same as run_3, but with dataset with 19 classes"""
+"""The same as run_3, but with dataset with 19 classes and with CrossEntropyLoss with ignore_index=19"""
 
 import os
 from typing import Tuple, Dict
@@ -10,6 +10,7 @@ from augmentations.augs import RandomFlip, RandomCrop, RandomColorJitterWithProb
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY, LOGIT_KEY
 from datasets.segmantation.cityscapes import CityscapesDataset19
 from experiments.DDRNet.run_base import RunBase
+from loss.cross_entropy import CrossEntropyLoss
 from nn_models.segmentation.ddrnet.models import DDRNet23Slim
 from optim_utils.iter_policy.linear_policy import LinearIterationPolicy
 from transforms.segmentration import BaseToImageTransforms, FramesToImage, GroundTruthToImage, LogitsToImage
@@ -20,6 +21,9 @@ class Phase(RunBase):
         super().__init__(os.path.abspath(__file__))
 
         self.num_classes = 19
+
+        self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY,
+                                     ignore_index=19)
 
         self.optimizer_kwargs = {'lr': 0., 'weight_decay': 3e-5}
         self.lr_policy = LinearIterationPolicy(start_iter=0, start_lr=0, end_iter=10000, end_lr=3.1e-3)
