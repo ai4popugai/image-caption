@@ -25,9 +25,6 @@ class Phase(RunBase):
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY,
                                      ignore_index=19)
 
-        self.optimizer_kwargs = {'lr': 2.18e-3, 'weight_decay': 3e-5}
-        self.lr_policy = None
-
         self.train_augs = [RandomFlip(target_keys=self.target_keys),
                            RandomCrop(self.crop_size, target_keys=self.target_keys),
                            RandomResizedCropWithProb(probability=0.75,
