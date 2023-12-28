@@ -1,4 +1,4 @@
-"""The same as run_3, but with dataset with 19 classes and with CrossEntropyLoss with ignore_index=19"""
+"""run_city_19cl_0 continue"""
 
 import os
 from typing import Tuple, Dict
