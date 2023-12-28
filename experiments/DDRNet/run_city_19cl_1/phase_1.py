@@ -1,3 +1,5 @@
+"""The same as run_3, but with dataset with 19 classes and with CrossEntropyLoss with ignore_index=19"""
+
 import os
 from typing import Tuple, Dict
 
@@ -23,8 +25,8 @@ class Phase(RunBase):
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY,
                                      ignore_index=19)
 
-        self.optimizer_kwargs = {'lr': 0., 'weight_decay': 3e-5}
-        self.lr_policy = LinearIterationPolicy(start_iter=0, start_lr=0, end_iter=10000, end_lr=1.5e-3)
+        self.optimizer_kwargs = {'lr': 0., 'weight_decay': 5e-4}
+        self.lr_policy = LinearIterationPolicy(start_iter=0, start_lr=0, end_iter=10000, end_lr=3.1e-3)
 
         self.train_augs = [RandomFlip(target_keys=self.target_keys),
                            RandomCrop(self.crop_size, target_keys=self.target_keys),
