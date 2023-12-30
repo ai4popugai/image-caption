@@ -26,8 +26,8 @@ class Phase(RunBase):
 
         self.train_augs = [RandomFlip(target_keys=self.target_keys),
                            RandomCrop(self.crop_size, target_keys=self.target_keys),
-                           RandomResizedCropWithProb(probability=0.75,
-                                                     size=[0.25, 1.0],
+                           RandomResizedCropWithProb(probability=0.95,
+                                                     size=[0.15, 1.0],
                                                      target_keys=self.target_keys),
                            RandomColorJitterWithProb(probability=0.8,
                                                      brightness_range=(0.7, 1),
@@ -50,5 +50,5 @@ class Phase(RunBase):
 
 
 if __name__ == '__main__':
-    start_snapshot = 'DDRNet/run_city_19cl_2/DDRNet23Slim_9500.pth'
-    Phase().train(start_snapshot=start_snapshot)
+    # 19000
+    Phase().train(start_snapshot=None)
