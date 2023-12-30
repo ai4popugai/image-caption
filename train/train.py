@@ -258,7 +258,7 @@ class Trainer:
     
     @staticmethod
     def batch_to_device(batch: Dict[str, torch.Tensor], device: torch.device) -> Dict[str, torch.Tensor]:
-        batch = {key: batch[key].to(device, non_blocking=True) for key in batch}
+        batch = {key: batch[key].to(device) for key in batch}
         return batch
 
     @staticmethod
