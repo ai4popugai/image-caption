@@ -22,6 +22,7 @@ class Phase(RunBase):
         super().__init__(os.path.abspath(__file__))
 
         self.num_classes = 19
+        self.batch_size = 2
 
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY,
                                      ignore_index=19)
