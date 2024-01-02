@@ -54,4 +54,5 @@ class Phase(RunBase):
 
 
 if __name__ == '__main__':
+    # 9500
     Phase().train(start_snapshot=None)
