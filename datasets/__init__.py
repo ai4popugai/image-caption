@@ -4,6 +4,7 @@ GROUND_TRUTH_KEY = 'ground_truths'
 TOKEN_KEY = 'tokens'
 LABEL_KEY = 'labels'
 LOGIT_KEY = 'logits'
+LOGIT_AUG_KEY = 'logits_aux'
 EMB_KEY = 'embs'
 
 FRAME_T_KEY = 'frame_t'

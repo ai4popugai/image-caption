@@ -337,6 +337,7 @@ class DualResNet(nn.Module):
 
         if self.augment:
             x_extra = self.seghead_extra(temp)
+            x_extra = self.upsampler(x_extra)
             return x_, x_extra
         else:
             return x_
