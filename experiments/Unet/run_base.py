@@ -54,7 +54,6 @@ class RunBase(Run):
                                                      contrast_range=(0.7, 1.2),
                                                      saturation_range=(0.7, 1.2)),
                            ]
-        self.val_augs = [CenterCrop(self.resolution, target_keys=self.target_keys)]
 
         self.batch_dump_flag = True
 
