@@ -8,10 +8,11 @@ from datasets import FRAME_KEY, LOGIT_KEY
 
 
 class Unet(nn.Module):
-    def __init__(self, num_classes: int, encoder_name: str = "resnet34", encoder_weights: Optional[str] = None):
+    def __init__(self, num_classes: int, encoder_name: str = "resnet34", encoder_weights: Optional[str] = None,
+                 decoder_use_batchnorm: bool = True):
         super().__init__()
         self.model = Unet_seg_models(classes=num_classes, encoder_weights=encoder_weights,
-                                     decoder_use_batchnorm=False,
+                                     decoder_use_batchnorm=decoder_use_batchnorm,
                                      encoder_name=encoder_name,
                                      )
 
