@@ -63,7 +63,7 @@ class RunBase(Run):
         self.batch_dump_flag = True
 
     def setup_model(self) -> nn.Module:
-        return Unet(num_classes=self.num_classes)
+        return Unet(num_classes=self.num_classes, encoder_weights='imagenet')
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         torch.manual_seed(42)
