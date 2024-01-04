@@ -1,10 +1,11 @@
 import os
-from typing import Dict
+from typing import Dict, Tuple
 
 import cv2
 import torch
 from torchvision.transforms import ToTensor
 
+from augmentations.augs import RandomCrop
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY
 from datasets.segmantation.base_dataset import BaseSegmentationDataset
 
@@ -25,8 +26,10 @@ COLOR_MAP_TENSOR = torch.tensor(list(COLOR_MAP.values()), dtype=torch.uint8)
 class DubaiAerial(BaseSegmentationDataset):
     color_map = COLOR_MAP_TENSOR
 
-    def __init__(self):
+    def __init__(self, resolution: Tuple[int, int]):
         super().__init__()
+        self.resolution = resolution
+        self.crop = RandomCrop(self.resolution, target_keys=[FRAME_KEY, GROUND_TRUTH_KEY])
         self.transform = ToTensor()
         if DUBAI_AERIAL_DATASET not in os.environ:
             raise RuntimeError('Dataset root not in environment.')
@@ -56,4 +59,4 @@ class DubaiAerial(BaseSegmentationDataset):
         gt_color = gt_color.permute(1, 2, 0).unsqueeze(2)  # (h, w, 1, 3)
         res = gt_color - self.color_map  # (h, w, NUM_COLORS, 3)
         gt = torch.argmin(res, dim=2)  # (h, w, 3)
-        return {FRAME_KEY: img, GROUND_TRUTH_KEY: gt.select(2, 0)}
+        return self.crop({FRAME_KEY: img, GROUND_TRUTH_KEY: gt.select(2, 0)})
