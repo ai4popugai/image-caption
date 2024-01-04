@@ -10,6 +10,7 @@ from metrics.base_metric import BaseMetric
 class IoU(BaseMetric):
     def __init__(self, num_classes):
         super().__init__(name='IoU')
+        self.num_classes = num_classes
         self.iou_metric = JaccardIndex(task='multiclass', num_classes=num_classes)
         self.unit = '%'
         self.num_samples = 0
