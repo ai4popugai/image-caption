@@ -32,9 +32,9 @@ class RunBase(Run):
         self.batch_size = 32
         self.num_workers = 4
 
-        self.train_iters = 10
-        self.batch_dump_iters = 10
-        self.snapshot_iters = 10
+        self.train_iters = 50
+        self.batch_dump_iters = 50
+        self.snapshot_iters = 50
         self.show_iters = 1
 
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY)
