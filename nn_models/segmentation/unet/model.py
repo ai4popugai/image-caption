@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import torch
 from torch import nn
@@ -8,9 +8,9 @@ from datasets import FRAME_KEY, LOGIT_KEY
 
 
 class Unet(nn.Module):
-    def __init__(self, num_classes: int, encoder_name: str = "resnet34"):
+    def __init__(self, num_classes: int, encoder_name: str = "resnet34", encoder_weights: Optional[str] = None):
         super().__init__()
-        self.model = Unet_seg_models(classes=num_classes, encoder_weights=None,
+        self.model = Unet_seg_models(classes=num_classes, encoder_weights=encoder_weights,
                                      decoder_use_batchnorm=False,
                                      encoder_name=encoder_name,
                                      )
