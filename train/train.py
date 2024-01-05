@@ -180,6 +180,8 @@ class Trainer:
         if reset_optimizer is False:
             if OPTIMIZER_STATE_DICT_KEY in checkpoint:
                 self.optimizer.load_state_dict(checkpoint[OPTIMIZER_STATE_DICT_KEY])
+                for param_group in self.optimizer.param_groups:
+                    param_group.update(self.optimizer_kwargs)
             else:
                 print('No optimizer state dict in snapshot. Optimizer is reset.')
         print(f'Loaded snapshot from {snapshot_path}')
