@@ -7,7 +7,6 @@ class Phase(RunBase):
         super().__init__(os.path.abspath(__file__))
 
         self.optimizer_kwargs = {'lr': 1e-3, 'weight_decay': 5e-4}
-        self.device = 'cpu'
 
 
 if __name__ == '__main__':
