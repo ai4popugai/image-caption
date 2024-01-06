@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Tuple, Dict
 
 import torch
@@ -62,10 +63,17 @@ class RunBase(Run):
 
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         torch.manual_seed(42)
-        dataset = DubaiAerial(self.resolution)
-        train_size = int(0.8 * len(dataset))
-        val_size = len(dataset) - train_size
-        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+        train_dataset = DubaiAerial(self.resolution)
+        indexes = list(range(0, len(train_dataset.image_path_list)))
+        random.shuffle(indexes)
+        split_index = int(0.8 * len(indexes))
+        train_indexes = indexes[:split_index]
+        val_indexes = indexes[split_index:]
+
+        val_dataset = DubaiAerial(self.resolution)
+        train_dataset.setup_mode(mode='train', indexes=train_indexes)
+        val_dataset.setup_mode(mode='val', indexes=val_indexes)
+
         return train_dataset, val_dataset
 
     def get_batch_sample_to_image_map(self) -> Dict[str, BaseToImageTransforms]:

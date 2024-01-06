@@ -1,11 +1,11 @@
 import os
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional, List
 
 import cv2
 import torch
 from torchvision.transforms import ToTensor
 
-from augmentations.augs import RandomCrop
+from augmentations.augs import RandomCrop, CenterCrop, BaseAug
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY
 from datasets.segmantation.base_dataset import BaseSegmentationDataset
 
@@ -29,7 +29,9 @@ class DubaiAerial(BaseSegmentationDataset):
     def __init__(self, resolution: Tuple[int, int]):
         super().__init__()
         self.resolution = resolution
-        self.crop = RandomCrop(self.resolution, target_keys=[FRAME_KEY, GROUND_TRUTH_KEY])
+        self.crop_train = RandomCrop(self.resolution, target_keys=[FRAME_KEY, GROUND_TRUTH_KEY])
+        self.crop_val = CenterCrop(self.resolution, target_keys=[FRAME_KEY, GROUND_TRUTH_KEY])
+        self.crop: Optional[BaseAug] = None
         self.transform = ToTensor()
         if DUBAI_AERIAL_DATASET not in os.environ:
             raise RuntimeError('Dataset root not in environment.')
@@ -47,6 +49,23 @@ class DubaiAerial(BaseSegmentationDataset):
             if os.path.basename(img_path).split('.')[0] != os.path.basename(gt_path).split('.')[0]:
                 raise RuntimeError('Dataset is broken! '
                                    'Check out image_path_list and ground_true_path_list correspondence.')
+
+    def setup_mode(self, mode: str, indexes: List[int]):
+        """
+        Method to setup crop depended on mode before usage.
+
+        :param indexes: indexes to select images and masks to the split.
+        :param mode: 'train' or 'val'.
+        :return: None
+        """
+        if mode == 'train':
+            self.crop = self.crop_train
+        elif mode == 'val':
+            self.crop = self.crop_val
+        else:
+            raise RuntimeError('Mode must be train or val.')
+        self.image_path_list = [self.image_path_list[i] for i in indexes]
+        self.ground_true_path_list = [self.ground_true_path_list[i] for i in indexes]
 
     def __len__(self) -> int:
         return len(self.image_path_list)
