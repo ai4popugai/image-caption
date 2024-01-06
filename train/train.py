@@ -234,7 +234,7 @@ class Trainer:
         self.optimizer.zero_grad()
         result = model(batch)
         self._batch_dump(result, iteration, TRAIN_MODE)
-        loss = torch.tensor(0., dtype=torch.float32, requires_grad=True)
+        loss = torch.tensor(0., requires_grad=True, device=self.device)
         for loss_instance in self.loss:
             loss = loss + loss_instance(result, batch)
         loss.backward()
@@ -245,7 +245,7 @@ class Trainer:
     def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], global_iter: int) -> float:
         result = model(batch)
         self._batch_dump(result, global_iter, mode=VAL_MODE)
-        loss = torch.tensor(0., dtype=torch.float32, requires_grad=False)
+        loss = torch.tensor(0., requires_grad=False, device=self.device)
         for loss_instance in self.loss:
             loss = loss + loss_instance(result, batch)
         self._update_metrics(self.val_metrics, result, batch)
