@@ -64,7 +64,7 @@ class RunBase(Run):
     def setup_datasets(self) -> Tuple[Dataset, Dataset]:
         torch.manual_seed(42)
         train_dataset = DubaiAerial(self.resolution)
-        indexes = list(range(0, len(train_dataset.image_path_list)))
+        indexes = list(range(0, train_dataset.__len__()))
         random.shuffle(indexes)
         split_index = int(0.8 * len(indexes))
         train_indexes = indexes[:split_index]
