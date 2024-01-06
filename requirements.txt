@@ -79,6 +79,9 @@ wget==3.2
 wsproto==1.2.0
 yolov7-package==0.0.12
 zipp==3.16.2
-pydantic
-omegaconf
-colorlog
+pydantic~=2.4.2
+omegaconf~=2.3.0
+colorlog~=6.7.0
+setuptools~=58.2.0
+torchgeometry~=0.1.2
+transformers~=4.33.3
