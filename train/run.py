@@ -1,6 +1,6 @@
 import os
 from abc import ABC
-from typing import Tuple, Optional, List, Type, Dict, Callable
+from typing import Tuple, Optional, List, Type, Dict, Callable, Union
 
 import torch
 from torch import nn
@@ -54,7 +54,7 @@ class Run(ABC):
         self.lr_policy: Optional[BaseIterationPolicy] = None
 
         # loss
-        self.loss: Optional[nn.Module] = None
+        self.loss: Optional[Union[nn.Module, List[nn.Module]]] = None
 
         # snapshots
         self.strict_weight_loading: bool = True

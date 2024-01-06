@@ -33,7 +33,7 @@ class Trainer:
                  batch_dump_dir: str,
                  optimizer_class: Type[Optimizer],
                  optimizer_kwargs: Dict,
-                 loss: nn.Module,
+                 loss: Union[nn.Module, List[nn.Module]],
                  train_iters: int, snapshot_iters: int,
                  batch_dump_iters: int,
                  show_iters: int,
@@ -81,6 +81,8 @@ class Trainer:
         self.optimizer = None
         self.optimizer_class = optimizer_class
         self.optimizer_kwargs = optimizer_kwargs
+        if isinstance(loss, nn.Module):
+            loss = [loss]
         self.loss = loss
         self.train_metrics = train_metrics
         self.val_metrics = val_metrics
@@ -232,7 +234,9 @@ class Trainer:
         self.optimizer.zero_grad()
         result = model(batch)
         self._batch_dump(result, iteration, TRAIN_MODE)
-        loss = self.loss(result, batch)
+        loss = torch.tensor(0., dtype=torch.float32, requires_grad=True)
+        for loss_instance in self.loss:
+            loss = loss + loss_instance(result, batch)
         loss.backward()
         self.optimizer.step()
         self._update_metrics(self.train_metrics, result, batch)
@@ -241,7 +245,9 @@ class Trainer:
     def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], global_iter: int) -> float:
         result = model(batch)
         self._batch_dump(result, global_iter, mode=VAL_MODE)
-        loss = self.loss(result, batch)
+        loss = torch.tensor(0., dtype=torch.float32, requires_grad=False)
+        for loss_instance in self.loss:
+            loss += loss_instance(result, batch)
         self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
 
