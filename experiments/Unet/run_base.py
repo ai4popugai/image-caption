@@ -30,7 +30,7 @@ class RunBase(Run):
         self.normalizer = BatchNormalizer(normalizer=self._normalizer, target_key=FRAME_KEY)
 
         self.batch_size = 32
-        self.num_workers = 4
+        self.num_workers = 0
 
         self.train_iters = 50
         self.batch_dump_iters = 50
