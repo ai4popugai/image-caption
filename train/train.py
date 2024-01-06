@@ -247,7 +247,7 @@ class Trainer:
         self._batch_dump(result, global_iter, mode=VAL_MODE)
         loss = torch.tensor(0., dtype=torch.float32, requires_grad=False)
         for loss_instance in self.loss:
-            loss += loss_instance(result, batch)
+            loss = loss + loss_instance(result, batch)
         self._update_metrics(self.val_metrics, result, batch)
         return loss.item()
 
