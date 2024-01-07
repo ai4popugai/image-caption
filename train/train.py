@@ -231,7 +231,6 @@ class Trainer:
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], iteration: int) -> float:
         model.train()
-        self.optimizer.zero_grad()
         result = model(batch)
         self._batch_dump(result, iteration, TRAIN_MODE)
         self._update_metrics(self.train_metrics, result, batch)
@@ -240,6 +239,7 @@ class Trainer:
             loss = loss + loss_instance(result, batch)
         loss.backward()
         self.optimizer.step()
+        self.optimizer.zero_grad()
         return loss.item()
 
     def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], global_iter: int) -> float:
