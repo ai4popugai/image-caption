@@ -5,7 +5,7 @@ from torch import nn
 
 
 class CrossEntropyLoss(nn.Module):
-    def __init__(self, result_trg_key: str, batch_trg_key: str, ignore_index: int = -100):
+    def __init__(self, result_trg_key: str, batch_trg_key: str, ignore_index: int = -100, alpha: float = 1.):
         """
         Cross Entropy loss wrapper.
 
@@ -16,6 +16,8 @@ class CrossEntropyLoss(nn.Module):
         self.result_trg_key = result_trg_key
         self.batch_trg_key = batch_trg_key
         self.loss = nn.CrossEntropyLoss(ignore_index=ignore_index)
+        self.alpha = torch.tensor(alpha)
 
     def forward(self, result: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor]) -> torch.Tensor:
-        return self.loss(result[self.result_trg_key], batch[self.batch_trg_key])
+        return self.loss(result[self.result_trg_key], batch[self.batch_trg_key]) * \
+               self.alpha.to(batch[self.batch_trg_key].device)

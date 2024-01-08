@@ -228,9 +228,10 @@ class Trainer:
     def _batch_dump(self, batch: Dict[str, torch.Tensor], iteration: int, mode: str,):
         if iteration % self.batch_dump_iters == 0 and self.batch_dump_flag:
             for key in batch:
-                imgs = self.sample_to_image[key](batch[key])
-                for i, img in enumerate(imgs):
-                    cv2.imwrite(os.path.join(self.batch_dump_dir, f'{mode}_iter_{iteration}__{i}_{key}.png'), img)
+                if key in self.sample_to_image.keys():
+                    imgs = self.sample_to_image[key](batch[key])
+                    for i, img in enumerate(imgs):
+                        cv2.imwrite(os.path.join(self.batch_dump_dir, f'{mode}_iter_{iteration}__{i}_{key}.png'), img)
 
     def _train_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], iteration: int) -> float:
         model.train()

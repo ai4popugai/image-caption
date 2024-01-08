@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import torch
 from torchmetrics import JaccardIndex
@@ -8,10 +8,10 @@ from metrics.base_metric import BaseMetric
 
 
 class IoU(BaseMetric):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, ignore_index: Optional[int] = None):
         super().__init__(name='IoU')
         self.num_classes = num_classes
-        self.iou_metric = JaccardIndex(task='multiclass', num_classes=num_classes)
+        self.iou_metric = JaccardIndex(task='multiclass', num_classes=num_classes, ignore_index=ignore_index)
         self.unit = '%'
         self.num_samples = 0
         self.total_iou = 0.
