@@ -54,7 +54,7 @@ class RunBase(Run):
                            RandomResizedCropWithProb(probability=0.95,
                                                      size=[0.2, 1.0],
                                                      target_keys=self.target_keys),
-                           RandomColorJitterWithProb(probability=0.8,
+                           RandomColorJitterWithProb(probability=0.95,
                                                      brightness_range=(0.7, 1.3),
                                                      contrast_range=(0.7, 1.2),
                                                      saturation_range=(0.7, 1.2)),
