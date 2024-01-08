@@ -36,6 +36,7 @@ class RunBase(Run):
         self.batch_dump_iters = 500
         self.snapshot_iters = 500
         self.show_iters = 5
+        self.accum_iters = 4
 
         self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY,
                                      ignore_index=19)

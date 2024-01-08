@@ -35,6 +35,7 @@ class Run(ABC):
         self.train_iters: int = 500
         self.batch_dump_iters = 100
         self.show_iters: int = 10
+        self.accum_iters = None
         self.snapshot_iters: int = 300
         self.max_iteration: int = 1000000
 
@@ -122,6 +123,7 @@ class Run(ABC):
                           train_iters=self.train_iters,
                           batch_dump_iters=self.batch_dump_iters,
                           show_iters=self.show_iters,
+                          accum_iters=self.accum_iters,
                           snapshot_iters=self.snapshot_iters,
                           normalizer=self.normalizer,
                           device=self.device,

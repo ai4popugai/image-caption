@@ -37,6 +37,7 @@ class Trainer:
                  train_iters: int, snapshot_iters: int,
                  batch_dump_iters: int,
                  show_iters: int,
+                 accum_iters: Optional[int] = None,
                  normalizer: Optional[Callable] = None,
                  train_metrics: Optional[List[BaseMetric]] = None,
                  val_metrics: Optional[List[BaseMetric]] = None,
@@ -65,6 +66,7 @@ class Trainer:
         :param snapshot_iters: number of training iterations before snapshot is saved.
         :param batch_dump_iters: number of training iterations before batch_dump batch.
         :param show_iters: number of training iterations to accumulate loss for logging to tensorboard.
+        :param accum_iters: number of training iterations to accumulate gradients.
         :param normalizer: normalization layer to be applied to input images.
         :param device: device to train on.
         :param: batch_dump_flag: True to batch batch_dump. Default False
@@ -92,6 +94,7 @@ class Trainer:
         self.batch_dump_iters = batch_dump_iters
         self.train_iters = train_iters
         self.show_iters = show_iters
+        self.accum_iters = accum_iters
         self.normalizer = normalizer
 
         if os.path.exists(self.logs_dir) is False:
@@ -237,9 +240,9 @@ class Trainer:
         loss = torch.tensor(0., requires_grad=True, device=self.device)
         for loss_instance in self.loss:
             loss = loss + loss_instance(result, batch)
-        loss.backward()
-        self.optimizer.step()
-        self.optimizer.zero_grad()
+        loss.backward(retain_graph=True if self.accum_iters is not None else None)
+        self._optimizer_step(iteration, model)
+        self._zero_grad(iteration, model)
         return loss.item()
 
     def _val_iteration(self, model: nn.Module, batch: Dict[str, torch.Tensor], global_iter: int) -> float:
@@ -250,6 +253,23 @@ class Trainer:
         for loss_instance in self.loss:
             loss = loss + loss_instance(result, batch)
         return loss.item()
+
+    def _optimizer_step(self, global_step: int, model: nn.Module):
+        if self.accum_iters is not None:
+            if (global_step + 1) % self.accum_iters == 0:
+                for param in model.parameters():
+                    param.grad /= self.accum_iters
+                self.optimizer.step()
+        else:
+            self.optimizer.step()
+
+    def _zero_grad(self, global_step: int, model: nn.Module):
+        if self.accum_iters is not None:
+            if (global_step + 1) % self.accum_iters == 0:
+                for param in model.parameters():
+                    param.grad.zero_()
+        else:
+            self.optimizer.zero_grad()
 
     @staticmethod
     def aug_loop(batch: Dict[str, torch.Tensor], aug_list: Optional[List[BaseAug]]) -> Dict[str, torch.Tensor]:
