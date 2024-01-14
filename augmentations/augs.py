@@ -10,6 +10,7 @@ from torchvision import transforms
 from torchvision.transforms.functional import hflip
 import torchvision.transforms.functional as F
 from datasets import FRAME_KEY
+
 torchvision.disable_beta_transforms_warning()
 from torchvision.transforms.v2.functional import crop
 
@@ -85,10 +86,20 @@ class RandomResizedCropWithProb(BaseAug):
         :return: batch
         """
         check_batch(batch, self.target_keys)
+        orig_shape = batch[self.target_keys[0]].shape[-2:]
+        is_inpaint = False
+        inpaint_left_margin = None
+        inpaint_top_margin = None
         if isinstance(self.size[0], float):
             change_factor = math.sqrt(random.uniform(self.size[0], self.size[1]))
-            new_height = int(batch[self.target_keys[0]].shape[-2] * change_factor)
-            new_width = int(batch[self.target_keys[0]].shape[-1] * change_factor)
+            if change_factor > 1:
+                change_factor = 1 / change_factor
+                is_inpaint = True
+            new_height = int(orig_shape[0] * change_factor)
+            new_width = int(orig_shape[1] * change_factor)
+            if is_inpaint:
+                inpaint_top_margin = random.randint(0, orig_shape[0] - new_height)
+                inpaint_left_margin = random.randint(0, orig_shape[1] - new_width)
             size = (new_height, new_width)
         else:
             size = self.size
@@ -102,7 +113,10 @@ class RandomResizedCropWithProb(BaseAug):
         for i in range(batch[self.target_keys[0]].shape[0]):
             if random.random() < self.probability:
                 for key in self.target_keys:
-                    batch[key][i] = resize(crop(batch[key][i].unsqueeze(dim=0), i, j, h, w)).squeeze(dim=0)
+                    if is_inpaint is False:
+                        batch[key][i] = resize(crop(batch[key][i].unsqueeze(dim=0), i, j, h, w)).squeeze(dim=0)
+                    else:
+                        pass
 
         return batch
 
