@@ -308,8 +308,8 @@ class Trainer:
         for iteration in range(start_iteration, max_iteration + start_iteration):
             iterator, batch = self._get_batch(iterator, train_loader)
             batch = self.aug_loop(batch, self.train_augs)
-            batch = self.batch_to_device(batch, self.device)
             self._batch_dump(batch, iteration, mode=TRAIN_MODE)
+            batch = self.batch_to_device(batch, self.device)
             batch = self.normalize(batch, self.normalizer)
             loss = self._train_iteration(model, batch, iteration)
             iteration += 1
@@ -356,8 +356,8 @@ class Trainer:
             for val_iter in range(val_iters):
                 iterator, batch = self._get_batch(iterator, val_loader)
                 batch = self.aug_loop(batch, self.val_augs)
-                batch = self.batch_to_device(batch, self.device)
                 self._batch_dump(batch, global_iter + val_iter, mode=VAL_MODE)
+                batch = self.batch_to_device(batch, self.device)
                 batch = self.normalize(batch, self.normalizer)
                 loss = self._val_iteration(model, batch, global_iter + val_iter)
                 losses.append(loss)
