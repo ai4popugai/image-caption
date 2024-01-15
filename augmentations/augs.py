@@ -1,4 +1,3 @@
-import math
 import random
 from abc import abstractmethod, ABC
 from typing import Dict, Tuple, Union, List, Optional
@@ -74,22 +73,22 @@ class RandomCrop(BaseAug):
 class RandomResizedCropWithProb(BaseAug):
     def __init__(self, size: Union[List[float], Tuple[int, int]],
                  probability: float = 0.5, target_keys: Optional[List[str]] = None,
-                 inpaint_val: Optional[int] = None):
+                 inpaint_val_dict: Optional[Dict[str, Union[int, float]]] = None):
         """
 
         :param size: scaling interval or certain resolution.
         :param probability: prob of applying aug (for every instance of set of target keys)
         :param target_keys: target keys to apply aug with the same parameters.
-        :param inpaint_val: value to image inpainting if change factor > 1.
+        :param inpaint_val_dict: dict with values to image inpainting if change factor > 1.
         """
-        if isinstance(size, List) and size[1] > 1 and inpaint_val is None:
+        if isinstance(size, List) and size[1] > 1 and inpaint_val_dict is None:
             raise RuntimeError('Input value must be set up if change factor > 1.')
         super().__init__(target_keys)
         self.size = size
         self.probability = probability
-        self.inpaint_val = inpaint_val
+        self.inpaint_val_dict = inpaint_val_dict
 
-    def _inpaint(self, target: torch.Tensor,
+    def _inpaint(self, target: torch.Tensor, inpaint_val: int,
                  left_margin: int, right_margin: int,
                  top_margin: int, bottom_margin: int,
                  device: torch.device) -> torch.Tensor:
@@ -97,7 +96,7 @@ class RandomResizedCropWithProb(BaseAug):
         fill_shape = list(target.shape)
         fill_shape[-2] = top_margin 
         target = torch.cat((torch.full(fill_shape,
-                                       self.inpaint_val, device=device),
+                                       inpaint_val, device=device),
                             target),
                            dim=-2)
         # bottom
@@ -105,13 +104,13 @@ class RandomResizedCropWithProb(BaseAug):
         fill_shape[-2] = bottom_margin 
         target = torch.cat((target,
                             torch.full(fill_shape,
-                                       self.inpaint_val, device=device)),
+                                       inpaint_val, device=device)),
                            dim=-2)
         # left
         fill_shape = list(target.shape)
         fill_shape[-1] = left_margin
         target = torch.cat((torch.full(fill_shape,
-                                       self.inpaint_val, device=device),
+                                       inpaint_val, device=device),
                             target),
                            dim=-1)
         # right
@@ -119,7 +118,7 @@ class RandomResizedCropWithProb(BaseAug):
         fill_shape[-1] = right_margin
         target = torch.cat((target,
                             torch.full(fill_shape,
-                                       self.inpaint_val, device=device)),
+                                       inpaint_val, device=device)),
                            dim=-1)
         return target
 
@@ -133,7 +132,6 @@ class RandomResizedCropWithProb(BaseAug):
         check_batch(batch, self.target_keys)
         orig_resolution = batch[self.target_keys[0]].shape[-2:]
         device = batch[self.target_keys[0]].device
-        is_inpaint = False
         left_margin = None
         right_margin = None
         top_margin = None
@@ -143,8 +141,9 @@ class RandomResizedCropWithProb(BaseAug):
         # Perform random resized crop on each frame
         for i in range(batch[self.target_keys[0]].shape[0]):
             if random.random() < self.probability:
+                is_inpaint = False
                 if isinstance(self.size, List):
-                    change_factor = math.sqrt(random.uniform(self.size[0], self.size[1]))
+                    change_factor = random.uniform(self.size[0], self.size[1])
                     if change_factor > 1:
                         change_factor = 1 / change_factor
                         is_inpaint = True
@@ -171,7 +170,7 @@ class RandomResizedCropWithProb(BaseAug):
                     if is_inpaint:
                         # resize
                         trg = resize(batch[key][i].unsqueeze(dim=0)).squeeze(dim=0)
-                        batch[key][i] = self._inpaint(trg,
+                        batch[key][i] = self._inpaint(trg, self.inpaint_val_dict[key],
                                                       left_margin, right_margin, top_margin, bottom_margin,
                                                       device=device)
                     else:
