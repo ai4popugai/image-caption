@@ -82,35 +82,45 @@ class RandomResizedCropWithProb(BaseAug):
         :param target_keys: target keys to apply aug with the same parameters.
         :param inpaint_val: value to image inpainting if change factor > 1.
         """
+        if isinstance(size, List) and size[1] > 1 and inpaint_val is None:
+            raise RuntimeError('Input value must be set up if change factor > 1.')
         super().__init__(target_keys)
         self.size = size
         self.probability = probability
         self.inpaint_val = inpaint_val
 
-    def _inpaint(self, target: torch.Tensor, orig_shape: torch.Size,
+    def _inpaint(self, target: torch.Tensor,
                  left_margin: int, right_margin: int,
                  top_margin: int, bottom_margin: int,
                  device: torch.device) -> torch.Tensor:
         # top
+        fill_shape = list(target.shape)
+        fill_shape[-2] = top_margin 
         target = torch.cat((target,
-                            torch.full((target.shape[0], top_margin, target.shape[2]),
+                            torch.full(fill_shape,
                                        self.inpaint_val, device=device)),
-                           dim=1)
+                           dim=-2)
         # bottom
+        fill_shape = list(target.shape)
+        fill_shape[-2] = bottom_margin 
         target = torch.cat((target,
-                            torch.full((target.shape[0], bottom_margin, target.shape[2]),
+                            torch.full(fill_shape,
                                        self.inpaint_val, device=device)),
-                           dim=1)
+                           dim=-2)
         # left
+        fill_shape = list(target.shape)
+        fill_shape[-1] = left_margin
         target = torch.cat((target,
-                            torch.full((target.shape[0], orig_shape[0], left_margin),
+                            torch.full(fill_shape,
                                        self.inpaint_val, device=device)),
-                           dim=2)
+                           dim=-1)
         # right
+        fill_shape = list(target.shape)
+        fill_shape[-1] = right_margin
         target = torch.cat((target,
-                            torch.full((target.shape[0], orig_shape[0], right_margin),
+                            torch.full(fill_shape,
                                        self.inpaint_val, device=device)),
-                           dim=2)
+                           dim=-1)
         return target
 
     def forward(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
@@ -121,53 +131,51 @@ class RandomResizedCropWithProb(BaseAug):
         :return: batch
         """
         check_batch(batch, self.target_keys)
-        orig_shape = batch[self.target_keys[0]].shape[-2:]
+        orig_resolution = batch[self.target_keys[0]].shape[-2:]
         device = batch[self.target_keys[0]].device
         is_inpaint = False
         left_margin = None
         right_margin = None
         top_margin = None
         bottom_margin = None
-        if isinstance(self.size[0], float):
-            change_factor = math.sqrt(random.uniform(self.size[0], self.size[1]))
-            if change_factor > 1:
-                if self.inpaint_val is None:
-                    raise RuntimeError('Inpint value must be set up if change factor > 1.')
-                change_factor = 1 / change_factor
-                is_inpaint = True
-            new_height = int(orig_shape[0] * change_factor)
-            new_width = int(orig_shape[1] * change_factor)
-
-            size = (new_height, new_width)
-        else:
-            size = self.size
-
-        i, j, h, w = transforms.RandomCrop.get_params(batch[self.target_keys[0]],
-                                                      output_size=size)
-        if is_inpaint:
-            resize = transforms.Resize(size,
-                                       antialias=False, interpolation=F.InterpolationMode.NEAREST)
-        else:
-            resize = transforms.Resize(orig_shape,
-                                       antialias=False, interpolation=F.InterpolationMode.NEAREST)
+        x, y, h, w = None, None, None, None
 
         # Perform random resized crop on each frame
         for i in range(batch[self.target_keys[0]].shape[0]):
             if random.random() < self.probability:
+                if isinstance(self.size, List):
+                    change_factor = math.sqrt(random.uniform(self.size[0], self.size[1]))
+                    if change_factor > 1:
+                        change_factor = 1 / change_factor
+                        is_inpaint = True
+                    new_height = int(orig_resolution[0] * change_factor)
+                    new_width = int(orig_resolution[1] * change_factor)
+
+                    size = (new_height, new_width)
+                else:
+                    size = self.size
+
                 if is_inpaint:
-                    top_margin = random.randint(0, orig_shape[0] - size[0])
-                    bottom_margin = orig_shape[0] - size[0] - top_margin
-                    left_margin = random.randint(0, orig_shape[1] - size[1])
-                    right_margin = orig_shape[1] - size[1] - left_margin
+                    top_margin = random.randint(0, orig_resolution[0] - size[0])
+                    bottom_margin = orig_resolution[0] - size[0] - top_margin
+                    left_margin = random.randint(0, orig_resolution[1] - size[1])
+                    right_margin = orig_resolution[1] - size[1] - left_margin
+                    resize = transforms.Resize(size,
+                                               antialias=False, interpolation=F.InterpolationMode.NEAREST)
+                else:
+                    x, y, h, w = transforms.RandomCrop.get_params(batch[self.target_keys[0]],
+                                                                  output_size=size)
+                    resize = transforms.Resize(orig_resolution,
+                                               antialias=False, interpolation=F.InterpolationMode.NEAREST)
                 for key in self.target_keys:
                     if is_inpaint:
                         # resize
-                        trg = resize(batch[key][i])
-                        batch[key][i] = self._inpaint(trg, orig_shape,
+                        trg = resize(batch[key][i].unsqueeze(dim=0)).squeeze(dim=0)
+                        batch[key][i] = self._inpaint(trg,
                                                       left_margin, right_margin, top_margin, bottom_margin,
                                                       device=device)
                     else:
-                        batch[key][i] = resize(crop(batch[key][i].unsqueeze(dim=0), i, j, h, w)).squeeze(dim=0)
+                        batch[key][i] = resize(crop(batch[key][i].unsqueeze(dim=0), x, y, h, w)).squeeze(dim=0)
 
         return batch
 

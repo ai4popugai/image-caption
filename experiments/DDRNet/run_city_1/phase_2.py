@@ -13,7 +13,7 @@ class Phase(RunBase):
         self.train_augs = [RandomFlip(target_keys=self.target_keys),
                            RandomCrop(self.crop_size, target_keys=self.target_keys),
                            RandomResizedCropWithProb(probability=0.95,
-                                                     size=[1.1, 2.0],
+                                                     size=[0.3, 1.7],
                                                      target_keys=self.target_keys,
                                                      inpaint_val=self.ignore_index
                                                      ),
