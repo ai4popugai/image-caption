@@ -96,9 +96,9 @@ class RandomResizedCropWithProb(BaseAug):
         # top
         fill_shape = list(target.shape)
         fill_shape[-2] = top_margin 
-        target = torch.cat((target,
-                            torch.full(fill_shape,
-                                       self.inpaint_val, device=device)),
+        target = torch.cat((torch.full(fill_shape,
+                                       self.inpaint_val, device=device),
+                            target),
                            dim=-2)
         # bottom
         fill_shape = list(target.shape)
@@ -110,9 +110,9 @@ class RandomResizedCropWithProb(BaseAug):
         # left
         fill_shape = list(target.shape)
         fill_shape[-1] = left_margin
-        target = torch.cat((target,
-                            torch.full(fill_shape,
-                                       self.inpaint_val, device=device)),
+        target = torch.cat((torch.full(fill_shape,
+                                       self.inpaint_val, device=device),
+                            target),
                            dim=-1)
         # right
         fill_shape = list(target.shape)
