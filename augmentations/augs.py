@@ -168,7 +168,6 @@ class RandomResizedCropWithProb(BaseAug):
                                                antialias=False, interpolation=F.InterpolationMode.NEAREST)
                 for key in self.target_keys:
                     if is_inpaint:
-                        # resize
                         trg = resize(batch[key][i].unsqueeze(dim=0)).squeeze(dim=0)
                         batch[key][i] = self._inpaint(trg, self.inpaint_val_dict[key],
                                                       left_margin, right_margin, top_margin, bottom_margin,
