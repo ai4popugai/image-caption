@@ -76,13 +76,13 @@ class RandomResizedCropWithProb(BaseAug):
                  inpaint_val_dict: Optional[Dict[str, Union[int, float]]] = None):
         """
 
-        :param size: scaling interval or certain resolution.
+        :param size: scaling interval for List or certain resolution for Tuple.
         :param probability: prob of applying aug (for every instance of set of target keys)
         :param target_keys: target keys to apply aug with the same parameters.
         :param inpaint_val_dict: dict with values to image inpainting if change factor > 1.
         """
         if isinstance(size, List) and size[1] > 1 and inpaint_val_dict is None:
-            raise RuntimeError('Input value must be set up if change factor > 1.')
+            raise RuntimeError('Inpaint value must be set up if change factor > 1.')
         super().__init__(target_keys)
         self.size = size
         self.probability = probability
