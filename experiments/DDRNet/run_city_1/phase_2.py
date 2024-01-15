@@ -1,6 +1,7 @@
 import os
 
 from augmentations.augs import RandomFlip, RandomCrop, RandomResizedCropWithProb, RandomColorJitterWithProb
+from datasets import FRAME_KEY, GROUND_TRUTH_KEY
 from experiments.DDRNet.run_base import RunBase
 
 
@@ -13,9 +14,10 @@ class Phase(RunBase):
         self.train_augs = [RandomFlip(target_keys=self.target_keys),
                            RandomCrop(self.crop_size, target_keys=self.target_keys),
                            RandomResizedCropWithProb(probability=0.95,
-                                                     size=[0.3, 1.7],
+                                                     size=[0.5, 2.0],
                                                      target_keys=self.target_keys,
-                                                     inpaint_val=self.ignore_index
+                                                     inpaint_val_dict={FRAME_KEY: 0.,
+                                                                       GROUND_TRUTH_KEY: self.ignore_index}
                                                      ),
                            RandomColorJitterWithProb(probability=0.95,
                                                      brightness_range=(0.7, 1.3),
