@@ -10,7 +10,6 @@ from datasets import FRAME_KEY, GROUND_TRUTH_KEY, LOGIT_KEY, LOGIT_AUX_KEY
 from datasets.segmantation.cityscapes import CityscapesDataset19
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.segmentation.iou import IoU
-from nn_models.segmentation.ddrnet.models import DDRNet23Slim
 from nn_models.segmentation.unet import Unet
 from normalize.normalize import BatchNormalizer
 from train.run import Run
@@ -31,7 +30,7 @@ class RunBase(Run):
         self._normalizer = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.normalizer = BatchNormalizer(normalizer=self._normalizer, target_key=FRAME_KEY)
 
-        self.batch_size = 6
+        self.batch_size = 4
         self.num_workers = 0
 
         self.train_iters = 500
@@ -40,12 +39,8 @@ class RunBase(Run):
         self.show_iters = 5
         self.accum_iters = 5
 
-        self.alpha = 0.4
-        self.loss = [CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY,
-                                      ignore_index=self.ignore_index),
-                     CrossEntropyLoss(result_trg_key=LOGIT_AUX_KEY, batch_trg_key=GROUND_TRUTH_KEY,
-                                      ignore_index=self.ignore_index, alpha=self.alpha)
-                     ]
+        self.loss = CrossEntropyLoss(result_trg_key=LOGIT_KEY, batch_trg_key=GROUND_TRUTH_KEY,
+                                     ignore_index=self.ignore_index)
 
         self.optimizer_class = torch.optim.Adam
 
