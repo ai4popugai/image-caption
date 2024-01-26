@@ -7,11 +7,13 @@ from torch import nn
 from datasets import FEATURE_MAP_KEYS, FRAME_KEY
 from nn_models.classification.base_model import BaseClassificationModel
 
+WEIGHTS = torchvision.models.EfficientNet_B0_Weights.IMAGENET1K_V1
+
 
 class EfficientNet(BaseClassificationModel):
-    def __init__(self, num_classes: int):
+    def __init__(self, num_classes: int, pretrain: bool = False):
         super().__init__()
-        self.model = torchvision.models.efficientnet_b0()
+        self.model = torchvision.models.efficientnet_b0(weights=WEIGHTS if pretrain else None)
         self.model.classifier[1] = nn.Linear(1280, num_classes)
 
 

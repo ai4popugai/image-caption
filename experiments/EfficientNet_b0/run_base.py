@@ -8,7 +8,7 @@ from torchvision import transforms
 from augmentations.augs import RandomFlip, RandomCrop, CenterCrop
 from datasets import LOGIT_KEY, LABEL_KEY, FRAME_KEY
 from datasets.classification.gpr import GPRDataset, GPR_NUM_CLASSES
-from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNet
+from nn_models.classification.efficient_net.efficient_net_b0 import EfficientNet
 from loss.cross_entropy import CrossEntropyLoss
 from metrics.classification.accuracy import Accuracy
 from metrics.classification.mean_precision import MeanPrecision

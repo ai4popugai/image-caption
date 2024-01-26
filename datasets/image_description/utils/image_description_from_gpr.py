@@ -6,7 +6,7 @@ import torch
 
 from datasets import FEATURE_MAP_KEYS, FRAME_KEY, LABEL_KEY
 from datasets.classification.gpr import GPRDataset
-from experiments.EfficientNet_b0.efficient_net_b0 import EfficientNetFeatureMapExtractor, EfficientNet
+from nn_models.classification.efficient_net.efficient_net_b0 import EfficientNetFeatureMapExtractor
 from experiments.utils import setup_run_instance
 from train import Trainer
 
