@@ -29,6 +29,5 @@ class DogsCatsDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         file = self.img_files[idx]
-        print(os.path.basename(file).split('.')[0])
         label = 0 if os.path.basename(file).split('.')[0] == 'cat' else 1
-        return {FRAME_KEY: self.transform(cv2.imread(file)), LABEL_KEY: torch.tensor(label, dtype=torch.float32)}
+        return {FRAME_KEY: self.transform(cv2.imread(file)), LABEL_KEY: torch.tensor(label, dtype=torch.int64)}
