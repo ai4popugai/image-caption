@@ -1,9 +1,4 @@
-import os
-from abc import ABCMeta
-
-import torch
-
-from experiments.EfficientNet_b0.run_base import RunBase
+from experiments.classification.gpr.EfficientNet_b0.run_base import RunBase
 
 
 def setup_run_instance(experiment: str, run: str, phase: str,) -> RunBase:

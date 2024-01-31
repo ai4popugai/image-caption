@@ -5,7 +5,7 @@ import re
 from typing import Optional
 
 from db import SQLiteDb
-from experiments.EfficientNet_b0.generate_concepts import generate_concepts
+from experiments.classification.gpr.EfficientNet_b0.generate_concepts import generate_concepts
 
 # setup concept detection model constants
 from keyframes_extraction import KEYFRAMES_DIR_KEY

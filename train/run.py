@@ -20,10 +20,14 @@ class Run(ABC):
     def __init__(self, filename: str):
         self.name = os.path.splitext(os.path.basename(filename))[0]  # i.e. phase_1
         run_path = os.path.split(filename)[0]
-        self.run_name = os.path.basename(run_path)  # i.e. run_10
-        experiment_path = os.path.split(run_path)[0]  # i.e. proj/experiments/exp_name
-        self.experiment_name = os.path.basename(experiment_path)  # i.e. wav2lip3
-        self.project = os.path.basename(os.path.split(os.path.split(experiment_path)[0])[0])  # i.e. wav2lip
+        self.run_name = os.path.basename(run_path)  # i.e. run_0
+        architecture_path = os.path.split(run_path)[0]  # i.e. proj/experiments/segmentation/cityscapes/DDRNet
+        self.architecture_name = os.path.basename(architecture_path)  # i.e. DDRNet
+        dataset_path = os.path.split(architecture_path)[0]  # i.e. proj/experiments/segmentation/cityscapes
+        self.dataset_name = os.path.basename(dataset_path)  # i.e. cityscapes
+        task_path = os.path.split(dataset_path)[0]  # i.e. proj/experiments/segmentation
+        self.task_name = os.path.basename(task_path)
+        self.project = os.path.basename(os.path.split(os.path.split(task_path)[0])[0])  # i.e. wav2lip
 
         self.batch_size: int = 64
         self.num_workers: int = 8
@@ -39,11 +43,14 @@ class Run(ABC):
         self.snapshot_iters: int = 300
         self.max_iteration: int = 1000000
 
-        self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOTS_DIR'], self.project, self.experiment_name,
-                                              self.run_name)
-        self.logs_dir: str = os.path.join(os.environ['LOG_DIR'], self.project, self.experiment_name, self.run_name)
-        self.batch_dump_dir: str = os.path.join(os.environ['BATCH_DUMP_DIR'], self.project, self.experiment_name,
-                                                self.run_name)
+        postfix = os.path.join(self.project,
+                               self.task_name, self.dataset_name, self.architecture_name,
+                               self.run_name)
+
+        self.snapshot_dir: str = os.path.join(os.environ['SNAPSHOTS_DIR'], postfix)
+        self.logs_dir: str = os.path.join(os.environ['LOG_DIR'], postfix)
+        self.batch_dump_dir: str = os.path.join(os.environ['BATCH_DUMP_DIR'], postfix)
+
         os.makedirs(self.snapshot_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
         os.makedirs(self.batch_dump_dir, exist_ok=True)
