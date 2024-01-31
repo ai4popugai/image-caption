@@ -27,7 +27,7 @@ class Run(ABC):
         self.dataset_name = os.path.basename(dataset_path)  # i.e. cityscapes
         task_path = os.path.split(dataset_path)[0]  # i.e. proj/experiments/segmentation
         self.task_name = os.path.basename(task_path)
-        self.project = os.path.basename(os.path.split(os.path.split(task_path)[0])[0])  # i.e. wav2lip
+        self.project = os.path.basename(os.path.split(os.path.split(task_path)[0])[0])  # i.e. image-retrieval
 
         self.batch_size: int = 64
         self.num_workers: int = 8
