@@ -2,7 +2,9 @@ import torch
 
 
 def warp_optical_flow(img: torch.Tensor, flow: torch.Tensor) -> torch.Tensor:
-    device = f'cuda:{img.get_device()}' if img.get_device() >= 0 else 'cpu'
+    if str(img.device) != str(flow.device):
+        raise RuntimeError('Both image anf flow device must be the same.')
+    device = img.device
 
     if img.shape[0] != flow.shape[0]:
         raise RuntimeError('Two input batches has different batch sizes.')
