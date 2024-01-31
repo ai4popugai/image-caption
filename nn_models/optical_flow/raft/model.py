@@ -1,17 +1,18 @@
 from typing import Dict
 
 import torch
+from torch import nn
 from torchvision.models.optical_flow import raft_large, raft_small, Raft_Small_Weights, Raft_Large_Weights
 
 from datasets import FRAME_T_KEY, FRAME_T_K_KEY, OPTICAL_FLOW_KEY
-from nn_models.base_model import BaseModel
 
 
-class Raft(BaseModel):
+class Raft(nn.Module):
     def __init__(self, small: bool = False):
         super().__init__()
+        self.small = small
 
-        if small is True:
+        if self.small is True:
             weights = Raft_Small_Weights.DEFAULT
             self.transforms = weights.transforms()
             self.model = raft_small(weights=weights, progress=False)
@@ -27,4 +28,5 @@ class Raft(BaseModel):
         :return:
         """
         t, t_k = self.transforms(batch[FRAME_T_KEY], batch[FRAME_T_K_KEY])
-        return {OPTICAL_FLOW_KEY: self.model(t, t_k)}
+        flow = self.model(t, t_k)
+        return {OPTICAL_FLOW_KEY: flow if isinstance(flow, torch.Tensor) else flow[-1]}
