@@ -6,7 +6,7 @@ from typing import Dict, Any
 import torch
 from torch.utils.data import DataLoader
 
-from datasets.segmantation.cityscapes import CityscapesVideoDataset
+from datasets.segmantation.cityscapes import CityscapesVideoDataset, CITYSCAPES_VIDEO_ROOT
 from train import Trainer
 
 
@@ -28,8 +28,11 @@ def main(dst_path: str, optical_flow_model: torch.nn.Module, loader: DataLoader,
 
 
 if __name__ == '__main__':
+    if CITYSCAPES_VIDEO_ROOT not in os.environ:
+        raise RuntimeError(
+            f'Failed to init cityscapes dataset instance: {CITYSCAPES_VIDEO_ROOT} not in environment.')
+
     parser = argparse.ArgumentParser(description='Create optical flow dataset from cityscapes dataset')
-    parser.add_argument('--dst_path', type=str, help='Path were to store new dataset.')
     parser.add_argument('--step', type=int, help='Step between 2 frames  in dataset', default=1)
     parser.add_argument('--optical_flow_model', type=str, help='Model to compute optical flow', default='Raft')
     parser.add_argument('--optical_flow_model_kwargs', type=Dict[str, Any], help='Model to compute optical flow',
@@ -42,7 +45,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    dst_path = f'{args.dst_path}_step-{args.step}_model-{args.optical_flow_model}'
+    dst_path = os.path.join(os.environ[CITYSCAPES_VIDEO_ROOT], 'optical_flow')
+    dst_path = f'{dst_path}_step-{args.step}_model-{args.optical_flow_model}'
     for key, val in args.optical_flow_model_kwargs.items():
         dst_path += f'_{key}-{val}'
     os.makedirs(dst_path, exist_ok=True)
