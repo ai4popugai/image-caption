@@ -6,7 +6,7 @@ from typing import Dict, Any
 import torch
 from torch.utils.data import DataLoader
 
-from datasets.segmantation.cityscapes import CityscapesVideoDataset, CITYSCAPES_VIDEO_ROOT
+from datasets.segmantation.cityscapes import CityscapesVideoDataset, CITYSCAPES_VIDEO_ROOT, setup_opt_flow_path
 from train import Trainer
 
 
@@ -45,10 +45,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    dst_path = os.path.join(os.environ[CITYSCAPES_VIDEO_ROOT], 'optical_flow')
-    dst_path = f'{dst_path}_step-{args.step}_model-{args.optical_flow_model}'
-    for key, val in args.optical_flow_model_kwargs.items():
-        dst_path += f'_{key}-{val}'
+    dst_path = setup_opt_flow_path(args.step, args.optical_flow_model, args.optical_flow_model_kwargs)
     os.makedirs(dst_path, exist_ok=True)
     file_names = sorted(os.listdir(dst_path))
     if len(file_names) != 0:
