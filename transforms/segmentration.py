@@ -89,16 +89,33 @@ class GroundTruthToImage(BaseToImageTransforms):
         return activation_map_to_colors(ground_truth, self.color_map).permute(self.permute_dims).cpu().numpy()
 
 
-class FramesToImage(BaseToImageTransforms):
+class FramesFloatToImage(BaseToImageTransforms):
     def __init__(self):
         super().__init__()
 
     def __call__(self, frames: torch.Tensor):
         """
-        Method to convert frames represented as torch.Tensor to image
+        Method to convert frames represented as torch.Tensor with values range [0, 1] to image
 
         :param frames: frames with shape [batch_size, CHANNELS, h, w].
         :return:
         """
         return (frames.clone().detach() * 255).to(torch.uint8).permute(self.permute_dims).cpu().numpy()
+
+
+class FramesIntToImage(BaseToImageTransforms):
+    def __init__(self):
+        super().__init__()
+
+    def __call__(self, frames: torch.Tensor):
+        """
+        Method to convert frames represented as torch.Tensor with values range [0, 255] to image
+
+        :param frames: frames with shape [batch_size, CHANNELS, h, w].
+        :return:
+        """
+        if frames.dtype == torch.float32:
+            frames = torch.round(frames).to(torch.uint8)
+
+        return frames.clone().detach().permute(self.permute_dims).cpu().numpy()
 

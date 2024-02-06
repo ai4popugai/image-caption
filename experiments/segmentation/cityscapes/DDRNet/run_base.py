@@ -15,7 +15,7 @@ from normalize.normalize import BatchNormalizer
 from train.run import Run
 from torchvision import transforms
 
-from transforms.segmentration import FramesToImage, GroundTruthToImage, LogitsToImage, BaseToImageTransforms
+from transforms.segmentration import FramesFloatToImage, GroundTruthToImage, LogitsToImage, BaseToImageTransforms
 
 os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
 
@@ -78,7 +78,7 @@ class RunBase(Run):
         return train_dataset, val_dataset
 
     def get_batch_sample_to_image_map(self) -> Dict[str, BaseToImageTransforms]:
-        return {FRAME_KEY: FramesToImage(),
+        return {FRAME_KEY: FramesFloatToImage(),
                 GROUND_TRUTH_KEY: GroundTruthToImage(color_map=CityscapesDataset19.color_map),
                 LOGIT_KEY: LogitsToImage(color_map=CityscapesDataset19.color_map),
                 LOGIT_AUX_KEY: LogitsToImage(color_map=CityscapesDataset19.color_map)}

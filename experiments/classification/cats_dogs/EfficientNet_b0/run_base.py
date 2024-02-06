@@ -16,7 +16,7 @@ from metrics.classification.mean_recall import MeanRecall
 from nn_models.classification.base_model import BaseClassificationModel
 from normalize.normalize import BatchNormalizer
 from train.run import Run
-from transforms.segmentration import BaseToImageTransforms, FramesToImage
+from transforms.segmentration import BaseToImageTransforms, FramesFloatToImage
 
 
 class RunBase(Run):
@@ -69,5 +69,5 @@ class RunBase(Run):
         return train_dataset, validation_dataset
 
     def get_batch_sample_to_image_map(self) -> Dict[str, BaseToImageTransforms]:
-        return {FRAME_KEY: FramesToImage()}
+        return {FRAME_KEY: FramesFloatToImage()}
 
