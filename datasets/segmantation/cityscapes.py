@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, Any
 
 import torch
 from PIL import Image
@@ -7,7 +7,7 @@ from torch import Tensor
 from torchvision.datasets import Cityscapes
 from torchvision.transforms import Compose, PILToTensor
 
-from datasets import FRAME_KEY, GROUND_TRUTH_KEY, FRAME_T_KEY, FRAME_T_K_KEY
+from datasets import FRAME_KEY, GROUND_TRUTH_KEY, FRAME_T_KEY, FRAME_T_K_KEY, OPTICAL_FLOW_KEY
 from datasets.segmantation.base_dataset import BaseSegmentationDataset
 
 CITYSCAPES_ROOT = 'CITYSCAPES_DATASET_ROOT'
@@ -96,6 +96,14 @@ CLASSES_WEIGHTS_34 = torch.tensor([5.6972e-03, 2.5404e-01, 2.3097e-01, 1.8188e-0
                                    2.3325e-04, 2.2257e-04, 2.2248e-04, 2.2177e-04], dtype=torch.float32)
 
 
+def setup_opt_flow_path(step: int, optical_flow_model: str, optical_flow_model_kwargs: Dict[str, Any]):
+    dst_path = os.path.join(os.environ[CITYSCAPES_VIDEO_ROOT], 'optical_flow')
+    dst_path = f'{dst_path}_step-{step}_model-{optical_flow_model}'
+    for key, val in optical_flow_model_kwargs.items():
+        dst_path += f'_{key}-{val}'
+    return dst_path
+
+
 class CityscapesVideoDataset(BaseSegmentationDataset):
     color_map = COLOR_MAP_34_TENSOR
 
@@ -138,6 +146,26 @@ class CityscapesVideoDataset(BaseSegmentationDataset):
         return {FRAME_T_KEY: frame_t,
                 FRAME_T_K_KEY: frame_t_k,
                 }
+
+
+class CityscapesVideoOptFlowDataset(BaseSegmentationDataset):
+    def __init__(self, optical_flow_model: str, optical_flow_model_kwargs: Dict[str, Any], step: int = 1):
+        super().__init__()
+        opt_flow_path = setup_opt_flow_path(step, optical_flow_model, optical_flow_model_kwargs)
+        self.dataset = CityscapesVideoDataset(step=step)
+        self.optical_flow_path_list = [os.path.join(opt_flow_path, ff) for ff in sorted(os.listdir(opt_flow_path))
+                                       if ff.endswith('.pt')]
+        if len(self.dataset) != len(self.optical_flow_path_list):
+            raise RuntimeError('Incompatible amount of precomputed optical flow maps for given '
+                               'optical_flow_model and optical_flow_model_kwargs')
+
+    def __len__(self):
+        return self.dataset.__len__()
+
+    def __getitem__(self, idx: int) -> Dict[str, Tensor]:
+        item = self.dataset[idx]
+        item[OPTICAL_FLOW_KEY] = torch.load(self.optical_flow_path_list[idx])
+        return item
 
 
 class CityscapesDataset34(BaseSegmentationDataset):
