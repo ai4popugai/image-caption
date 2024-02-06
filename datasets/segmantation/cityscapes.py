@@ -4,11 +4,11 @@ from typing import Dict, Any
 import torch
 from PIL import Image
 from torch import Tensor
+from torch.utils.data import Dataset
 from torchvision.datasets import Cityscapes
 from torchvision.transforms import Compose, PILToTensor
 
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY, FRAME_T_KEY, FRAME_T_K_KEY, OPTICAL_FLOW_KEY
-from datasets.segmantation.base_dataset import BaseSegmentationDataset
 
 CITYSCAPES_ROOT = 'CITYSCAPES_DATASET_ROOT'
 CITYSCAPES_VIDEO_ROOT = 'CITYSCAPES_VIDEO_DATASET_ROOT'
@@ -104,7 +104,7 @@ def setup_opt_flow_path(step: int, optical_flow_model: str, optical_flow_model_k
     return dst_path
 
 
-class CityscapesVideoDataset(BaseSegmentationDataset):
+class CityscapesVideoDataset(Dataset):
     color_map = COLOR_MAP_34_TENSOR
 
     def __init__(self, step: int = 1):
@@ -148,7 +148,7 @@ class CityscapesVideoDataset(BaseSegmentationDataset):
                 }
 
 
-class CityscapesVideoOptFlowDataset(BaseSegmentationDataset):
+class CityscapesVideoOptFlowDataset(Dataset):
     def __init__(self, optical_flow_model: str, optical_flow_model_kwargs: Dict[str, Any], step: int = 1):
         super().__init__()
         opt_flow_path = setup_opt_flow_path(step, optical_flow_model, optical_flow_model_kwargs)
@@ -168,7 +168,7 @@ class CityscapesVideoOptFlowDataset(BaseSegmentationDataset):
         return item
 
 
-class CityscapesDataset34(BaseSegmentationDataset):
+class CityscapesDataset34(Dataset):
     color_map = COLOR_MAP_34_TENSOR
 
     def __init__(self, split: str, mode: str = 'fine'):
@@ -191,7 +191,7 @@ class CityscapesDataset34(BaseSegmentationDataset):
         # convert frames from RGB to BGR
 
 
-class CityscapesDataset19(BaseSegmentationDataset):
+class CityscapesDataset19(Dataset):
     color_map = COLOR_MAP_19_TENSOR
 
     def __init__(self, split: str, mode: str = 'fine'):

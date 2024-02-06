@@ -3,11 +3,11 @@ from typing import Dict, Tuple, Optional, List
 
 import cv2
 import torch
+from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
 
 from augmentations.augs import RandomCrop, CenterCrop, BaseAug
 from datasets import FRAME_KEY, GROUND_TRUTH_KEY
-from datasets.segmantation.base_dataset import BaseSegmentationDataset
 
 DUBAI_AERIAL_DATASET = 'DUBAI_AERIAL_DATASET'
 
@@ -23,7 +23,7 @@ COLOR_MAP = {
 COLOR_MAP_TENSOR = torch.tensor(list(COLOR_MAP.values()), dtype=torch.uint8)
 
 
-class DubaiAerial(BaseSegmentationDataset):
+class DubaiAerial(Dataset):
     color_map = COLOR_MAP_TENSOR
 
     def __init__(self, resolution: Tuple[int, int]):
