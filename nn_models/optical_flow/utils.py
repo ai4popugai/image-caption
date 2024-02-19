@@ -21,5 +21,6 @@ def warp_optical_flow(img: torch.Tensor, flow: torch.Tensor) -> torch.Tensor:
     flow = flow.permute(0, 2, 3, 1)
     warped_grid = grid - flow
     warped_grid = warped_grid * 2 / torch.tensor([w, h]).float().to(device) - 1
-    warped_image = torch.nn.functional.grid_sample(img.float(), warped_grid, padding_mode='zeros')
+    warped_image = torch.nn.functional.grid_sample(img.float(), warped_grid, padding_mode='zeros',
+                                                   align_corners=True)
     return warped_image
