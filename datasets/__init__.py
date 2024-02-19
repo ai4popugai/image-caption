@@ -10,4 +10,4 @@ EMB_KEY = 'embs'
 FRAME_T_KEY = 'frame_t'
 FRAME_T_K_KEY = 'frame_t_k'
 
-OPTICAL_FLOW_KEY = 'OPTICAL_FLOW_KEY'
+OPTICAL_FLOW_KEY = 'optical_flow'
