@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import GroupNorm
+from torch.nn import BatchNorm2d
 
 BatchNorm2d = nn.SyncBatchNorm
 bn_mom = 0.1
-NUM_GROUPS = 8
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -20,10 +19,10 @@ class BasicBlock(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None, no_relu=False):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = GroupNorm(NUM_GROUPS, planes)
+        self.bn1 = BatchNorm2d(planes, momentum=bn_mom)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
-        self.bn2 = GroupNorm(NUM_GROUPS, planes)
+        self.bn2 = BatchNorm2d(planes, momentum=bn_mom)
         self.downsample = downsample
         self.stride = stride
         self.no_relu = no_relu
@@ -55,13 +54,13 @@ class Bottleneck(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None, no_relu=True):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1 = GroupNorm(NUM_GROUPS, planes)
+        self.bn1 = BatchNorm2d(planes, momentum=bn_mom)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
                                padding=1, bias=False)
-        self.bn2 = GroupNorm(NUM_GROUPS, planes)
+        self.bn2 = BatchNorm2d(planes, momentum=bn_mom)
         self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1,
                                bias=False)
-        self.bn3 = GroupNorm(NUM_GROUPS, planes * self.expansion)
+        self.bn3 = BatchNorm2d(planes * self.expansion, momentum=bn_mom)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -95,57 +94,57 @@ class DAPPM(nn.Module):
     def __init__(self, inplanes, branch_planes, outplanes):
         super(DAPPM, self).__init__()
         self.scale1 = nn.Sequential(nn.AvgPool2d(kernel_size=5, stride=2, padding=2),
-                                    GroupNorm(NUM_GROUPS, inplanes),
+                                    BatchNorm2d(inplanes, momentum=bn_mom),
                                     nn.ReLU(inplace=True),
                                     nn.Conv2d(inplanes, branch_planes, kernel_size=1, bias=False),
                                     )
         self.scale2 = nn.Sequential(nn.AvgPool2d(kernel_size=9, stride=4, padding=4),
-                                    GroupNorm(NUM_GROUPS, inplanes),
+                                    BatchNorm2d(inplanes, momentum=bn_mom),
                                     nn.ReLU(inplace=True),
                                     nn.Conv2d(inplanes, branch_planes, kernel_size=1, bias=False),
                                     )
         self.scale3 = nn.Sequential(nn.AvgPool2d(kernel_size=17, stride=8, padding=8),
-                                    GroupNorm(NUM_GROUPS, inplanes),
+                                    BatchNorm2d(inplanes, momentum=bn_mom),
                                     nn.ReLU(inplace=True),
                                     nn.Conv2d(inplanes, branch_planes, kernel_size=1, bias=False),
                                     )
         self.scale4 = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
-                                    GroupNorm(NUM_GROUPS, inplanes),
+                                    BatchNorm2d(inplanes, momentum=bn_mom),
                                     nn.ReLU(inplace=True),
                                     nn.Conv2d(inplanes, branch_planes, kernel_size=1, bias=False),
                                     )
         self.scale0 = nn.Sequential(
-            GroupNorm(NUM_GROUPS, inplanes),
+            BatchNorm2d(inplanes, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(inplanes, branch_planes, kernel_size=1, bias=False),
         )
         self.process1 = nn.Sequential(
-            GroupNorm(NUM_GROUPS, branch_planes),
+            BatchNorm2d(branch_planes, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(branch_planes, branch_planes, kernel_size=3, padding=1, bias=False),
         )
         self.process2 = nn.Sequential(
-            GroupNorm(NUM_GROUPS, branch_planes),
+            BatchNorm2d(branch_planes, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(branch_planes, branch_planes, kernel_size=3, padding=1, bias=False),
         )
         self.process3 = nn.Sequential(
-            GroupNorm(NUM_GROUPS, branch_planes),
+            BatchNorm2d(branch_planes, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(branch_planes, branch_planes, kernel_size=3, padding=1, bias=False),
         )
         self.process4 = nn.Sequential(
-            GroupNorm(NUM_GROUPS, branch_planes),
+            BatchNorm2d(branch_planes, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(branch_planes, branch_planes, kernel_size=3, padding=1, bias=False),
         )
         self.compression = nn.Sequential(
-            GroupNorm(NUM_GROUPS, branch_planes * 5),
+            BatchNorm2d(branch_planes * 5, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(branch_planes * 5, outplanes, kernel_size=1, bias=False),
         )
         self.shortcut = nn.Sequential(
-            GroupNorm(NUM_GROUPS, inplanes),
+            BatchNorm2d(inplanes, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(inplanes, outplanes, kernel_size=1, bias=False),
         )
@@ -178,9 +177,9 @@ class segmenthead(nn.Module):
 
     def __init__(self, inplanes, interplanes, outplanes, scale_factor=None):
         super(segmenthead, self).__init__()
-        self.bn1 = GroupNorm(NUM_GROUPS, inplanes)
+        self.bn1 = BatchNorm2d(inplanes, momentum=bn_mom)
         self.conv1 = nn.Conv2d(inplanes, interplanes, kernel_size=3, padding=1, bias=False)
-        self.bn2 = GroupNorm(NUM_GROUPS, interplanes)
+        self.bn2 = BatchNorm2d(interplanes, momentum=bn_mom)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(interplanes, outplanes, kernel_size=1, padding=0, bias=True)
         self.scale_factor = scale_factor
@@ -209,10 +208,10 @@ class DualResNet(nn.Module):
 
         self.conv1 = nn.Sequential(
             nn.Conv2d(3, planes, kernel_size=3, stride=2, padding=1),
-            GroupNorm(NUM_GROUPS, planes),
+            BatchNorm2d(planes, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(planes, planes, kernel_size=3, stride=2, padding=1),
-            GroupNorm(NUM_GROUPS, planes),
+            BatchNorm2d(planes, momentum=bn_mom),
             nn.ReLU(inplace=True),
         )
 
@@ -224,25 +223,25 @@ class DualResNet(nn.Module):
 
         self.compression3 = nn.Sequential(
             nn.Conv2d(planes * 4, highres_planes, kernel_size=1, bias=False),
-            GroupNorm(NUM_GROUPS, highres_planes),
+            BatchNorm2d(highres_planes, momentum=bn_mom),
         )
 
         self.compression4 = nn.Sequential(
             nn.Conv2d(planes * 8, highres_planes, kernel_size=1, bias=False),
-            GroupNorm(NUM_GROUPS, highres_planes),
+            BatchNorm2d(highres_planes, momentum=bn_mom),
         )
 
         self.down3 = nn.Sequential(
             nn.Conv2d(highres_planes, planes * 4, kernel_size=3, stride=2, padding=1, bias=False),
-            GroupNorm(NUM_GROUPS, planes * 4),
+            BatchNorm2d(planes * 4, momentum=bn_mom),
         )
 
         self.down4 = nn.Sequential(
             nn.Conv2d(highres_planes, planes * 4, kernel_size=3, stride=2, padding=1, bias=False),
-            GroupNorm(NUM_GROUPS, planes * 4),
+            BatchNorm2d(planes * 4, momentum=bn_mom),
             nn.ReLU(inplace=True),
             nn.Conv2d(planes * 4, planes * 8, kernel_size=3, stride=2, padding=1, bias=False),
-            GroupNorm(NUM_GROUPS, planes * 8),
+            BatchNorm2d(planes * 8, momentum=bn_mom),
         )
 
         self.layer3_ = self._make_layer(block, planes * 2, highres_planes, 2)
@@ -275,7 +274,7 @@ class DualResNet(nn.Module):
             downsample = nn.Sequential(
                 nn.Conv2d(inplanes, planes * block.expansion,
                           kernel_size=1, stride=stride, bias=False),
-                nn.GroupNorm(NUM_GROUPS, planes * block.expansion),
+                nn.BatchNorm2d(planes * block.expansion, momentum=bn_mom),
             )
 
         layers = []
