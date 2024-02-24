@@ -138,11 +138,15 @@ class CityscapesVideoDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Dict[str, Tensor]:
         idx = self.indexes[idx]
+        # load image like in pytorch cityscapes dataset
         frame_t = Image.open(self.frames_list[idx]).convert("RGB")
         frame_t = self.frame_transforms(frame_t).byte()
+        # convert frames from RGB to BGR
+        frame_t = torch.flip(frame_t, [0])
 
         frame_t_k = Image.open(self.frames_list[idx + self.step]).convert("RGB")
         frame_t_k = self.frame_transforms(frame_t_k).byte()
+        frame_t_k = torch.flip(frame_t_k, [0])
         return {FRAME_T_KEY: frame_t,
                 FRAME_T_K_KEY: frame_t_k,
                 }
